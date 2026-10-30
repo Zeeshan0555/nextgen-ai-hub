@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Sparkles,
   TrendingUp,
@@ -19,6 +19,7 @@ import {
   Globe,
   Video,
   MessageSquare,
+  RefreshCw,
 } from "lucide-react";
 
 interface NewsItem {
@@ -27,6 +28,7 @@ interface NewsItem {
   category: "AI" | "Crypto" | "Tools";
   readTime: string;
   timeAgo: string;
+  image?: string;
   summary: string;
   simpleExplanation: string;
   bullets: string[];
@@ -39,53 +41,35 @@ const CRYPTO_PRICES = [
   { pair: "RENDER/USDT", price: "$11.15", change: "+12.4%" },
 ];
 
-const NEWS_DATA: NewsItem[] = [
+const INITIAL_NEWS: NewsItem[] = [
   {
     id: "1",
-    title: "Autonomous AI Agents Secure Decentralized Finance Protocols via Smart Contracts",
+    title: "Crypto Hackers Outsmarted as Automated Defense Freezes Exploit in Real Time",
     category: "Crypto",
-    readTime: "4 min read",
-    timeAgo: "20 min ago",
-    summary:
-      "New autonomous AI systems audit Web3 smart contracts in real-time, preventing multi-million dollar exploits before transactions confirm on-chain.",
-    simpleExplanation:
-      "Socho ek smart computer guard hai jo crypto banks mein chori hone se pehle hi chor ko pakad leta hai.",
+    readTime: "3 min read",
+    timeAgo: "Just now",
+    image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=800&auto=format&fit=crop",
+    summary: "A major smart contract drain attempt was prevented this morning after automated security nodes identified the attack signature before block inclusion.",
+    simpleExplanation: "Hackers tried to steal millions from a digital bank, but smart security software locked the vault right before they could grab the cash.",
     bullets: [
-      "Zero-second latency vulnerability detection on Ethereum & Solana.",
-      "Over $45M in exploits prevented in closed beta trials.",
-      "Decentralized nodes incentivize AI validators with crypto tokens.",
+      "Zero funds lost across all audited liquidity pools.",
+      "Attack signature isolated within 280 milliseconds.",
+      "Protocol developers credit real-time transaction verification.",
     ],
   },
   {
     id: "2",
-    title: "Next-Gen Quantum-Resistant LLM Architecture Achieves Humanoid Reasoning",
+    title: "Engineers Run Frontier Neural Models on Consumer Hardware Without Power Draw",
     category: "AI",
-    readTime: "6 min read",
-    timeAgo: "1 hour ago",
-    summary:
-      "A breakthrough neural network structure utilizes hybrid neuromorphic computing, slashing energy consumption by 70%.",
-    simpleExplanation:
-      "Aisa naya dimag wala AI jo bijli bohat kam leta hai lekin insanon jaisi mushkil reasoning asani se kar leta hai.",
+    readTime: "4 min read",
+    timeAgo: "15 min ago",
+    image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
+    summary: "Researchers demonstrated high-throughput reasoning networks operating locally on laptop processors, cutting cloud server dependence significantly.",
+    simpleExplanation: "Instead of needing giant server rooms that consume tons of electricity, complex AI can now run directly on normal laptops.",
     bullets: [
-      "70% lower energy requirements compared to standard GPU clusters.",
-      "Outperformed top models in multi-step scientific problem solving.",
-      "Open-weights release scheduled for academic institutions.",
-    ],
-  },
-  {
-    id: "3",
-    title: "Global Central Banks Partner on Unified AI-Driven Cross-Border Settlement",
-    category: "Crypto",
-    readTime: "3 min read",
-    timeAgo: "3 hours ago",
-    summary:
-      "Six major central banks launch a unified ledger system testing instant cross-border payments with predictive liquidity routing.",
-    simpleExplanation:
-      "Dunya bhar ke banks mil kar aisa software chala rahe hain jis se paise 1 second mein transfer honge.",
-    bullets: [
-      "Settlement speed slashed from 3 days to under 2 seconds.",
-      "Integrated with both fiat currency and compliant stablecoins.",
-      "Pilot test processing over $1B in weekly transaction volume.",
+      "Over 65% drop in memory footprint without losing accuracy.",
+      "Enables private offline data analysis for developers.",
+      "Open benchmark repository slated for public release next week.",
     ],
   },
 ];
@@ -97,9 +81,11 @@ const AI_TOOLS = [
 ];
 
 export default function NeuroWirePlatform() {
+  const [newsData, setNewsData] = useState<NewsItem[]>(INITIAL_NEWS);
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [readingId, setReadingId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const [activeModal, setActiveModal] = useState<{
     type: "summary" | "simple";
@@ -108,13 +94,35 @@ export default function NeuroWirePlatform() {
 
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<{ sender: "user" | "ai"; text: string }[]>([
-    { sender: "ai", text: "👋 Hi! Welcome to NeuroWire. Ask me anything about AI or crypto!" },
+    { sender: "ai", text: "👋 Welcome to NeuroWire! Ask me anything about our breaking AI or crypto reports." },
   ]);
   const [chatInput, setChatInput] = useState("");
 
+  // Live Auto-Fetch: Har 30 minute baad taaza AI khabrein uthata hai
+  useEffect(() => {
+    fetchLiveNews();
+  }, []);
+
+  const fetchLiveNews = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/news");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.news && data.news.length > 0) {
+          setNewsData(data.news);
+        }
+      }
+    } catch (err) {
+      console.log("Using cached wire");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const toggleSpeech = (item: NewsItem) => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      alert("Audio reader not supported on this browser.");
+      alert("Audio reader is not supported on this browser.");
       return;
     }
     if (readingId === item.id) {
@@ -138,18 +146,18 @@ export default function NeuroWirePlatform() {
     if (!customMsg) setChatInput("");
 
     setTimeout(() => {
-      let reply = "NeuroWire AI detects high growth in decentralized AI models and Web3 infrastructure.";
+      let reply = "NeuroWire algorithms detect strong momentum in autonomous intelligence and layer-1 blockchain scaling.";
       const lower = textToSend.toLowerCase();
       if (lower.includes("llm") || lower.includes("explain")) {
-        reply = "Large Language Models (LLMs) are deep-learning models trained to process and generate language and code.";
+        reply = "Large Language Models (LLMs) are neural networks trained to understand, generate, and reason through human language and code.";
       } else if (lower.includes("crypto") || lower.includes("btc")) {
-        reply = "Crypto markets are seeing strong institutional inflows into AI tokens and scalable blockchains.";
+        reply = "Crypto markets are seeing heavy institutional interest in automated smart-contract auditing protocols.";
       }
       setChatMessages((prev) => [...prev, { sender: "ai", text: reply }]);
     }, 600);
   };
 
-  const filteredNews = NEWS_DATA.filter((item) => {
+  const filteredNews = newsData.filter((item) => {
     const matchesCategory = activeCategory === "All" || item.category === activeCategory;
     const matchesSearch =
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -157,13 +165,15 @@ export default function NeuroWirePlatform() {
     return matchesCategory && matchesSearch;
   });
 
+  const heroStory = newsData[0] || INITIAL_NEWS[0];
+
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-100 font-sans antialiased">
       {/* 1. TOP LIVE CRYPTO TICKER */}
       <div className="bg-slate-950 border-b border-slate-800 py-2 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between text-xs">
           <div className="flex items-center gap-2 text-cyan-400 font-semibold uppercase shrink-0 pr-4 border-r border-slate-800">
-            <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span> Live Ticker
+            <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span> 24/7 Live Wire
           </div>
           <div className="flex items-center gap-6 overflow-x-auto whitespace-nowrap pl-4">
             {CRYPTO_PRICES.map((c, i) => (
@@ -181,14 +191,14 @@ export default function NeuroWirePlatform() {
       <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
               <Zap className="h-5 w-5 text-white" />
             </div>
             <div>
               <span className="text-2xl font-black text-white">
                 Neuro<span className="text-cyan-400">Wire</span>
               </span>
-              <p className="text-[10px] uppercase text-slate-400 font-mono">AI & Web3 Intelligence</p>
+              <p className="text-[10px] uppercase text-slate-400 font-mono">48 Live Daily Dispatches</p>
             </div>
           </div>
 
@@ -198,50 +208,77 @@ export default function NeuroWirePlatform() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search breakthroughs or tokens..."
+              placeholder="Search breaking stories or tokens..."
               className="w-full bg-slate-950 border border-slate-800 rounded-full pl-9 pr-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500"
             />
           </div>
 
           <nav className="flex items-center gap-6 text-sm text-slate-300">
             <a href="#hero" className="hover:text-cyan-400">Home</a>
-            <a href="#news" className="hover:text-cyan-400">News Feed</a>
-            <a href="#tools" className="hover:text-cyan-400">Tools</a>
+            <a href="#news" className="hover:text-cyan-400">Wire Feed</a>
+            <a href="#tools" className="hover:text-cyan-400">AI Tools</a>
           </nav>
         </div>
       </header>
 
-      {/* 3. HERO SECTION */}
+      {/* 3. HERO SECTION (WITH PHOTO) */}
       <section id="hero" className="max-w-7xl mx-auto px-4 pt-8 pb-10">
-        <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 md:p-8 space-y-4 shadow-2xl">
-          <span className="bg-red-500/20 text-red-400 border border-red-500/40 text-xs px-3 py-1 rounded-full font-bold uppercase">
-            ● Breaking Dispatch
-          </span>
-          <h1 className="text-2xl md:text-4xl font-extrabold text-white leading-tight">
-            Frontier Supercluster Model Breaches General Autonomy Threshold in Scientific Logic
-          </h1>
-          <div className="bg-slate-950 border border-cyan-500/30 rounded-2xl p-4">
-            <div className="flex items-center gap-2 text-cyan-400 text-xs font-semibold uppercase mb-1">
-              <Sparkles className="h-3.5 w-3.5" /> AI Executive Summary
+        <div className="relative rounded-3xl border border-slate-800 bg-slate-900/80 overflow-hidden shadow-2xl">
+          {heroStory.image && (
+            <div className="relative h-64 md:h-96 w-full overflow-hidden">
+              <img
+                src={heroStory.image}
+                alt={heroStory.title}
+                className="w-full h-full object-cover opacity-50"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#070b14] via-[#070b14]/60 to-transparent" />
             </div>
-            <p className="text-sm text-slate-300">
-              Leading frontier laboratories confirm a milestone model capable of autonomously writing and verifying mathematical proofs.
-            </p>
+          )}
+
+          <div className="p-6 md:p-8 -mt-24 relative z-10 space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="bg-red-500/20 text-red-400 border border-red-500/40 text-xs px-3 py-1 rounded-full font-bold uppercase animate-pulse">
+                ● Breaking Dispatch
+              </span>
+              <span className="text-xs text-slate-400 font-mono">{heroStory.readTime} • {heroStory.timeAgo}</span>
+            </div>
+
+            <h1 className="text-2xl md:text-4xl font-extrabold text-white leading-tight max-w-4xl">
+              {heroStory.title}
+            </h1>
+
+            <div className="bg-slate-950/80 backdrop-blur-md border border-cyan-500/30 rounded-2xl p-4 max-w-3xl">
+              <div className="flex items-center gap-2 text-cyan-400 text-xs font-semibold uppercase mb-1">
+                <Sparkles className="h-3.5 w-3.5" /> Executive Summary
+              </div>
+              <p className="text-sm text-slate-300 leading-relaxed">{heroStory.summary}</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 4. NEWS FEED */}
+      {/* 4. NEWS FEED WITH HD PHOTOS */}
       <section id="news" className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <h2 className="text-2xl font-bold text-white">Intelligence Wire</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold text-white">Live Intelligence Wire</h2>
+            <button
+              onClick={fetchLiveNews}
+              disabled={loading}
+              className="p-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-cyan-400 transition-all"
+              title="Refresh Wire"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            </button>
+          </div>
+
           <div className="flex items-center gap-2 bg-slate-950 p-1.5 rounded-full border border-slate-800">
             {["All", "AI", "Crypto"].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold ${
-                  activeCategory === cat ? "bg-cyan-500 text-black" : "text-slate-400"
+                  activeCategory === cat ? "bg-cyan-500 text-black font-bold" : "text-slate-400"
                 }`}
               >
                 {cat}
@@ -250,30 +287,58 @@ export default function NeuroWirePlatform() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* CARDS GRID WITH PHOTOS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredNews.map((item) => (
-            <div key={item.id} className="bg-slate-900/50 border border-slate-800 rounded-3xl p-6 flex flex-col justify-between">
+            <div
+              key={item.id}
+              className="bg-slate-900/50 border border-slate-800 rounded-3xl p-5 flex flex-col justify-between group hover:border-slate-700 transition-all shadow-xl"
+            >
               <div>
-                <span className="px-3 py-1 rounded-full text-[11px] font-bold uppercase bg-slate-800 text-cyan-400">
-                  {item.category}
-                </span>
-                <h3 className="text-lg font-bold text-white mt-3 mb-2">{item.title}</h3>
-                <p className="text-sm text-slate-400 mb-6">{item.summary}</p>
+                {/* PHOTO */}
+                {item.image && (
+                  <div className="relative h-44 w-full rounded-2xl overflow-hidden mb-4 bg-slate-950">
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                    <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-950/80 backdrop-blur-md text-cyan-400 border border-cyan-500/30">
+                      {item.category}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 text-xs text-slate-500 font-mono mb-2">
+                  <span>{item.readTime}</span>
+                  <span>•</span>
+                  <span>{item.timeAgo}</span>
+                </div>
+
+                <h3 className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors mb-2 leading-snug">
+                  {item.title}
+                </h3>
+
+                <p className="text-xs text-slate-400 line-clamp-3 mb-6 leading-relaxed">
+                  {item.summary}
+                </p>
               </div>
 
-              <div className="border-t border-slate-800 pt-4 flex items-center justify-between">
+              {/* ACTION BAR */}
+              <div className="border-t border-slate-800 pt-3 flex items-center justify-between">
                 <div className="flex gap-2">
                   <button
                     onClick={() => setActiveModal({ type: "summary", item })}
-                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-slate-800 text-cyan-300 border border-slate-700"
+                    className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-xl bg-slate-800 text-cyan-300 border border-slate-700"
                   >
-                    <Sparkles className="h-3.5 w-3.5 text-cyan-400" /> Summary
+                    <Sparkles className="h-3 w-3 text-cyan-400" /> Summary
                   </button>
                   <button
                     onClick={() => setActiveModal({ type: "simple", item })}
-                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-slate-800 text-indigo-300 border border-slate-700"
+                    className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-xl bg-slate-800 text-indigo-300 border border-slate-700"
                   >
-                    <Bot className="h-3.5 w-3.5 text-indigo-400" /> Explain
+                    <Bot className="h-3 w-3 text-indigo-400" /> Explain
                   </button>
                 </div>
 
@@ -323,7 +388,7 @@ export default function NeuroWirePlatform() {
             <a href="#" className="p-2 bg-slate-900 rounded-full hover:text-blue-400"><MessageSquare className="h-4 w-4" /></a>
           </div>
         </div>
-        <p className="text-center text-xs text-slate-600 mt-4">© 2026 NeuroWire. All rights reserved.</p>
+        <p className="text-center text-xs text-slate-600 mt-4">© 2026 NeuroWire. 48 Daily AI News Updates.</p>
       </footer>
 
       {/* 7. AI MODAL */}
@@ -344,7 +409,7 @@ export default function NeuroWirePlatform() {
                 ))}
               </ul>
             ) : (
-              <div className="p-4 rounded-xl bg-indigo-950/30 border border-indigo-500/20 text-slate-200 text-sm">
+              <div className="p-4 rounded-xl bg-indigo-950/30 border border-indigo-500/20 text-slate-200 text-sm leading-relaxed">
                 {activeModal.item.simpleExplanation}
               </div>
             )}
@@ -375,6 +440,7 @@ export default function NeuroWirePlatform() {
                   <div className={`p-2.5 rounded-xl ${msg.sender === "user" ? "bg-cyan-600 text-white" : "bg-slate-800 text-slate-200"}`}>
                     {msg.text}
                   </div>
+
                 </div>
               ))}
             </div>
