@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
-// 1800 seconds = 30 minutes. 24 ghante mein exactly 48 bar nayi news update hogi!
-export const revalidate = 1800;
+export const revalidate = 1800; // Har 30 minute baad update
 
 const TECH_PHOTOS = [
   "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
@@ -17,91 +16,64 @@ const DEFAULT_NEWS = [
     id: "1",
     title: "Crypto Hackers Outsmarted as Automated Defense Freezes Exploit in Real Time",
     category: "Crypto",
-    readTime: "3 min read",
+    readTime: "6 min read",
     timeAgo: "8 min ago",
     image: TECH_PHOTOS[1],
+    source: "Bloomberg Technology",
     summary: "A major smart contract drain attempt was prevented this morning after automated security nodes identified the attack signature before block inclusion.",
-    simpleExplanation: "Hackers tried to steal millions from a digital bank, but smart security software locked the vault right before they could grab the cash.",
+    simpleExplanation: "Hackers tried to break into a decentralized crypto treasury, but automated code inspectors intercepted the fraudulent transaction within milliseconds.",
+    fullArticle: `In what security researchers are describing as one of the most sophisticated on-chain confrontations this quarter, automated defense protocols on the Ethereum network successfully neutralised a multi-million-dollar exploitation attempt in the early hours of Saturday.\n\nThe target was a decentralized liquidity pool holding over $140 million in deposited collateral. According to post-mortem transaction logs, the attacker initiated a series of rapid flash-loan requests engineered to artificially depress token exchange rates across decentralized trading venues.\n\nHistorically, attacks of this magnitude take several hours to mitigate, often requiring governance council members to manually vote on emergency pauses. By the time human operators intervene, funds have typically vanished through privacy tumblers. This time, however, latency-optimised validation nodes running automated invariant checks detected the abnormal withdrawal volume prior to transaction finality.\n\nThe protocol automatically routed counter-transactions through private mempools, effectively neutralizing the attacker’s contract execution and locking the vulnerable reserve vaults before any digital assets were drained.\n\nInstitutional depositors breathed a collective sigh of relief as market analysts reiterated that autonomous smart contract defenses are shifting from speculative experimental software into foundational critical infrastructure. The team behind the protocol has confirmed that a full forensic security audit will be made publicly accessible by early next week, underscoring a milestone victory for automated decentralized security.`,
     bullets: [
-      "Zero funds lost across all audited liquidity pools.",
-      "Attack signature isolated within 280 milliseconds.",
-      "Protocol developers credit real-time transaction verification.",
+      "Zero customer funds drained across audited liquidity pools.",
+      "Anomalous attack pattern caught in under 280 milliseconds.",
+      "Sets precedent for autonomous, machine-speed smart contract defense.",
     ],
   },
   {
     id: "2",
     title: "Engineers Run Frontier Neural Models on Consumer Hardware Without Power Draw",
     category: "AI",
-    readTime: "4 min read",
+    readTime: "5 min read",
     timeAgo: "22 min ago",
     image: TECH_PHOTOS[0],
+    source: "Reuters Tech Desk",
     summary: "Researchers demonstrated high-throughput reasoning networks operating locally on laptop processors, cutting cloud server dependence significantly.",
     simpleExplanation: "Instead of needing giant server rooms that consume tons of electricity, complex AI can now run directly on normal laptops.",
+    fullArticle: `Hardware engineers and computer scientists have achieved what many thought was years away: running complex, multi-billion-parameter neural reasoning architectures directly on standard consumer silicon without triggering thermal throttling or rapid battery exhaustion.\n\nTraditionally, running frontier-tier AI requires vast clusters of power-hungry data center accelerators, each consuming hundreds of watts and costing tens of thousands of dollars to operate continuously. This has created a bottleneck where developers and everyday users remain bound to centralized cloud subscriptions.\n\nThe breakthrough centers around a new quantization scheme that dynamically reduces precision on dormant neural pathways while maintaining high-fidelity calculations during critical reasoning steps. Testing revealed that laptops equipped with standard integrated chips executed multi-turn code synthesis and mathematical proofs at speeds comparable to enterprise server setups.\n\nCrucially, energy draw remained well below thirty watts during extended operational benchmarks. Industry observers note that running autonomous AI agents locally on personal computers preserves user privacy, eliminates data transmission latency, and allows sophisticated computing in offline environments.\n\nWith open-source toolkits scheduled for general release, local intelligence is rapidly transitioning from a tech enthusiast dream into an accessible reality for software creators worldwide.`,
     bullets: [
-      "Over 65% drop in memory footprint without losing accuracy.",
-      "Enables private offline data analysis for developers.",
-      "Open benchmark repository slated for public release next week.",
-    ],
-  },
-  {
-    id: "3",
-    title: "Global Financial Hubs Move Closer to Sub-Second Cross-Border Digital Settlement",
-    category: "Crypto",
-    readTime: "3 min read",
-    timeAgo: "35 min ago",
-    image: TECH_PHOTOS[4],
-    summary: "Leading payment infrastructure providers launched live pilot transactions settling foreign exchange wires in under two seconds.",
-    simpleExplanation: "Sending money to another country used to take days and high fees; new systems now settle it in the blink of an eye.",
-    bullets: [
-      "Settlement speed improved from 72 hours to 1.8 seconds.",
-      "Eliminates intermediary correspondent banking charges.",
-      "Over $1.2 billion processed during the initial pilot phase.",
-    ],
-  },
-  {
-    id: "4",
-    title: "Game Studios Adopt Live Multimodal Generation to Render 4K Interactive Worlds",
-    category: "AI",
-    readTime: "4 min read",
-    timeAgo: "48 min ago",
-    image: TECH_PHOTOS[2],
-    summary: "Production teams are now streaming realistic 3D game environments synthesized on the fly using natural voice directions from level designers.",
-    simpleExplanation: "Game designers can now speak to their computers and watch full 3D interactive environments generate on screen instantly.",
-    bullets: [
-      "Delivers reliable 60 frames per second on standard graphics cards.",
-      "Direct speech controls camera angles and environmental lighting.",
-      "Seamlessly links into production game engine pipelines.",
+      "Cuts energy requirements by over 65% on consumer-grade silicon.",
+      "Permits complex logical deduction without sending data to cloud servers.",
+      "Open-weights repository slated for public deployment this month.",
     ],
   },
 ];
 
+// GET: News Generate karta hai (with 25-30 lines Full Article & Sources)
 export async function GET() {
   const apiKey = process.env.GEMINI_API_KEY;
-
-  if (!apiKey) {
-    return NextResponse.json({ success: true, news: DEFAULT_NEWS });
-  }
+  if (!apiKey) return NextResponse.json({ success: true, news: DEFAULT_NEWS });
 
   try {
-    const prompt = `You are a senior tech reporter for 'NeuroWire News', delivering live 24/7 breaking news every 30 minutes.
-CRITICAL RULES FOR 100% NATURAL HUMAN ENGLISH:
-1. Write in clear, sharp, engaging human journalism. Do NOT sound like an AI.
-2. ABSOLUTELY FORBIDDEN BUZZWORDS: delve, testament, revolutionize, ever-evolving, beacon, crucial, furthermore, paramount, landscape, game-changer.
-3. Every single field MUST be in 100% natural, crisp human English.
-4. 'simpleExplanation' must be a friendly, crystal-clear 1-sentence real-world analogy in everyday human English (e.g. 'Think of it like...').
+    const prompt = `You are an elite senior investigative journalist writing for 'NeuroWire News'.
+CRITICAL RULES FOR WRITING:
+1. Write in compelling, authentic, natural human English. Strictly avoid repetitive AI clichés.
+2. For each news story, write an IN-DEPTH 'fullArticle' consisting of 4 to 5 rich paragraphs (25 to 30 lines total). Explain the background, the technical breakthrough, real-world industry implications, and future outlook.
+3. Assign a realistic credible 'source' (e.g., 'Bloomberg Technology', 'Reuters Wire', 'Wired Tech News', 'CoinDesk Markets', 'Financial Times').
 
-Generate 6 realistic, timely breaking news stories (3 Artificial Intelligence, 3 Crypto/Web3).
+Generate 4 realistic breaking news stories (2 AI, 2 Crypto).
 Return ONLY a valid JSON array with NO markdown wrapping, matching this exact schema:
 [
   {
     "id": "1",
-    "title": "Punchy human headline",
+    "title": "Punchy Headline",
     "category": "AI",
-    "readTime": "3 min read",
+    "readTime": "6 min read",
     "timeAgo": "Just now",
-    "summary": "2 direct sentences on what took place and why readers should care.",
-    "simpleExplanation": "Think of it like a simple real-world analogy.",
-    "bullets": ["Concrete fact 1", "Concrete fact 2", "Concrete fact 3"]
+    "source": "Bloomberg Technology",
+    "summary": "2 direct sentences summarizing the news.",
+    "simpleExplanation": "A friendly 1-sentence real-world analogy in everyday English.",
+    "fullArticle": "Paragraph 1...\\n\\nParagraph 2...\\n\\nParagraph 3...\\n\\nParagraph 4...\\n\\nParagraph 5...",
+    "bullets": ["Key takeaway 1", "Key takeaway 2", "Key takeaway 3"]
   }
 ]`;
 
@@ -116,16 +88,13 @@ Return ONLY a valid JSON array with NO markdown wrapping, matching this exact sc
       }
     );
 
-    if (!res.ok) {
-      return NextResponse.json({ success: true, news: DEFAULT_NEWS });
-    }
+    if (!res.ok) return NextResponse.json({ success: true, news: DEFAULT_NEWS });
 
     const data = await res.json();
     const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
     const cleanJson = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
     const parsed = JSON.parse(cleanJson);
 
-    // Attach high-res photos automatically
     const newsWithPhotos = parsed.map((item: any, idx: number) => ({
       ...item,
       image: TECH_PHOTOS[idx % TECH_PHOTOS.length],
@@ -136,3 +105,41 @@ Return ONLY a valid JSON array with NO markdown wrapping, matching this exact sc
     return NextResponse.json({ success: true, news: DEFAULT_NEWS });
   }
 }
+
+// POST: Real Live Gemini Chatbot API
+export async function POST(req: Request) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json({ reply: "I am ready to assist you! Please ensure the API connection is active." });
+  }
+
+  try {
+    const { message } = await req.json();
+
+    const prompt = `You are the official conversational AI assistant for 'NeuroWire News'.
+Respond in an authentic, friendly, and natural human tone. If the user writes in Roman Urdu (Urdu written in English alphabets), answer them warmly in natural Roman Urdu. If they write in English, reply in clear, professional English.
+Answer their questions directly and intelligently:
+User Question: "${message}"`;
+
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      return NextResponse.json({ reply: "I am receiving breaking updates right now. Please ask again in a moment." });
+    }
+
+    const data = await res.json();
+    const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "I am analyzing the latest wire reports.";
+    return NextResponse.json({ reply: replyText });
+  } catch (err) {
+    return NextResponse.json({ reply: "Connection temporarily interrupted. Please retry." });
+  }
+}.
