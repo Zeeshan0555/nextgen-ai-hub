@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "NextGen AI Hub",
-  description: "Futuristic AI & Crypto News Wire",
+  title: "NeuroWire | Frontier AI & Web3 Intelligence",
+  description: "Real-time AI developments, autonomous tools, and crypto market wire.",
 };
 
 export default function RootLayout({
