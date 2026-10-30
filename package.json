@@ -1,5 +1,5 @@
 {
-  "name": "nextgen-ai-hub",
+  "name": "neurowire-news",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,12 +8,16 @@
     "start": "next start"
   },
   "dependencies": {
-    "react": "^18",
-    "react-dom": "^18",
+    "react": "latest",
+    "react-dom": "latest",
     "next": "latest",
-    "lucide-react": "^1.16.0"
+    "lucide-react": "latest"
   },
   "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
     "tailwindcss": "^3.4.1",
     "postcss": "^8",
     "autoprefixer": "^10"
