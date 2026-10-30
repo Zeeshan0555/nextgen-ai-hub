@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-export const revalidate = 1800; // Har 30 minute baad update
+export const revalidate = 1800;
 
 const TECH_PHOTOS = [
   "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
@@ -48,34 +48,12 @@ const DEFAULT_NEWS = [
   },
 ];
 
-// GET: News Generate karta hai (with 25-30 lines Full Article & Sources)
 export async function GET() {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return NextResponse.json({ success: true, news: DEFAULT_NEWS });
 
   try {
-    const prompt = `You are an elite senior investigative journalist writing for 'NeuroWire News'.
-CRITICAL RULES FOR WRITING:
-1. Write in compelling, authentic, natural human English. Strictly avoid repetitive AI clichés.
-2. For each news story, write an IN-DEPTH 'fullArticle' consisting of 4 to 5 rich paragraphs (25 to 30 lines total). Explain the background, the technical breakthrough, real-world industry implications, and future outlook.
-3. Assign a realistic credible 'source' (e.g., 'Bloomberg Technology', 'Reuters Wire', 'Wired Tech News', 'CoinDesk Markets', 'Financial Times').
-
-Generate 4 realistic breaking news stories (2 AI, 2 Crypto).
-Return ONLY a valid JSON array with NO markdown wrapping, matching this exact schema:
-[
-  {
-    "id": "1",
-    "title": "Punchy Headline",
-    "category": "AI",
-    "readTime": "6 min read",
-    "timeAgo": "Just now",
-    "source": "Bloomberg Technology",
-    "summary": "2 direct sentences summarizing the news.",
-    "simpleExplanation": "A friendly 1-sentence real-world analogy in everyday English.",
-    "fullArticle": "Paragraph 1...\\n\\nParagraph 2...\\n\\nParagraph 3...\\n\\nParagraph 4...\\n\\nParagraph 5...",
-    "bullets": ["Key takeaway 1", "Key takeaway 2", "Key takeaway 3"]
-  }
-]`;
+    const prompt = `You are an elite senior investigative journalist for 'NeuroWire News'. Write 4 in-depth human news stories (2 AI, 2 Crypto) with 25-30 lines fullArticle and verified sources (e.g. Bloomberg, Reuters). Return strictly valid JSON array.`;
 
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
@@ -106,20 +84,20 @@ Return ONLY a valid JSON array with NO markdown wrapping, matching this exact sc
   }
 }
 
-// POST: Real Live Gemini Chatbot API
+// REAL LIVE GEMINI CHATBOT
 export async function POST(req: Request) {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ reply: "I am ready to assist you! Please ensure the API connection is active." });
-  }
 
   try {
     const { message } = await req.json();
 
-    const prompt = `You are the official conversational AI assistant for 'NeuroWire News'.
-Respond in an authentic, friendly, and natural human tone. If the user writes in Roman Urdu (Urdu written in English alphabets), answer them warmly in natural Roman Urdu. If they write in English, reply in clear, professional English.
-Answer their questions directly and intelligently:
-User Question: "${message}"`;
+    if (!apiKey) {
+      return NextResponse.json({
+        reply: "Welcome to NeuroWire! This platform is an independent real-time intelligence publication reporting on cutting-edge Artificial Intelligence developments, robotics, and Web3 decentralized finance.",
+      });
+    }
+
+    const systemInstruction = "You are the official AI assistant of 'NeuroWire News'. Answer questions intelligently, accurately, and naturally. If asked about the website's purpose, explain that NeuroWire News is an independent intelligence wire covering artificial intelligence, robotics, and crypto markets.";
 
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
@@ -127,19 +105,25 @@ User Question: "${message}"`;
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: `${systemInstruction}\n\nUser Question: ${message}` }],
+            },
+          ],
         }),
       }
     );
 
-    if (!res.ok) {
-      return NextResponse.json({ reply: "I am receiving breaking updates right now. Please ask again in a moment." });
-    }
-
     const data = await res.json();
-    const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "I am analyzing the latest wire reports.";
+    const replyText =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "NeuroWire News is an independent media platform monitoring artificial intelligence breakthroughs, quantum systems, and crypto market dynamics.";
+
     return NextResponse.json({ reply: replyText });
   } catch (err) {
-    return NextResponse.json({ reply: "Connection temporarily interrupted. Please retry." });
+    return NextResponse.json({
+      reply: "NeuroWire News delivers 24/7 verified journalism on artificial intelligence and decentralized technologies.",
+    });
   }
 }
