@@ -142,4 +142,4 @@ User Question: "${message}"`;
   } catch (err) {
     return NextResponse.json({ reply: "Connection temporarily interrupted. Please retry." });
   }
-}.
+}
