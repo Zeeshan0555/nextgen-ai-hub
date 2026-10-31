@@ -9,7 +9,6 @@ import {
   Search,
   X,
   Zap,
-  Bot,
   Plus,
   Cpu,
   CheckCircle2,
@@ -138,7 +137,8 @@ export default function NeuroWirePlatform() {
   const [activeStory, setActiveStory] = useState<NewsItem | null>(null);
   const [isReading, setIsReading] = useState(false);
 
-  // User Publishing Desk Modal
+  // Tareeqa 2: Secret Admin State
+  const [isAdmin, setIsAdmin] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState<"AI" | "Crypto" | "Policy">("AI");
@@ -147,8 +147,18 @@ export default function NeuroWirePlatform() {
   const [newSummary, setNewSummary] = useState("");
   const [newArticle, setNewArticle] = useState("");
 
-  // Load custom user stories
+  // Secret Admin Detection & Custom News Loader
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("admin") === "true") {
+        setIsAdmin(true);
+        localStorage.setItem("neurowire_admin_mode", "true");
+      } else if (localStorage.getItem("neurowire_admin_mode") === "true") {
+        setIsAdmin(true);
+      }
+    }
+
     const saved = localStorage.getItem("neurowire_custom_wire");
     if (saved) {
       try {
@@ -213,7 +223,6 @@ export default function NeuroWirePlatform() {
   });
 
   const hero = filtered[0] || news[0];
-
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-black">
       {/* 1. LIVE MACRO & CRYPTO TICKER */}
@@ -234,7 +243,7 @@ export default function NeuroWirePlatform() {
         </div>
       </div>
 
-      {/* 2. NAVBAR */}
+      {/* 2. NAVBAR (WITH SECRET ADMIN UNLOCK) */}
       <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -260,18 +269,21 @@ export default function NeuroWirePlatform() {
             />
           </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowPublishModal(true)}
-              className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/20 hover:opacity-90 transition-all"
-            >
-              <Plus className="h-4 w-4" /> Publish Wire
-            </button>
-          </div>
+          {/* TAREEQA 2: SIRF ADMIN KO DIKHEGA */}
+          {isAdmin && (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowPublishModal(true)}
+                className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/20 hover:opacity-90 transition-all"
+              >
+                <Plus className="h-4 w-4" /> Publish Wire (Admin)
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
-      {/* 3. HERO DISPATCH (INVESTING.COM STYLE) */}
+      {/* 3. HERO DISPATCH */}
       <section className="max-w-7xl mx-auto px-4 pt-8 pb-8">
         <div className="relative rounded-3xl border border-slate-800 bg-slate-900/80 overflow-hidden shadow-2xl">
           <div className="relative h-72 md:h-96 w-full overflow-hidden">
@@ -548,5 +560,4 @@ export default function NeuroWirePlatform() {
       )}
     </div>
   );
-                  }
-              
+      }
