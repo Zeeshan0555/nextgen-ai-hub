@@ -13,7 +13,6 @@ import {
   Bot,
   ArrowUpRight,
   Cpu,
-  Mail,
   CheckCircle2,
   Share2,
   Globe,
@@ -99,10 +98,10 @@ export default function NeuroWirePlatform() {
     item: NewsItem;
   } | null>(null);
 
-  // REAL LIVE GEMINI CHATBOT
+  // REAL LIVE GEMINI CHATBOT (100% PURE ENGLISH WELCOME)
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<{ sender: "user" | "ai"; text: string }[]>([
-    { sender: "ai", text: "👋 Hello! I am your live NeuroWire Intelligence Assistant powered by Gemini. Ask me anything in English or Roman Urdu!" },
+    { sender: "ai", text: "👋 Hello! I am your NeuroWire Intelligence Assistant. Ask me anything about our breaking AI reports, crypto markets, or tech developments." },
   ]);
   const [chatInput, setChatInput] = useState("");
   const [isAiReplying, setIsAiReplying] = useState(false);
@@ -146,7 +145,6 @@ export default function NeuroWirePlatform() {
     }
   };
 
-  // ASAL LIVE GEMINI CHATBOT CALL
   const handleSendMessage = async (customMsg?: string) => {
     const textToSend = customMsg || chatInput;
     if (!textToSend.trim() || isAiReplying) return;
@@ -169,7 +167,7 @@ export default function NeuroWirePlatform() {
     } catch (err) {
       setChatMessages((prev) => [
         ...prev,
-        { sender: "ai", text: "Connection error. Please try asking again." },
+        { sender: "ai", text: "NeuroWire News covers 24/7 intelligence on AI and Web3 technologies." },
       ]);
     } finally {
       setIsAiReplying(false);
@@ -350,7 +348,6 @@ export default function NeuroWirePlatform() {
                 </p>
               </div>
 
-              {/* ACTION BAR */}
               <div className="border-t border-slate-800 pt-3 flex flex-wrap items-center justify-between gap-2">
                 <button
                   onClick={() => setActiveModal({ type: "full", item })}
@@ -419,7 +416,7 @@ export default function NeuroWirePlatform() {
         <p className="text-center text-xs text-slate-600 mt-4">© 2026 NeuroWire. In-depth reports with verified media sources.</p>
       </footer>
 
-      {/* 7. DETAILED ARTICLE & SUMMARY MODAL */}
+      {/* 7. FULL ARTICLE & SUMMARY MODAL */}
       {activeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
           <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full p-6 relative my-8 shadow-2xl max-h-[85vh] overflow-y-auto">
@@ -498,7 +495,7 @@ export default function NeuroWirePlatform() {
           <div className="w-80 sm:w-96 bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl flex flex-col h-[460px] overflow-hidden">
             <div className="bg-slate-950 p-3.5 border-b border-slate-800 flex items-center justify-between">
               <span className="text-xs font-bold text-white flex items-center gap-2">
-                <Bot className="h-4 w-4 text-cyan-400" /> NeuroWire Live Companion
+                <Bot className="h-4 w-4 text-cyan-400" /> NeuroWire Intelligence
               </span>
               <button onClick={() => setChatOpen(false)}><X className="h-4 w-4 text-slate-400" /></button>
             </div>
@@ -518,7 +515,7 @@ export default function NeuroWirePlatform() {
               {isAiReplying && (
                 <div className="flex justify-start">
                   <div className="bg-slate-800 text-cyan-400 p-2.5 rounded-xl text-xs animate-pulse">
-                    Gemini AI is analyzing & typing...
+                    Gemini AI is analyzing...
                   </div>
                 </div>
               )}
@@ -529,7 +526,7 @@ export default function NeuroWirePlatform() {
                 type="text"
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Ask in English or Roman Urdu..."
+                placeholder="Ask NeuroWire Intelligence..."
                 className="flex-1 bg-slate-900 border border-slate-800 rounded-full px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
               />
               <button type="submit" disabled={isAiReplying} className="p-2 rounded-full bg-cyan-500 text-black">
