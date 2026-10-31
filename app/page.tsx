@@ -159,13 +159,15 @@ export default function NeuroWirePlatform() {
       }
     }
 
-    const saved = localStorage.getItem("neurowire_custom_wire");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setNews([...parsed, ...FRONTIER_NEWS]);
-      } catch (e) {}
-    }
+    fetch("/api/news")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.news && data.news.length > 0) {
+          const saved = JSON.parse(localStorage.getItem("neurowire_custom_wire") || "[]");
+          setNews([...saved, ...data.news]);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handlePublishWire = (e: React.FormEvent) => {
