@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-export const revalidate = 1800;
+export const revalidate = 1800; // Har 30 minute baad update
 
 const TECH_PHOTOS = [
   "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
@@ -48,18 +48,43 @@ const DEFAULT_NEWS = [
   },
 ];
 
+// GET: NAYI NEWS GENERATOR (AQ. KEY FORMAT KE LIYE UPDATED)
 export async function GET() {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = (process.env.GEMINI_API_KEY || "").trim();
   if (!apiKey) return NextResponse.json({ success: true, news: DEFAULT_NEWS });
 
   try {
-    const prompt = `You are an elite senior investigative journalist for 'NeuroWire News'. Write 4 in-depth human news stories (2 AI, 2 Crypto) with 25-30 lines fullArticle and verified sources (e.g. Bloomberg, Reuters). Return strictly valid JSON array.`;
+    const prompt = `You are an elite senior investigative tech reporter for 'NeuroWire News'.
+CRITICAL WRITING RULES:
+1. Write in 100% natural, crisp, human English journalism. Absolutely NO AI clichés.
+2. For each news story, write an IN-DEPTH 'fullArticle' consisting of 4 rich paragraphs (25 to 30 lines).
+3. Assign a realistic credible 'source' (e.g. 'Bloomberg Technology', 'Reuters Wire', 'Wired Tech News', 'CoinDesk Markets').
+
+Generate 4 timely breaking news stories (2 AI breakthroughs, 2 Crypto/Web3).
+Return ONLY valid JSON array with NO markdown wrapping, matching this exact schema:
+[
+  {
+    "id": "1",
+    "title": "Punchy human headline",
+    "category": "AI",
+    "readTime": "6 min read",
+    "timeAgo": "Just now",
+    "source": "Bloomberg Technology",
+    "summary": "2 direct sentences on what happened and why it matters.",
+    "simpleExplanation": "Friendly 1-sentence real-world analogy in everyday English.",
+    "fullArticle": "Paragraph 1...\\n\\nParagraph 2...\\n\\nParagraph 3...\\n\\nParagraph 4...",
+    "bullets": ["Key point 1", "Key point 2", "Key point 3"]
+  }
+]`;
 
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
         }),
@@ -84,27 +109,28 @@ export async function GET() {
   }
 }
 
-// 🤖 REAL INTELLIGENT CHATBOT (ROMAN URDU + ENGLISH DUAL ENGINE)
+// POST: REAL CHATBOT (AQ. KEY FORMAT KE LIYE UPDATED)
 export async function POST(req: Request) {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = (process.env.GEMINI_API_KEY || "").trim();
 
   try {
     const { message } = await req.json();
-    const lower = (message || "").toLowerCase().trim();
 
-    // 1. Agar Gemini API key kaam kare toh live Gemini se jawab lo:
     if (apiKey) {
       try {
         const systemPrompt = `You are the official conversational AI of 'NeuroWire News'.
-LANGUAGE RULE: If the user speaks or asks in Roman Urdu (Urdu written in English alphabets like "kya haal hai", "kis maqsad ke liye", "kya karta hai"), you MUST answer in friendly, natural, respectful Roman Urdu. If they ask in English, answer in crisp English.
-WEBSITE PURPOSE: NeuroWire News is an independent media platform reporting on cutting-edge Artificial Intelligence breakthroughs, supercomputing, robotics, and Web3 crypto market movements every 30 minutes.
-User's Question: "${message}"`;
+Respond in an authentic, friendly, and natural human tone. If the user writes in Roman Urdu (e.g. "ye website kis maqsad ke liye hai"), answer in natural Roman Urdu. If they write in English, reply in crisp English.
+Website purpose: NeuroWire News is an independent intelligence wire covering artificial intelligence, robotics, and crypto markets.
+User Question: "${message}"`;
 
         const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "x-goog-api-key": apiKey,
+            },
             body: JSON.stringify({
               contents: [{ parts: [{ text: systemPrompt }] }],
             }),
@@ -119,49 +145,16 @@ User's Question: "${message}"`;
           }
         }
       } catch (e) {
-        // Fallback to intelligent dual engine below
+        // Fallback
       }
     }
 
-    // 2. Intelligent Smart Fallback (Agar API slow ho ya key invalid ho toh ye natural Roman Urdu/English bolega):
-    if (
-      lower.includes("maqsad") ||
-      lower.includes("purpose") ||
-      lower.includes("kyun") ||
-      lower.includes("kis liye") ||
-      lower.includes("what is") ||
-      lower.includes("website")
-    ) {
-      return NextResponse.json({
-        reply: "Yeh website (NeuroWire News) is maqsad ke liye banayi gayi hai taake aapko Artificial Intelligence (AI), robotics, aur crypto currency market ki taaza tareen khabrein aur developments sab se pehle aur aasaan zubaan mein mil sakein. Yahan har 30 minute baad auto-updates aati hain!",
-      });
-    }
-
-    if (lower.includes("crypto") || lower.includes("btc") || lower.includes("bitcoin")) {
-      return NextResponse.json({
-        reply: "Crypto market is waqt bohot active hai! Bitcoin aur doosre digital assets par institutional buying aur decentralized smart-contracts ki developments bohot tezi se chal rahi hain.",
-      });
-    }
-
-    if (lower.includes("ai") || lower.includes("llm") || lower.includes("robot")) {
-      return NextResponse.json({
-        reply: "Artificial Intelligence mein naye reasoning models aur open-source software aam laptops par bina heavy bijli ke chalne ke qabil ho chuke hain, jo bohot bada inqilab hai.",
-      });
-    }
-
-    if (lower.includes("kaise ho") || lower.includes("kya haal") || lower.includes("hello") || lower.includes("hi")) {
-      return NextResponse.json({
-        reply: "Walaikum Assalam! Main NeuroWire ka official AI companion hoon. Aap mujh se AI breakthroughs, crypto market, ya hamari breaking news ke baare mein kuch bhi pooch sakte hain!",
-      });
-    }
-
-    // Default reply in Roman Urdu + English
     return NextResponse.json({
-      reply: "Main NeuroWire News ka AI assistant hoon. Main AI ki daryafton aur crypto markets ko 24/7 monitor karta hoon. Aap mujh se kisi bhi tech khabar ke baare mein pooch sakte hain!",
+      reply: "NeuroWire News is an independent media platform reporting 24/7 intelligence on Artificial Intelligence breakthroughs, supercomputing, and Web3 crypto markets.",
     });
   } catch (err) {
     return NextResponse.json({
-      reply: "Main aapka sawal samajh raha hoon. Barah-e-karam apna sawal dobara bheinjiye!",
+      reply: "NeuroWire News delivers 24/7 verified journalism on artificial intelligence and decentralized technologies.",
     });
   }
-}
+            }
