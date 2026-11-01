@@ -30,7 +30,7 @@ export async function GET() {
             category: "Crypto" as const,
             source: "CoinTelegraph Markets",
             readTime: "5 min read",
-            timeAgo: "Just now",
+            publishedAt: item.pubDate || new Date().toISOString(),
             image: item.thumbnail || item.enclosure?.link || TECH_PHOTOS[i % TECH_PHOTOS.length],
             summary: item.description?.replace(/<[^>]*>?/gm, "").slice(0, 180) + "...",
             fullReport: [
@@ -59,7 +59,7 @@ export async function GET() {
             category: "AI" as const,
             source: "TechCrunch AI Bureau",
             readTime: "6 min read",
-            timeAgo: "15 min ago",
+            publishedAt: item.pubDate || new Date().toISOString(),
             image: item.thumbnail || item.enclosure?.link || TECH_PHOTOS[(i + 2) % TECH_PHOTOS.length],
             summary: item.description?.replace(/<[^>]*>?/gm, "").slice(0, 180) + "...",
             fullReport: [
