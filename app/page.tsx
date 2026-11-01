@@ -411,6 +411,16 @@ export default function NeuroWirePlatform() {
             <a href="#" className="p-2 bg-slate-900 rounded-full hover:text-blue-400"><MessageSquare className="h-4 w-4" /></a>
           </div>
         </div>
+        
+        {/* GOOGLE ADSENSE COMPLIANCE LINKS */}
+        <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400 mt-6 pt-4 border-t border-slate-900">
+          <a href="/about" className="hover:text-cyan-400 transition-colors">About Us</a>
+          <span>•</span>
+          <a href="/privacy" className="hover:text-cyan-400 transition-colors">Privacy Policy</a>
+          <span>•</span>
+          <a href="/about" className="hover:text-cyan-400 transition-colors">Contact & Editorial Desk</a>
+        </div>
+
         <p className="text-center text-xs text-slate-600 mt-4">© 2026 NeuroWire. Real-time in-depth market intelligence with verified global media wires.</p>
       </footer>
 
