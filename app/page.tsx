@@ -386,7 +386,7 @@ export default function NeuroWirePlatform() {
                 </div>
 
                 <div className="flex items-center justify-between gap-2 text-xs text-slate-500 font-mono mb-2">
-                  <span>{item.readTime} • {formatTimeAgo(item.publishedAt || item.timeAgo)}</span>
+                  <span>{item.readTime} • {formatTimeAgo((item as any).publishedAt || item.timeAgo)}</span>
                   
                 </div>
 
