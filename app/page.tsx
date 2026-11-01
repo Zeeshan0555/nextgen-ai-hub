@@ -143,17 +143,16 @@ export default function NeuroWirePlatform() {
   const formatTimeAgo = (dateStr?: string) => {
     if (!dateStr) return "Just now";
     try {
-      const date = new Date(dateStr);
-      const now = new Date();
-      const diffInSec = Math.floor((now.getTime() - date.getTime()) / 1000);
-      if (isNaN(diffInSec) || diffInSec < 60) return "Just now";
-      const mins = Math.floor(diffInSec / 60);
-      if (mins < 60) return `${mins}m ago`;
-      const hours = Math.floor(diffInSec / 60);
-      if (hours < 24) return `${hours}h ago`;
-      const days = Math.floor(hours / 24);
-      if (days < 7) return `${days}d ago`;
-      return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      const diffInSeconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+      if (diffInSeconds < 60) return "Just now";
+      
+      const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+      
+      if (diffInSeconds < 3600) return rtf.format(-Math.floor(diffInSeconds / 60), "minute");
+      if (diffInSeconds < 86400) return rtf.format(-Math.floor(diffInSeconds / 3600), "hour");
+      if (diffInSeconds < 604800) return rtf.format(-Math.floor(diffInSeconds / 86400), "day");
+      
+      return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
     } catch {
       return "Recently";
     }
