@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "NeuroWire | Frontier AI & Web3 Intelligence",
@@ -19,7 +20,10 @@ export default function RootLayout({
         <script src="https://cdn.tailwindcss.com"></script>
         <meta name="google-site-verification" content="ToM3svxPGC6wP1wvecZBmsQ9Jb5z6srvqsIQIWJJ7AE" />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
