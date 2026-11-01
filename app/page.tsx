@@ -136,7 +136,28 @@ export default function NeuroWirePlatform() {
   const [search, setSearch] = useState<string>("");
   const [activeStory, setActiveStory] = useState<NewsItem | null>(null);
   const [isReading, setIsReading] = useState(false);
+// Bloomberg Style: Load More Wire Engine
+  const [visibleCount, setVisibleCount] = useState(6);
 
+  // Permanent Real Time Calculator (Waqt kabhi reset nahi hoga)
+  const formatTimeAgo = (dateStr?: string) => {
+    if (!dateStr) return "Just now";
+    try {
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diffInSec = Math.floor((now.getTime() - date.getTime()) / 1000);
+      if (isNaN(diffInSec) || diffInSec < 60) return "Just now";
+      const mins = Math.floor(diffInSec / 60);
+      if (mins < 60) return `${mins}m ago`;
+      const hours = Math.floor(diffInSec / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      if (days < 7) return `${days}d ago`;
+      return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    } catch {
+      return "Recently";
+    }
+  };
   // Tareeqa 2: Secret Admin State
   const [isAdmin, setIsAdmin] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
@@ -345,7 +366,8 @@ export default function NeuroWirePlatform() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-          {filtered.map((item) => (
+          
+          {filtered.slice(0, visibleCount).map((item) => (
             <div
               key={item.id}
               className="bg-slate-900/50 border border-slate-800 rounded-3xl p-5 flex flex-col justify-between group hover:border-slate-700 transition-all shadow-xl"
@@ -364,8 +386,8 @@ export default function NeuroWirePlatform() {
                 </div>
 
                 <div className="flex items-center justify-between gap-2 text-xs text-slate-500 font-mono mb-2">
-                  <span className="text-cyan-400 font-semibold">{item.source}</span>
-                  <span>{item.readTime} • {item.timeAgo}</span>
+                  <span>{item.readTime} • {formatTimeAgo(item.publishedAt || item.timeAgo)}</span>
+                  
                 </div>
 
                 <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors mb-2 leading-snug">
@@ -398,6 +420,17 @@ export default function NeuroWirePlatform() {
             </div>
           ))}
         </div>
+        {/* BLOOMBERG STYLE LOAD MORE BUTTON */}
+        {visibleCount < filtered.length && (
+          <div className="flex justify-center mt-10">
+            <button
+              onClick={() => setVisibleCount((prev) => prev + 6)}
+              className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-cyan-500/40 text-cyan-400 hover:text-white font-bold text-xs uppercase tracking-wider transition-all shadow-xl shadow-cyan-500/10 active:scale-95"
+            >
+              <Zap className="h-4 w-4" /> Load More Intelligence Wire ({filtered.length - visibleCount} Remaining)
+            </button>
+          </div>
+        )}
       </section>
 
       {/* 5. FOOTER */}
