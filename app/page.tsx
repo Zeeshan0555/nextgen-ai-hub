@@ -143,16 +143,32 @@ export default function NeuroWirePlatform() {
   const formatTimeAgo = (dateStr?: string) => {
     if (!dateStr) return "Just now";
     try {
-      const diffInSeconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-      if (diffInSeconds < 60) return "Just now";
+      const targetDate = new Date(dateStr);
+      const now = new Date();
+      const diffInSeconds = Math.floor((now.getTime() - targetDate.getTime()) / 1000);
       
+      if (isNaN(diffInSeconds) || diffInSeconds < 60) return "Just now";
+
+      // Modern Intl API for clock time formatting
+      const timeString = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      }).format(targetDate);
+
       const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-      
-      if (diffInSeconds < 3600) return rtf.format(-Math.floor(diffInSeconds / 60), "minute");
-      if (diffInSeconds < 86400) return rtf.format(-Math.floor(diffInSeconds / 3600), "hour");
-      if (diffInSeconds < 604800) return rtf.format(-Math.floor(diffInSeconds / 86400), "day");
-      
-      return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+      const mins = Math.floor(diffInSeconds / 60);
+      if (mins < 60) return `${timeString} • ${rtf.format(-mins, "minute")}`;
+
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return `${timeString} • ${rtf.format(-hours, "hour")}`;
+
+      const days = Math.floor(hours / 24);
+      if (days === 1) return "Yesterday";
+      if (days < 7) return rtf.format(-days, "day");
+
+      return targetDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
     } catch {
       return "Recently";
     }
