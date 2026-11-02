@@ -183,7 +183,7 @@ export default function NeuroWirePlatform() {
   const [newSummary, setNewSummary] = useState("");
   const [newArticle, setNewArticle] = useState("");
 
-  // Secret Admin Detection & Custom News Loader
+  // Secret Admin & Supabase Live News Loader
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -195,17 +195,36 @@ export default function NeuroWirePlatform() {
       }
     }
 
-    fetch("/api/news")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.news && data.news.length > 0) {
-          const saved = JSON.parse(localStorage.getItem("neurowire_custom_wire") || "[]");
-          setNews([...saved, ...data.news]);
-        }
-      })
-      .catch(() => {});
-  }, []);
+    async function loadSupabaseNews() {
+      try {
+        const { data, error } = await supabase
+          .from('news')
+          .select('*')
+          .order('created_at', { ascending: false });
 
+        if (data && data.length > 0) {
+          const dbNews: NewsItem[] = data.map((item: any) => ({
+            id: item.id.toString(),
+            title: item.title,
+            category: "AI",
+            source: "NeuroWire Dispatch",
+            readTime: "5 min read",
+            timeAgo: new Date(item.created_at).toLocaleDateString(),
+            image: item.image_url || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
+            summary: item.description || item.content.slice(0, 150) + "...",
+            fullReport: [item.content],
+            bullets: ["Verified secure entry from Supabase database."],
+          }));
+
+          setNews((prev) => [...dbNews, ...prev]);
+        }
+      } catch (err) {
+        console.error("Supabase load error:", err);
+      }
+    }
+
+    loadSupabaseNews();
+  }, []);
   const handlePublishWire = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newArticle.trim()) return;
