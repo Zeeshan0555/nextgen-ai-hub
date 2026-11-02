@@ -184,6 +184,7 @@ export default function NeuroWirePlatform() {
   const [newArticle, setNewArticle] = useState("");
 
   // Secret Admin & Supabase Live News Loader
+  // Smart Auto-Sync & Supabase Live Layout Loader
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -195,35 +196,62 @@ export default function NeuroWirePlatform() {
       }
     }
 
-    async function loadSupabaseNews() {
+    async function syncAndLoadNews() {
       try {
-        const { data, error } = await supabase
+        // 1. Check karein ke Supabase mein data hai ya nahi
+        const { data: existingNews, error: fetchError } = await supabase
           .from('news')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (data && data.length > 0) {
-          const dbNews: NewsItem[] = data.map((item: any) => ({
+        if (fetchError) {
+          console.error("Fetch error:", fetchError);
+          return;
+        }
+
+        // 2. Agar database khali hua, toh autopilot news ko khud ba khud Supabase mein save (seed) kar do
+        if (!existingNews || existingNews.length === 0) {
+          const seedPayload = FRONTIER_NEWS.map(item => ({
+            title: item.title,
+            description: item.summary,
+            content: item.fullReport.join("\n\n"),
+            image_url: item.image
+          }));
+
+          await supabase.from('news').insert(seedPayload);
+        }
+
+        // 3. Ab Supabase se saari permanent news utha kar website ke layout par render karein
+        const { data: finalData } = await supabase
+          .from('news')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (finalData && finalData.length > 0) {
+          const formattedNews: NewsItem[] = finalData.map((item: any) => ({
             id: item.id.toString(),
             title: item.title,
             category: "AI",
-            source: "NeuroWire Dispatch",
-            readTime: "5 min read",
+            source: "NeuroWire Global Wire",
+            readTime: "6 min read",
             timeAgo: new Date(item.created_at).toLocaleDateString(),
             image: item.image_url || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
-            summary: item.description || item.content.slice(0, 150) + "...",
-            fullReport: [item.content],
-            bullets: ["Verified secure entry from Supabase database."],
+            summary: item.description || "Market intelligence wire report.",
+            fullReport: item.content ? item.content.split("\n\n") : [item.description || "No full report available."],
+            bullets: [
+              "Real-time synchronized data stream from Supabase vault.",
+              "Automated global intelligence dispatch."
+            ],
           }));
 
-          setNews((prev) => [...dbNews, ...prev]);
+          setNews(formattedNews);
         }
       } catch (err) {
-        console.error("Supabase load error:", err);
+        console.error("Sync error:", err);
       }
     }
 
-    loadSupabaseNews();
+    syncAndLoadNews();
   }, []);
   const handlePublishWire = (e: React.FormEvent) => {
     e.preventDefault();
