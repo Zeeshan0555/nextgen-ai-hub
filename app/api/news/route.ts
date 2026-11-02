@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/app/supabase";
+import { supabase } from "../../supabase";
 
 export const revalidate = 900; // Har 15 min baad live news
 
