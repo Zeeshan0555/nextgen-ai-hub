@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
-import "./globals.css"; // Agar aapke paas globals.css hai toh yeh zaroori hai
-
 export const metadata: Metadata = {
   title: "NeuroWire | Frontier AI & Web3 Intelligence",
   description: "Real-time AI developments, autonomous tools, and crypto market wire.",
