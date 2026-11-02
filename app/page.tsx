@@ -275,16 +275,16 @@ export default function NeuroWirePlatform() {
           </div>
         </div>
       </div>
-                <span>•</span>
+                <footer className="mt-20 border-t border-slate-800 py-8 px-4 text-slate-400 text-sm flex flex-col items-center gap-4">
+        <div className="flex items-center gap-4">
           <a href="/privacy" className="hover:text-cyan-400 transition-colors">Privacy Policy</a>
           <span>•</span>
           <a href="/about" className="hover:text-cyan-400 transition-colors">Contact & Editorial Desk</a>
         </div>
-        <p className="text-center text-xs text-slate-600 mt-4">
-          &copy; 2026 NeuroWire. Real-time in-depth market intelligence.
+        <p className="text-center text-xs text-slate-600">
+          © 2026 NeuroWire. All rights reserved.
         </p>
       </footer>
-
       {/* 6. READER MODAL */}
       {activeStory && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
