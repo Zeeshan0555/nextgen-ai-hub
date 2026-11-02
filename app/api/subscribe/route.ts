@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
-import { supabase } from "../../supabase";
+import { createClient } from "@supabase/supabase-js";
+
+// Direct client initialization to avoid any missing module path issues
+const supabaseUrl = "https://buspmwcnkqlyqzgcexdr.supabase.co";
+const supabaseKey = "sb_publishable_pNsJYYPvHe8SywW76UupvA_pjaVGsdy";
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 export async function POST(request: Request) {
   try {
     const { email } = await request.json();
