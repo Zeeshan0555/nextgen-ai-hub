@@ -280,7 +280,9 @@ export default function NeuroWirePlatform() {
           <span>•</span>
           <a href="/about" className="hover:text-cyan-400 transition-colors">Contact & Editorial Desk</a>
         </div>
-        <p className="text-center text-xs text-slate-600 mt-4">© 2026 NeuroWire. Real-time in-depth market intelligence with verified global media wires.</p>
+        <p className="text-center text-xs text-slate-600 mt-4">
+          &copy; 2026 NeuroWire. Real-time in-depth market intelligence.
+        </p>
       </footer>
 
       {/* 6. READER MODAL */}
