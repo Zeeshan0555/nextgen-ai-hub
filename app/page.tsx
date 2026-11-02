@@ -326,23 +326,58 @@ export default function NeuroWirePlatform() {
                 <span>• {activeStory.readTime}</span>
               </div>
               <h2 className="text-xl md:text-2xl font-bold text-white leading-snug">{activeStory.title}</h2>
-              <div className="space-y-3 text-sm text-slate-300 leading-relaxed pt-2 border-t border-slate-800">
-                {activeStory.fullReport.map((paragraph, idx) => (
-                  <p key={idx}>{paragraph}</p>
-                ))}
-              </div>
-              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 mt-6">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-2">Key Strategic Takeaways</h4>
-                <ul className="space-y-1.5">
-                  {activeStory.bullets.map((b, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-slate-300">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-cyan-400 shrink-0 mt-0.5" />
-                      <span>{b}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {/* 🔒 SUBSCRIPTION GATE */}
+        {!isSubscribed ? (
+          <div className="bg-slate-950 border border-cyan-500/30 rounded-2xl p-6 text-center space-y-4 my-6">
+            <div className="inline-block p-3 bg-cyan-500/10 rounded-full text-cyan-400 mb-1 text-xl">
+              🔒
             </div>
+            <h3 className="text-lg font-bold text-white">Unlock Full AI Intelligence Report</h3>
+            <p className="text-slate-400 text-sm">
+              Enter your email to read the complete in-depth analysis, key takeaways, and live updates for free.
+            </p>
+            
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
+              <input 
+                type="email" 
+                required
+                placeholder="Enter your email address..." 
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500"
+              />
+              <button 
+                type="submit" 
+                disabled={submitting}
+                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold px-5 py-2.5 rounded-xl text-sm transition-all cursor-pointer"
+              >
+                {submitting ? "Unlocking..." : "Unlock Now"}
+              </button>
+            </form>
+            {subMessage && <p className="text-xs text-cyan-400 mt-2">{subMessage}</p>}
+          </div>
+        ) : (
+          /* ✅ UNLOCKED FULL CONTENT */
+          <>
+            <div className="space-y-3 text-sm text-slate-300 leading-relaxed pt-2 border-t border-slate-800">
+              {activeStory.fullReport.map((paragraph, idx) => (
+                <p key={idx}>{paragraph}</p>
+              ))}
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 mt-6">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-2">Key Strategic Takeaways</h4>
+              <ul className="space-y-1.5">
+                {activeStory.bullets.map((b, i) => (
+                  <li key={i} className="flex items-start gap-2 text-slate-300 text-sm">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-cyan-400 shrink-0 mt-0.5" />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </>
+        )}
           </div>
         </div>
       )}
