@@ -112,6 +112,31 @@ export default function NeuroWirePlatform() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   // Publish Form State
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [subMessage, setSubMessage] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const sub = localStorage.getItem("neurowire_sub");
+      if (sub) setIsSubscribed(true);
+    }
+  }, []);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      localStorage.setItem("neurowire_sub", "true");
+      setIsSubscribed(true);
+      setSubMessage("Unlocked successfully!");
+    } catch (err) {
+      setSubMessage("Error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState<"AI" | "Crypto" | "Policy">("AI");
