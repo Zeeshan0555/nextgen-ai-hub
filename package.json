@@ -10,6 +10,7 @@
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
     "lucide-react": "latest",
+    "@supabase/supabase-js": "latest",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest"
