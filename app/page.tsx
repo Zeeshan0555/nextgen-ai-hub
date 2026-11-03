@@ -311,23 +311,48 @@ export default function NeuroWirePlatform() {
         </p>
       </footer>
       {/* 6. READER MODAL */}
-      {activeStory && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full p-6 relative my-8 shadow-2xl max-h-[85vh] overflow-y-auto">
-            <button onClick={() => setActiveStory(null)} className="sticky top-0 float-right p-2 text-slate-400 hover:text-white rounded-full bg-slate-800 z-20">
-              <X className="h-4 w-4" />
-            </button>
-            <div className="space-y-4">
-              <div className="h-56 w-full rounded-2xl overflow-hidden mb-4">
-                <img src={activeStory.image} alt={activeStory.title} className="w-full h-full object-cover" />
-              </div>
-              <div className="flex items-center gap-2 text-xs font-mono text-cyan-400">
-                <span className="px-2.5 py-0.5 rounded-full bg-cyan-950 border border-cyan-800">Source: {activeStory.source}</span>
-                <span>• {activeStory.readTime}</span>
-              </div>
-              <h2 className="text-xl md:text-2xl font-bold text-white leading-snug">{activeStory.title}</h2>
-              {/* 🔒 SUBSCRIPTION GATE */}
-        {!isSubscribed ? (
+{activeStory && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
+    <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full p-6 relative my-8 shadow-2xl max-h-[85vh] overflow-y-auto">
+      <button onClick={() => setActiveStory(null)} className="sticky top-0 float-right p-2 text-slate-400 hover:text-white rounded-full bg-slate-800 z-20">
+        <X className="h-4 w-4" />
+      </button>
+      
+      <div className="space-y-4">
+        <div className="h-56 w-full rounded-2xl overflow-hidden mb-4">
+          <img src={activeStory.image} alt={activeStory.title} className="w-full h-full object-cover" />
+        </div>
+
+        <div className="flex items-center gap-2 text-xs font-mono text-cyan-400">
+          <span>Source: {activeStory.source}</span>
+          <span>•</span>
+          <span>{activeStory.readTime}</span>
+        </div>
+
+        <h2 className="text-xl md:text-2xl font-bold text-white leading-snug">{activeStory.title}</h2>
+
+        {/* SUBSCRIPTION GATE LOGIC */}
+        {isSubscribed ? (
+          <div>
+            <div className="space-y-3 text-sm text-slate-300 leading-relaxed pt-2 border-t border-slate-800">
+              {activeStory.fullReport && activeStory.fullReport.map((paragraph: string, idx: number) => (
+                <p key={idx}>{paragraph}</p>
+              ))}
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 mt-6">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-2">Key Strategic Takeaways</h4>
+              <ul className="space-y-1.5">
+                {activeStory.bullets && activeStory.bullets.map((b: string, i: number) => (
+                  <li key={i} className="flex items-start gap-2 text-slate-300 text-sm">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-cyan-400 shrink-0 mt-0.5" />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ) : (
           <div className="bg-slate-950 border border-cyan-500/30 rounded-2xl p-6 text-center space-y-4 my-6">
             <div className="inline-block p-3 bg-cyan-500/10 rounded-full text-cyan-400 mb-1 text-xl">
               🔒
@@ -356,31 +381,12 @@ export default function NeuroWirePlatform() {
             </form>
             {subMessage && <p className="text-xs text-cyan-400 mt-2">{subMessage}</p>}
           </div>
-        : (
-          /* ✅ UNLOCKED FULL CONTENT */
-          <>
-            <div className="space-y-3 text-sm text-slate-300 leading-relaxed pt-2 border-t border-slate-800">
-              {activeStory.fullReport.map((paragraph, idx) => (
-                <p key={idx}>{paragraph}</p>
-              ))}
-            </div>
-
-            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 mt-6">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-2">Key Strategic Takeaways</h4>
-              <ul className="space-y-1.5">
-                {activeStory.bullets.map((b, i) => (
-                  <li key={i} className="flex items-start gap-2 text-slate-300 text-sm">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-cyan-400 shrink-0 mt-0.5" />
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </>
         )}
-          </div>
-        </div>
-      )}
+
+      </div>
+    </div>
+  </div>
+)}
         {/* 7. PUBLISHING MODAL */}
       {showPublishModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
