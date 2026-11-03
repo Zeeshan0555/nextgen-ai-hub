@@ -356,7 +356,7 @@ export default function NeuroWirePlatform() {
             </form>
             {subMessage && <p className="text-xs text-cyan-400 mt-2">{subMessage}</p>}
           </div>
-        ) : (
+        : (
           /* ✅ UNLOCKED FULL CONTENT */
           <>
             <div className="space-y-3 text-sm text-slate-300 leading-relaxed pt-2 border-t border-slate-800">
