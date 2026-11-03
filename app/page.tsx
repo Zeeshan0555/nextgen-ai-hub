@@ -404,7 +404,7 @@ export default function NeuroWirePlatform() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
           
-          {filtered.slice(0, visibleCount).map((item) => (
+          {filtered.slice(0, visibleCount).map((item, index) => (
             <div
               key={item.id}
               className="bg-slate-900/50 border border-slate-800 rounded-3xl p-5 flex flex-col justify-between group hover:border-slate-700 transition-all shadow-xl"
