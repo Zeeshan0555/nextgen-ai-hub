@@ -104,6 +104,7 @@ const INITIAL_NEWS: NewsItem[] = [
   },
 ];
 export default function NeuroWirePlatform() {
+    const router = useRouter();
   const [news, setNews] = useState<NewsItem[]>(INITIAL_NEWS);
   const [activeTab, setActiveTab] = useState<string>("All");
   const [search, setSearch] = useState<string>("");
