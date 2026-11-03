@@ -8,8 +8,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Invalid email address" }, { status: 400 });
     }
 
-    const supabaseUrl = "https://buspmwcnkqlyqzgcexdr.supabase.co";
-    const supabaseKey = "sb_publishable_pNsJYYPvHe8SywW76UupvA_pjaVGsdy";
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://buspmwcnkqlyqzgcexdr.supabase.co";
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_pNsJYYPvHE8SySw76UupvA_pjaVGsdy";
 
     // 1. Check if email already exists using Supabase REST API
     const checkRes = await fetch(`${supabaseUrl}/rest/v1/subscribers?email=eq.${encodeURIComponent(email)}&select=id`, {
