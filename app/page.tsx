@@ -205,7 +205,7 @@ export default function NeuroWirePlatform() {
             fullReport: item.content ? item.content.split("\n\n") : [item.description || item.title],
             bullets: ["Verified intelligence dispatch from NeuroWire secure vault."],
           }));
-          setNews(dbNews);
+          setNews(dbNews.length > 0 ? dbNews : INITIAL_NEWS);
         }
       } catch (e) {
         console.log("Vault sync fallback active");
