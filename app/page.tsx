@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { supabase } from "./supabase";
+import { useRouter } from "next/navigation";
 import {
   TrendingUp,
   Volume2,
