@@ -436,7 +436,7 @@ export default function NeuroWirePlatform() {
 
               <div className="border-t border-slate-800 pt-3 flex items-center justify-between">
                 <button
-                  onClick={() => setActiveStory(item)}
+                  onClick={() => router.push(`/news/${index}`)}
                   className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-cyan-950 text-cyan-300 border border-cyan-800/40 hover:bg-cyan-900/60 font-semibold"
                 >
                   <BookOpen className="h-3.5 w-3.5" /> Read Full In-Depth Story
