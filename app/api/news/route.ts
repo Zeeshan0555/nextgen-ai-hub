@@ -52,7 +52,7 @@ export async function GET() {
     // Supabase database mein automatically save karein
     if (incoming.length > 0 && process.env.NEXT_PUBLIC_SUPABASE_URL) {
       for (const story of incoming) {
-        const { data: existing } = await supabase.from("news").select("id").eq("title", story.title).single();
+        const { data: existing } = await supabase.from("news").select("id").eq("title", story.title).maybeSingle();
         if (!existing) {
           await supabase.from("news").insert([story]);
         }

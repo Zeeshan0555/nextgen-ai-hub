@@ -300,6 +300,174 @@ export default function NeuroWirePlatform() {
           </div>
         </div>
       </div>
+
+      {/* 2. NAVBAR (WITH SECRET ADMIN UNLOCK) */}
+      <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+              <Zap className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <span className="text-2xl font-black text-white">
+                Neuro<span className="text-cyan-400">Wire</span>
+              </span>
+              <p className="text-[10px] uppercase text-slate-400 font-mono">Market & Frontier Tech Intelligence</p>
+            </div>
+          </div>
+
+          <div className="relative w-full md:w-96">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search reports, policy, or tickers..."
+              className="w-full bg-slate-950 border border-slate-800 rounded-full pl-9 pr-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500"
+            />
+          </div>
+
+          {/* TAREEQA 2: SIRF ADMIN KO DIKHEGA */}
+          {isAdmin && (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowPublishModal(true)}
+                className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/20 hover:opacity-90 transition-all"
+              >
+                <Plus className="h-4 w-4" /> Publish Wire (Admin)
+              </button>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* 3. HERO DISPATCH */}
+      <section className="max-w-7xl mx-auto px-4 pt-8 pb-8">
+        <div className="relative rounded-3xl border border-slate-800 bg-slate-900/80 overflow-hidden shadow-2xl">
+          <div className="relative h-72 md:h-96 w-full overflow-hidden">
+            <img src={hero.image} alt={hero.title} className="w-full h-full object-cover opacity-45" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#070b14] via-[#070b14]/70 to-transparent" />
+          </div>
+
+          <div className="p-6 md:p-8 -mt-28 relative z-10 space-y-4">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="bg-red-500/20 text-red-400 border border-red-500/40 px-3 py-1 rounded-full font-bold uppercase animate-pulse">
+                ● Breaking Wire
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">
+                Source: {hero.source}
+              </span>
+              <span className="text-slate-400 font-mono">{hero.readTime} • {formatTimeAgo(hero.publishedAt)}</span>
+            </div>
+
+            <h1 className="text-2xl md:text-4xl font-extrabold text-white leading-tight max-w-4xl">
+              {hero.title}
+            </h1>
+
+            <p className="text-sm text-slate-300 leading-relaxed max-w-3xl">
+              {hero.summary}
+            </p>
+
+            <button
+              onClick={() => setActiveStory(hero)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all"
+            >
+              <BookOpen className="h-4 w-4" /> Read In-Depth Analysis (Full Story)
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. MACRO WIRE FEED */}
+      <section className="max-w-7xl mx-auto px-4 py-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Cpu className="h-6 w-6 text-cyan-400" /> Frontier Wire Feed
+          </h2>
+
+          <div className="flex items-center gap-2 bg-slate-950 p-1.5 rounded-full border border-slate-800">
+            {["All", "AI", "Crypto", "Policy"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold ${
+                  activeTab === tab ? "bg-cyan-500 text-black font-bold" : "text-slate-400"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+          
+          {filtered.slice(0, visibleCount).map((item) => (
+            <div
+              key={item.id}
+              className="bg-slate-900/50 border border-slate-800 rounded-3xl p-5 flex flex-col justify-between group hover:border-slate-700 transition-all shadow-xl"
+            >
+              <div>
+                <div className="relative h-48 w-full rounded-2xl overflow-hidden mb-4 bg-slate-950">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-slate-950/80 backdrop-blur-md text-cyan-400 border border-cyan-500/30">
+                    {item.category}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 text-xs text-slate-500 font-mono mb-2">
+                  <span> {formatTimeAgo(item.publishedAt)}</span>
+                  
+                </div>
+
+                <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors mb-2 leading-snug">
+                  {item.title}
+                </h3>
+
+                <p className="text-xs text-slate-400 line-clamp-3 mb-4 leading-relaxed">
+                  {item.summary}
+                </p>
+              </div>
+
+              <div className="border-t border-slate-800 pt-3 flex items-center justify-between">
+                <button
+                  onClick={() => setActiveStory(item)}
+                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-cyan-950 text-cyan-300 border border-cyan-800/40 hover:bg-cyan-900/60 font-semibold"
+                >
+                  <BookOpen className="h-3.5 w-3.5" /> Read Full In-Depth Story
+                </button>
+
+                <button
+                  onClick={() => toggleVoiceReader(item)}
+                  className={`p-2 rounded-xl border ${
+                    isReading ? "bg-cyan-500 text-black border-cyan-400" : "bg-slate-800 text-slate-300 border-slate-700 hover:text-cyan-400"
+                  }`}
+                  title="Audio Reader"
+                >
+                  {isReading ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* BLOOMBERG STYLE LOAD MORE BUTTON */}
+        {visibleCount < filtered.length && (
+          <div className="flex justify-center mt-10">
+            <button
+              onClick={() => setVisibleCount((prev) => prev + 6)}
+              className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-cyan-500/40 text-cyan-400 hover:text-white font-bold text-xs uppercase tracking-wider transition-all shadow-xl shadow-cyan-500/10 active:scale-95"
+            >
+              <Zap className="h-4 w-4" /> Load More Intelligence Wire ({filtered.length - visibleCount} Remaining)
+            </button>
+          </div>
+        )}
+      </section>
+
                 <footer className="mt-20 border-t border-slate-800 py-8 px-4 text-slate-400 text-sm flex flex-col items-center gap-4">
         <div className="flex items-center gap-4">
           <a href="/privacy" className="hover:text-cyan-400 transition-colors">Privacy Policy</a>
