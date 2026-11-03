@@ -369,7 +369,7 @@ export default function NeuroWirePlatform() {
             </p>
 
             <button
-              onClick={() => setActiveStory(hero)}
+              onClick={() => router.push('/news/0')}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all"
             >
               <BookOpen className="h-4 w-4" /> Read In-Depth Analysis (Full Story)
