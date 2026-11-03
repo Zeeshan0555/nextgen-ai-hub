@@ -371,7 +371,8 @@ export default function NeuroWirePlatform() {
             </p>
 
             <button
-              onClick={() => router.push('/news/0')}
+              onClick={() => router.push(`/news/${encodeURIComponent(hero.title)}`)}
+              
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all"
             >
               <BookOpen className="h-4 w-4" /> Read In-Depth Analysis (Full Story)
