@@ -11,21 +11,19 @@ export async function POST(request: Request) {
     }
 
     const supabaseUrl = "https://buspmwcnkqlyqzgcexdr.supabase.co";
-    const supabaseKey = "sb_publishable_pNsJYYPvHe8SywW76UupvA_pjaVGsdy";
+    // Yahan apni lambi wali Legacy JWT 'anon' key (eyJ...) paste kar dein:
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1c3Btd2Nua3FseXF6Z2NleGRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1NjcyNzgsImV4cCI6MjEwOTE0MzI3OH0.-DkbydUi4tQ5W5F_wlGIgQYJg2Z9rAPOKUxX0M0hk18";
 
-    // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseKey, {
       auth: { persistSession: false, autoRefreshToken: false }
     });
 
-    // Use Supabase Official Auth SignUp (Handles new publishable keys perfectly)
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
-      password: password || "NeuroWire2026!", // Fallback password if not provided
+      password: password || "NeuroWire2026!",
     });
 
     if (error) {
-      // If user already registered, try to sign in them automatically!
       if (error.message.includes("already registered")) {
         const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
           email: email.trim(),
@@ -33,7 +31,8 @@ export async function POST(request: Request) {
         });
 
         if (loginError) {
-          return NextResponse.json({ success: false, error: "Incorrect password for existing account." }, { status: 400 });
+          // Wahi error message jo aap chahte thay: Invalid API Key ki jagah Wrong Password show ho!
+          return NextResponse.json({ success: false, error: "Incorrect password or email." }, { status: 400 });
         }
         return NextResponse.json({ success: true, message: "Logged in successfully!" });
       }
