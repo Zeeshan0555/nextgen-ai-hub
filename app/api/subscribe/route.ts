@@ -4,49 +4,45 @@ import { createClient } from "@supabase/supabase-js";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const email = body?.email;
+    const { email, password } = body;
 
-    if (!email || typeof email !== "string" || !email.includes("@")) {
+    if (!email || !email.includes("@")) {
       return NextResponse.json({ success: false, error: "Invalid email address" }, { status: 400 });
     }
 
     const supabaseUrl = "https://buspmwcnkqlyqzgcexdr.supabase.co";
     const supabaseKey = "sb_publishable_pNsJYYPvHe8SywW76UupvA_pjaVGsdy";
 
-    // Create server-side Supabase client
+    // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseKey, {
       auth: { persistSession: false, autoRefreshToken: false }
     });
 
-    // 1. Check if email already exists in subscribers table
-    const { data: existing, error: selectError } = await supabase
-      .from("subscribers")
-      .select("id")
-      .eq("email", email.trim())
-      .maybeSingle();
+    // Use Supabase Official Auth SignUp (Handles new publishable keys perfectly)
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password: password || "NeuroWire2026!", // Fallback password if not provided
+    });
 
-    if (selectError) {
-      console.error("Supabase select error:", selectError.message);
-      return NextResponse.json({ success: false, error: selectError.message }, { status: 500 });
+    if (error) {
+      // If user already registered, try to sign in them automatically!
+      if (error.message.includes("already registered")) {
+        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password: password || "NeuroWire2026!",
+        });
+
+        if (loginError) {
+          return NextResponse.json({ success: false, error: "Incorrect password for existing account." }, { status: 400 });
+        }
+        return NextResponse.json({ success: true, message: "Logged in successfully!" });
+      }
+
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
     }
 
-    if (existing) {
-      return NextResponse.json({ success: true, message: "Already subscribed!" });
-    }
-
-    // 2. Insert the new email
-    const { error: insertError } = await supabase
-      .from("subscribers")
-      .insert([{ email: email.trim() }]);
-
-    if (insertError) {
-      console.error("Supabase insert error:", insertError.message);
-      return NextResponse.json({ success: false, error: insertError.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ success: true, message: "Subscribed successfully!" });
+    return NextResponse.json({ success: true, message: "Account created successfully!" });
   } catch (err: any) {
-    console.error("API catch error:", err);
     return NextResponse.json({ success: false, error: err.message || "Server error" }, { status: 500 });
   }
 }
