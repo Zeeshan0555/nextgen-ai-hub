@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 export async function POST(request: Request) {
   try {
@@ -9,44 +10,35 @@ export async function POST(request: Request) {
     }
 
     const supabaseUrl = "https://buspmwcnkqlyqzgcexdr.supabase.co";
-    const supabaseKey = "sb_publishable_pNsJYYPvHe8SywW76UupvA_pjaVGsdy";
+    const supabaseKey = "sb_publishable_pNsJYYPvHe8SywW76UupvA_pjaVGsdy"; // Aapki key
 
-    // 1. Check if email already exists using Supabase REST API with correct 'apikey' header
-    const checkRes = await fetch(`${supabaseUrl}/rest/v1/subscribers?email=eq.${encodeURIComponent(email)}&select=id`, {
-      method: "GET",
-      headers: {
-        "apikey": supabaseKey,
-        "Authorization": `Bearer ${supabaseKey}`,
-        "Content-Type": "application/json"
-      },
+    // Initialize client properly
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false, autoRefreshToken: false }
     });
 
-    if (!checkRes.ok) {
-      const errDetail = await checkRes.text();
-      throw new Error(`Database connection failed: ${errDetail}`);
+    // 1. Check if subscriber already exists
+    const { data: existing, error: selectError } = await supabase
+      .from("subscribers")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (selectError) {
+      return NextResponse.json({ success: false, error: selectError.message }, { status: 500 });
     }
 
-    const existingData = await checkRes.json();
-
-    if (existingData && existingData.length > 0) {
+    if (existing) {
       return NextResponse.json({ success: true, message: "Already subscribed!" });
     }
 
-    // 2. Insert new subscriber
-    const insertRes = await fetch(`${supabaseUrl}/rest/v1/subscribers`, {
-      method: "POST",
-      headers: {
-        "apikey": supabaseKey,
-        "Authorization": `Bearer ${supabaseKey}`,
-        "Content-Type": "application/json",
-        "Prefer": "return=minimal"
-      },
-      body: JSON.stringify({ email }),
-    });
+    // 2. Insert new subscriber into table
+    const { error: insertError } = await supabase
+      .from("subscribers")
+      .insert([{ email }]);
 
-    if (!insertRes.ok) {
-      const errText = await insertRes.text();
-      throw new Error(errText || "Failed to insert subscriber");
+    if (insertError) {
+      return NextResponse.json({ success: false, error: insertError.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, message: "Subscribed successfully!" });
