@@ -186,32 +186,40 @@ export default function NeuroWirePlatform() {
     }
 
     async function loadVaultNews() {
-      try {
-        fetch("/api/news").catch(() => {});
+    try {
+      const { data, error } = await supabase
+        .from("news")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-        const { data, error } = await supabase
-          .from("news")
-          .select("*")
-          .order("created_at", { ascending: false });
-
-        if (!error && data && data.length > 0) {
-          const dbNews: NewsItem[] = data.map((item: any) => ({
-            id: item.id.toString(),
-            title: item.title,
-            category: item.category || "AI",
-            source: item.source || "NeuroWire Global Wire",
-            readTime: "6 min read",
-            publishedAt: item.created_at || new Date().toISOString(),
-            image: item.image_url || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
-            summary: item.description || item.title,
-            fullReport: item.content ? item.content.split("\n\n") : [item.description || item.title],
-            bullets: ["Verified intelligence dispatch from NeuroWire secure vault."],
-          }));
-          setNews(dbNews.length > 0 ? dbNews : INITIAL_NEWS);
-        }
-      } catch (e) {
-        console.log("Vault sync fallback active");
+      if (error) {
+        console.error("Supabase fetch error:", error.message);
+        return;
       }
+
+      if (data && data.length > 0) {
+        const dbNews: NewsItem[] = data.map((item: any) => ({
+          id: item.id.toString(),
+          title: item.title,
+          category: item.category || "AI",
+          source: item.source || "NeuroWire Global Wire",
+          readTime: "6 min read",
+          publishedAt: item.created_at || new Date().toISOString(),
+          image: item.image_url || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
+          summary: item.description || item.title,
+          fullReport: item.content ? item.content.split("\n\n") : [item.description || item.title],
+          bullets: ["Verified intelligence dispatch from NeuroWire secure vault."],
+        }));
+
+        setNews(dbNews);
+        return;
+      }
+
+      setNews(INITIAL_NEWS);
+    } catch (e: any) {
+      console.error("Vault sync fallback active:", e?.message || e);
+      setNews(INITIAL_NEWS);
+    }
     }
 
     loadVaultNews();
