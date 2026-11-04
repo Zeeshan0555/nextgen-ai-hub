@@ -31,7 +31,7 @@ export async function POST(request: Request) {
         });
 
         if (loginError) {
-          // Wahi error message jo aap chahte thay: Invalid API Key ki jagah Wrong Password show ho!
+          
           return NextResponse.json({ success: false, error: "Incorrect password or email." }, { status: 400 });
         }
         return NextResponse.json({ success: true, message: "Logged in successfully!" });
