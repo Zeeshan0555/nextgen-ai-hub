@@ -59,18 +59,17 @@ export async function GET() {
 
     const supabase = createSupabaseServerClient();
 
-  if (incoming.length > 0) {
-    const { error } = await supabase
-      .from("news")
-      .upsert(incoming, {
-        onConflict: "title_key",
-        ignoreDuplicates: true,
-      });
+    if (incoming.length > 0) {
+      const { error } = await supabase
+        .from("news")
+        .upsert(incoming, {
+          onConflict: "title_key",
+          ignoreDuplicates: true,
+        });
 
-    if (error) {
-      console.error("News upsert error:", error.message);
-    }
-  }
+      if (error) {
+        console.error("News upsert error:", error.message);
+      }
     }
 
     return NextResponse.json({
@@ -78,6 +77,7 @@ export async function GET() {
       count: incoming.length,
       news: incoming,
     });
+
   } catch (error: any) {
     console.error("News API error:", error);
     return NextResponse.json(
