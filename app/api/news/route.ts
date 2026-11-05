@@ -59,21 +59,18 @@ export async function GET() {
 
     const supabase = createSupabaseServerClient();
 
-    if (incoming.length > 0) {
-      for (const story of incoming) {
-        const { data: existing } = await supabase
-          .from("news")
-          .select("id")
-          .eq("title", story.title)
-          .maybeSingle();
+  if (incoming.length > 0) {
+    const { error } = await supabase
+      .from("news")
+      .upsert(incoming, {
+        onConflict: "title_key",
+        ignoreDuplicates: true,
+      });
 
-        if (!existing) {
-          const { error } = await supabase.from("news").insert([story]);
-          if (error) {
-            console.error("Insert error:", error.message);
-          }
-        }
-      }
+    if (error) {
+      console.error("News upsert error:", error.message);
+    }
+  }
     }
 
     return NextResponse.json({
