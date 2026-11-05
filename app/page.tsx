@@ -147,27 +147,40 @@ export default function NeuroWirePlatform() {
   const [newSummary, setNewSummary] = useState("");
   const [newArticle, setNewArticle] = useState("");
 
-  // Real Relative Clock Calculator
+   // Bloomberg / Reuters Style Market Terminal Timestamp Calculator
   const formatTimeAgo = (dateStr?: string) => {
     if (!dateStr) return "Just now";
     try {
       const targetDate = new Date(dateStr);
+      if (isNaN(targetDate.getTime())) return "Recently";
+
       const now = new Date();
-      const diffInSec = Math.floor((now.getTime() - targetDate.getTime()) / 1000);
+      
+      const timeString = targetDate.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
 
-      if (isNaN(diffInSec) || diffInSec < 120) return "Just now";
+      const dateString = targetDate.toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
 
-      const mins = Math.floor(diffInSec / 60);
-      if (mins < 60) return `${mins}m ago`;
+      const isToday = targetDate.toDateString() === now.toDateString();
 
-      const hours = Math.floor(mins / 60);
-      if (hours < 24) return `${hours}h ago`;
+      const yesterday = new Date();
+      yesterday.setDate(now.getDate() - 1);
+      const isYesterday = targetDate.toDateString() === yesterday.toDateString();
 
-      const days = Math.floor(hours / 24);
-      if (days === 1) return "Yesterday";
-      if (days < 7) return `${days}d ago`;
-
-      return targetDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      if (isToday) {
+        return `Today, ${timeString} — ${dateString}`;
+      } else if (isYesterday) {
+        return `Yesterday, ${timeString} — ${dateString}`;
+      } else {
+        return `${dateString} at ${timeString}`;
+      }
     } catch {
       return "Recently";
     }
