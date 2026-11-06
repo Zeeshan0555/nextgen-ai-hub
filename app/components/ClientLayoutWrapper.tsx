@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Bell, Menu, Sparkles, X } from 'lucide-react';
 import SidebarDrawer from '@/app/components/SidebarDrawer';
 import NotificationPopup from '@/app/components/NotificationPopup';
+import NewsTicker from '@/app/components/NewsTicker';
 
 export default function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
