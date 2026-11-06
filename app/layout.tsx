@@ -3,19 +3,19 @@ import { Inter, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import ClientLayoutWrapper from '@/app/components/ClientLayoutWrapper';
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
 });
 
-const spaceGrotesk = Space_Grotesk({ 
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   variable: '--font-space-grotesk',
 });
 
 export const metadata: Metadata = {
-  title: 'NeuroWire - Real-Time Agentic AI Intelligence Hub',
-  description: 'Enterprise-grade autonomous AI news, architecture, and live data feeds.',
+  title: 'NeuroWire - Autonomous AI News Platform',
+  description: 'Cyberpunk-themed high-performance real-time AI news intelligence hub',
 };
 
 export default function RootLayout({
@@ -24,8 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans bg-[#060814] text-slate-100 antialiased min-h-screen flex flex-col selection:bg-blue-500 selection:text-white`}>
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} dark`}>
+      <body className="bg-[#060814] text-slate-100 font-sans antialiased selection:bg-blue-600 selection:text-white min-h-screen flex flex-col">
         <ClientLayoutWrapper>
           {children}
         </ClientLayoutWrapper>
