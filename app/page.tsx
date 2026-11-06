@@ -428,13 +428,17 @@ export default function NeuroWirePlatform() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-          
-          {filtered.slice(0, visibleCount).map((item, index) => (
-            <div
-              key={item.id}
-              className="bg-slate-900/50 border border-slate-800 rounded-3xl p-5 flex flex-col justify-between group hover:border-slate-700 transition-all shadow-xl"
-            >
+{filtered.length === 0 ? (
+  <div className="p-12 rounded-2xl border border-slate-800 bg-slate-900/40 text-center text-slate-400">
+   
+  </div>
+) : (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+    {filtered.slice(0, visibleCount).map((item) => (
+      <div
+        key={item.id}
+        className="bg-slate-900/50 border border-slate-800 rounded-3xl p-5 flex flex-col justify-between group hover:border-slate-700 transition-all shadow-xl"
+      >
               <div>
                 <div className="relative h-48 w-full rounded-2xl overflow-hidden mb-4 bg-slate-950">
                   <img
