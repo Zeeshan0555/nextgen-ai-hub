@@ -349,7 +349,11 @@ export default function NeuroWirePlatform() {
               className="w-full bg-slate-950 border border-slate-800 rounded-full pl-9 pr-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500"
             />
           </div>
-
+<nav aria-label="Main navigation" className="hidden lg:flex items-center gap-6 text-sm font-medium">
+  <a href="#latest-news" className="text-slate-300 hover:text-cyan-400 transition-colors">Latest</a>
+  <a href="#categories" className="text-slate-300 hover:text-cyan-400 transition-colors">Categories</a>
+  <a href="/about" className="text-slate-400 hover:text-slate-200 transition-colors">About</a>
+</nav>
           {/* TAREEQA 2: SIRF ADMIN KO DIKHEGA */}
           {isAdmin && (
             <div className="flex items-center gap-3">
