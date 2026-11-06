@@ -3,11 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Bell, Menu, Sparkles, X } from 'lucide-react';
-import SidebarDrawer from '@/app/components/SidebarDrawer';
+import SidebarDrawer from '@/app/components/SidebarDrawer'; // 👈 Yahan spelling theek kar di hai
 import NotificationPopup from '@/app/components/NotificationPopup';
 import NewsTicker from '@/app/components/NewsTicker';
 
 export default function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
+  
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
