@@ -3,12 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Bell, Menu, Sparkles, X } from 'lucide-react';
-import SidebarDrawer from '@/app/components/SidebarDrawer'; // 👈 Yahan spelling theek kar di hai
+import SidebarDrawer from '@/app/components/SidebarDrawer';
 import NotificationPopup from '@/app/components/NotificationPopup';
 import NewsTicker from '@/app/components/NewsTicker';
 
 export default function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
-  
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
@@ -80,16 +79,18 @@ export default function ClientLayoutWrapper({ children }: { children: React.Reac
           </div>
         </div>
       </header>
-<NewsTicker />
-      
-      {/* 2. SIDEBAR DRAWER */}
+
+      {/* 2. LIVE REALTIME TICKER BAR */}
+      <NewsTicker />
+
+      {/* 3. SIDEBAR DRAWER */}
       <SidebarDrawer isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-      {/* 3. MAIN PAGE CONTENT */}
+      {/* 4. MAIN PAGE CONTENT */}
       <main className="flex-1">{children}</main>
 
-      {/* 4. NOTIFICATION POPUP */}
+      {/* 5. NOTIFICATION POPUP */}
       <NotificationPopup />
     </>
   );
-                    }
+}
