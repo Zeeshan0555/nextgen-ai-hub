@@ -79,7 +79,8 @@ export default function ClientLayoutWrapper({ children }: { children: React.Reac
           </div>
         </div>
       </header>
-
+<NewsTicker />
+      
       {/* 2. SIDEBAR DRAWER */}
       <SidebarDrawer isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
