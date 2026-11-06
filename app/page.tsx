@@ -430,9 +430,10 @@ export default function NeuroWirePlatform() {
 
 {filtered.length === 0 ? (
   <div className="p-12 rounded-2xl border border-slate-800 bg-slate-900/40 text-center text-slate-400">
-   
+    Koi article nahi mila. Search ya category change karke dekhein.
   </div>
 ) : (
+
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
     {filtered.slice(0, visibleCount).map((item) => (
       <div
