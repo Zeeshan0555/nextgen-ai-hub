@@ -486,8 +486,10 @@ export default function NeuroWirePlatform() {
                 </button>
               </div>
             </div>
-          ))}
-        </div>
+    
+    ))}
+  </div>
+)}
         {/* BLOOMBERG STYLE LOAD MORE BUTTON */}
         {visibleCount < filtered.length && (
           <div className="flex justify-center mt-10">
