@@ -97,6 +97,7 @@ export default function AdminDashboard() {
         </header>
 
         <main className="p-6 space-y-6 flex-1">
+          {/* Metrics Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
               <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Articles</p>
@@ -130,9 +131,50 @@ export default function AdminDashboard() {
               </p>
             </div>
           </div>
+
+          {/* Recent Articles Section (Table) */}
+          <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-bold text-lg">Recent AI News Stream</h3>
+                <p className="text-xs text-slate-400">Latest ingested articles waiting for publication</p>
+              </div>
+              <button className="px-3 py-1.5 rounded-lg bg-purple-600/20 text-purple-400 text-xs font-semibold border border-purple-500/30 hover:bg-purple-600/30 transition-all">
+                View All
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-slate-300">
+                <thead className="border-b border-slate-800 text-xs uppercase text-slate-500">
+                  <tr>
+                    <th className="py-3 px-4">Title</th>
+                    <th className="py-3 px-4">Category</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Time</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60">
+                  <tr>
+                    <td className="py-3 px-4 font-medium text-white">Quantum AI Breakthrough in Neural Networks</td>
+                    <td className="py-3 px-4"><span className="px-2 py-1 rounded-md bg-purple-500/10 text-purple-400 text-xs">AI & Tech</span></td>
+                    <td className="py-3 px-4"><span className="flex items-center gap-1.5 text-emerald-400 text-xs"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Published</span></td>
+                    <td className="py-3 px-4 text-xs text-slate-400">2:37 AM Today</td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-4 font-medium text-white">Cyberpunk Architecture Trends for 2026</td>
+                    <td className="py-3 px-4"><span className="px-2 py-1 rounded-md bg-cyan-500/10 text-cyan-400 text-xs">Design</span></td>
+                    <td className="py-3 px-4"><span className="flex items-center gap-1.5 text-amber-400 text-xs"><span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span> AI Draft</span></td>
+                    <td className="py-3 px-4 text-xs text-slate-400">1:15 AM Today</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </main>
       </div>
 
     </div>
   );
-}
+          }
