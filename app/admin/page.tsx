@@ -22,9 +22,8 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-[#07080b] text-slate-100 flex font-sans selection:bg-purple-500 selection:text-white">
       
-      {/* 📱 Mobile & Desktop Sidebar */}
+      {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#0c0e15] border-r border-purple-900/30 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col`}>
-        {/* Logo / Brand */}
         <div className="p-6 flex items-center justify-between border-b border-slate-800/60">
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-600/30">
@@ -40,34 +39,30 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        {/* Navigation Links */}
         <nav className="p-4 space-y-1.5 flex-1">
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-purple-600/10 text-purple-400 border border-purple-500/20 font-medium transition-all">
+          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-purple-600/10 text-purple-400 border border-purple-500/20 font-medium">
             <LayoutDashboard className="h-5 w-5" /> Dashboard
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all">
+          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
             <FileText className="h-5 w-5" /> CMS Articles
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all">
+          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
             <Cpu className="h-5 w-5" /> AI Automation
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all">
+          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
             <Database className="h-5 w-5" /> Vector DB (pgvector)
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all">
+          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
             <ShieldCheck className="h-5 w-5" /> Security & RLS
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40 transition-all">
+          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
             <Settings className="h-5 w-5" /> Settings
           </a>
         </nav>
 
-        {/* User Profile Footer */}
         <div className="p-4 border-t border-slate-800/60 bg-[#090a0f]">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 flex items-center justify-center font-bold text-sm">
-              Z
-            </div>
+            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 flex items-center justify-center font-bold text-sm">Z</div>
             <div className="overflow-hidden">
               <p className="text-sm font-semibold truncate">Zeeshan0555</p>
               <p className="text-xs text-purple-400 flex items-center gap-1">
@@ -78,10 +73,8 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
-      {/* Main Content Wrapper */}
+      {/* Main Content */}
       <div className="flex-1 lg:pl-64 flex flex-col min-w-0">
-        
-        {/* Top Header */}
         <header className="sticky top-0 z-40 bg-[#07080b]/80 backdrop-blur-md border-b border-slate-800/60 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-slate-400 hover:text-white">
@@ -103,13 +96,9 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        {/* Dashboard Body */}
         <main className="p-6 space-y-6 flex-1">
-          
-          {/* Metric Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden group hover:border-purple-500/40 transition-all">
-              <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-purple-600/10 rounded-full blur-xl group-hover:bg-purple-600/20 transition-all"></div>
+            <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
               <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Articles</p>
               <h3 className="text-3xl font-extrabold mt-2 tracking-tight">50.8K</h3>
               <p className="text-xs text-emerald-400 mt-2 flex items-center gap-1 font-medium">
@@ -117,8 +106,7 @@ export default function AdminDashboard() {
               </p>
             </div>
 
-            <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden group hover:border-cyan-500/40 transition-all">
-              <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-cyan-600/10 rounded-full blur-xl group-hover:bg-cyan-600/20 transition-all"></div>
+            <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
               <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">AI Processed</p>
               <h3 className="text-3xl font-extrabold mt-2 tracking-tight">23.6K</h3>
               <p className="text-xs text-cyan-400 mt-2 flex items-center gap-1 font-medium">
@@ -126,8 +114,7 @@ export default function AdminDashboard() {
               </p>
             </div>
 
-            <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden group hover:border-indigo-500/40 transition-all">
-              <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-indigo-600/10 rounded-full blur-xl group-hover:bg-indigo-600/20 transition-all"></div>
+            <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
               <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Vector Embeddings</p>
               <h3 className="text-3xl font-extrabold mt-2 tracking-tight">756</h3>
               <p className="text-xs text-purple-400 mt-2 flex items-center gap-1 font-medium">
@@ -135,8 +122,7 @@ export default function AdminDashboard() {
               </p>
             </div>
 
-            <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden group hover:border-emerald-500/40 transition-all">
-              <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-emerald-600/10 rounded-full blur-xl group-hover:bg-emerald-600/20 transition-all"></div>
+            <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
               <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">System Status</p>
               <h3 className="text-3xl font-extrabold mt-2 tracking-tight text-emerald-400">100%</h3>
               <p className="text-xs text-slate-400 mt-2 flex items-center gap-1 font-medium">
@@ -144,93 +130,9 @@ export default function AdminDashboard() {
               </p>
             </div>
           </div>
-
-          {/* Analytics Chart & Activity Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {/* Main Chart Area */}
-            <div className="lg:col-span-2 bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-6 flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="font-bold text-lg">AI News Ingestion Overview</h3>
-                  <p className="text-xs text-slate-400">Real-time vector matching and article throughput</p>
-                </div>
-                <div className="flex gap-2">
-                  <button className="px-3 py-1 rounded-lg bg-purple-600/20 text-purple-400 text-xs font-semibold border border-purple-500/30">Live</button>
-                  <button className="px-3 py-1 rounded-lg bg-slate-900 text-slate-400 text-xs font-semibold border border-slate-800">Weekly</button>
-                </div>
-              </div>
-
-              {/* Simulated Neon Chart Lines */}
-              <div className="h-64 flex items-end gap-2 pt-6 px-2 border-b border-slate-800/60 pb-2 relative">
-                <div className="absolute inset-0 bg-gradient-to-t from-purple-500/5 to-transparent pointer-events-none"></div>
-                {[35, 60, 45, 80, 55, 95, 70, 85, 60, 90, 75, 100].map((val, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-                    <div 
-                      style={{ height: `${val}%` }} 
-                      className="w-full bg-gradient-to-t from-purple-600 to-cyan-400 rounded-t-md transition-all duration-500 group-hover:brightness-125 shadow-lg shadow-purple-500/20"
-                    ></div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex justify-between text-xs text-slate-400 pt-4">
-                <span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Nov (Today)</span>
-              </div>
-            </div>
-
-            {/* Quick Automation & RSS Status */}
-            <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-6 flex flex-col justify-between">
-              <div>
-                <h3 className="font-bold text-lg mb-1">Active AI Pipelines</h3>
-                <p className="text-xs text-slate-400 mb-4">Background cron jobs & feeds</p>
-
-                <div className="space-y-3">
-                  <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-xs">AI</div>
-                      <div>
-                        <p className="text-sm font-medium">Cyberpunk RSS Stream</p>
-                        <p className="text-[11px] text-slate-400">Syncs every 15 mins</p>
-                      </div>
-                    </div>
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></span>
-                  </div>
-
-                  <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold text-xs">SQL</div>
-                      <div>
-                        <p className="text-sm font-medium">Supabase pgvector</p>
-                        <p className="text-[11px] text-slate-400">Embeddings operational</p>
-                      </div>
-                    </div>
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></span>
-                  </div>
-
-                  <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold text-xs">SEC</div>
-                      <div>
-                        <p className="text-sm font-medium">RLS Security Shield</p>
-                        <p className="text-[11px] text-slate-400">Active protection</p>
-                      </div>
-                    </div>
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50"></span>
-                  </div>
-                </div>
-              </div>
-
-              <button className="mt-6 w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-sm shadow-lg shadow-purple-600/30 transition-all">
-                Trigger Manual AI Sync
-              </button>
-            </div>
-
-          </div>
-
         </main>
       </div>
 
     </div>
   );
-            }
+}
