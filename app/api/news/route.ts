@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 type RssItem = {
   title?: string;
+  link?: string;
   description?: string;
   content?: string;
   thumbnail?: string;
@@ -78,6 +79,17 @@ function getImageUrl(...values: unknown[]): string {
   return "";
 }
 
+function getSafePublisherUrl(value: unknown): string {
+  if (typeof value !== "string" || !value.trim()) return "";
+
+  try {
+    const parsed = new URL(value.trim());
+    return parsed.protocol === "https:" ? parsed.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
 async function fetchRss(url: string): Promise<RssResponse | null> {
   try {
     const response = await fetch(url, { next: { revalidate: 900 } });
@@ -109,6 +121,7 @@ export async function GET() {
       );
     }
 
+    const publisherUrls = new Map<string, string>();
     const incoming: Array<{
       title: string;
       description: string;
@@ -127,6 +140,14 @@ export async function GET() {
 
         // Do not invent a publication time when the feed does not provide one.
         if (!title || !publishedAt) continue;
+
+        const publisherUrl = getSafePublisherUrl(item.link);
+        if (publisherUrl) {
+          publisherUrls.set(
+            `${feed.publisher.toLocaleLowerCase()}:${title.toLocaleLowerCase()}`,
+            publisherUrl
+          );
+        }
 
         const summaryText = articleText || title;
         const description =
@@ -170,7 +191,12 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       count: uniqueIncoming.length,
-      news: uniqueIncoming,
+      // Return publisher links to readers without adding unknown columns to the database upsert.
+      news: uniqueIncoming.map((item) => ({
+        ...item,
+        publisher_url:
+          publisherUrls.get(`${item.source.toLocaleLowerCase()}:${item.title.toLocaleLowerCase()}`) || "",
+      })),
     });
   } catch (error) {
     console.error("News API error:", error);
