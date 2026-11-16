@@ -40,72 +40,10 @@ const CRYPTO_PRICES = [
   { pair: "NVDA (AI Index)", price: "$142.10", change: "+4.9%" },
 ];
 
-const INITIAL_NEWS: NewsItem[] = [
-  {
-    id: "1",
-    title: "Global Regulators Fast-Track Sovereign Digital Asset Reserves Following High-Level Policy Talks",
-    category: "Crypto",
-    source: "Reuters Financial Wire",
-    readTime: "7 min read",
-    publishedAt: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
-    image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=800&auto=format&fit=crop",
-    summary: "Finance ministers and central bank governors across G20 nations have drafted framework guidelines designating transparent digital assets as strategic reserve instruments alongside gold.",
-    fullReport: [
-      "In a historic shift for sovereign financial architecture, delegates representing multiple G20 financial ministries have advanced preliminary language recognising high-liquidity digital assets within state asset reserves.",
-      "The catalyst stems from accelerated bilateral discussions in Washington and Brussels, where policymakers have increasingly sought inflation hedges insulated from single-currency debt degradation.",
-      "According to draft documentation, central treasuries would maintain custodial keys in multi-signatory state vaults, audited continuously on decentralized ledgers rather than relying on delayed quarterly balance sheets.",
-      "Wall Street institutional custodians noted an immediate surge in OTC inquiries from sovereign wealth funds, with major desk traders reporting block volumes that outpaced typical institutional averages.",
-    ],
-    bullets: [
-      "G20 working group drafts strategic reserve framework integrating high-tier digital assets.",
-      "Multi-signatory cold storage protocols prioritized over legacy correspondent custodians.",
-      "Institutional OTC desks register record sovereign wealth liquidity inquiries.",
-    ],
-  },
-  {
-    id: "2",
-    title: "Autonomous Multi-Agent Neural Clusters Outpace Wall Street Quantitative Desks in Live Market Executions",
-    category: "AI",
-    source: "Bloomberg Technology",
-    readTime: "6 min read",
-    publishedAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-    image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
-    summary: "Tier-one financial firms confirm that new autonomous neural agent architectures have surpassed human-coded algorithmic models in navigating high-volatility liquidity shocks.",
-    fullReport: [
-      "Leading global market makers have disclosed that multi-agent artificial intelligence clusters operating across decentralized liquidity venues generated unprecedented risk-adjusted yields during recent macroeconomic announcements.",
-      "Unlike legacy algorithmic models that adhere to rigid historical parameters, these neuromorphic agent networks dynamically negotiate order execution, liquidity routing, and cross-venue hedging simultaneously.",
-      "Engineers behind the models credit breakthroughs in energy-efficient local compute, allowing complex multi-step reasoning nodes to co-locate adjacent to transaction matching engines with sub-millisecond execution.",
-    ],
-    bullets: [
-      "Neural multi-agent clusters achieve sub-millisecond execution on high-volatility orders.",
-      "Dynamic liquidity routing reduces market slippage by 42% over static algorithms.",
-      "Securities regulators launch exploratory oversight frameworks for autonomous trading clusters.",
-    ],
-  },
-  {
-    id: "3",
-    title: "Bipartisan AI Compute Sovereignty Act Clears Senate: $50B Dedicated to Nuclear-Powered Superclusters",
-    category: "Policy",
-    source: "CNBC Policy Wire",
-    readTime: "8 min read",
-    publishedAt: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
-    image: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=800&auto=format&fit=crop",
-    summary: "Legislation guaranteeing federal energy rights and financial grants for domestic small modular nuclear reactors dedicated exclusively to frontier AI data campuses has passed the US Senate.",
-    fullReport: [
-      "The United States Senate has overwhelmingly approved comprehensive legislation allocating fifty billion dollars toward domestic AI compute campuses directly energized by dedicated next-generation nuclear reactors.",
-      "The bipartisan initiative addresses the acute energy bottleneck confronting frontier technology laboratories, which have projected multi-gigawatt power requirements for training future humanoid reasoning clusters.",
-      "Major utility providers and tech consortia have already finalized land permits adjacent to decommissioned industrial facilities.",
-    ],
-    bullets: [
-      "Senate allocates $50B for domestic AI data centers paired with small modular reactors.",
-      "Guarantees gigawatt-scale dedicated clean power to eliminate municipal grid competition.",
-      "Bipartisan consensus codifies compute capacity as primary national security asset.",
-    ],
-  },
-];
 export default function NeuroWirePlatform() {
     const router = useRouter();
-  const [news, setNews] = useState<NewsItem[]>(INITIAL_NEWS);
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [newsLoading, setNewsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("All");
   const [search, setSearch] = useState<string>("");
   const [activeStory, setActiveStory] = useState<NewsItem | null>(null);
@@ -206,7 +144,8 @@ export default function NeuroWirePlatform() {
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("Supabase fetch error:", error.message);
+        console.error("News feed fetch error:", error.message);
+        setNews([]);
         return;
       }
 
@@ -228,10 +167,12 @@ export default function NeuroWirePlatform() {
         return;
       }
 
-      setNews(INITIAL_NEWS);
+      setNews([]);
     } catch (e: any) {
-      console.error("Vault sync fallback active:", e?.message || e);
-      setNews(INITIAL_NEWS);
+      console.error("News feed fetch failed:", e?.message || e);
+      setNews([]);
+    } finally {
+      setNewsLoading(false);
     }
     }
 
@@ -302,7 +243,7 @@ export default function NeuroWirePlatform() {
     return matchesTab && matchesSearch;
   });
 
-  const hero = filtered[0] || news[0];
+  const hero = filtered[0] || news[0] || null;
 
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-black">
@@ -370,6 +311,7 @@ export default function NeuroWirePlatform() {
 
       {/* 3. HERO DISPATCH */}
       <section className="max-w-7xl mx-auto px-4 pt-8 pb-8">
+        {hero ? (
         <div className="relative rounded-3xl border border-slate-800 bg-slate-900/80 overflow-hidden shadow-2xl">
           <div className="relative h-72 md:h-96 w-full overflow-hidden">
             <img src={hero.image} alt={hero.title} className="w-full h-full object-cover opacity-45" />
@@ -379,7 +321,7 @@ export default function NeuroWirePlatform() {
           <div className="p-6 md:p-8 -mt-28 relative z-10 space-y-4">
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="bg-red-500/20 text-red-400 border border-red-500/40 px-3 py-1 rounded-full font-bold uppercase animate-pulse">
-                ● Breaking Wire
+                Latest story
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">
                 Source: {hero.source}
@@ -400,10 +342,20 @@ export default function NeuroWirePlatform() {
               
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all"
             >
-              <BookOpen className="h-4 w-4" /> Read In-Depth Analysis (Full Story)
+              <BookOpen className="h-4 w-4" /> Read Full Story
             </button>
           </div>
         </div>
+        ) : (
+          <div className="rounded-3xl border border-slate-800 bg-slate-900/60 px-6 py-12 text-center text-slate-300">
+            <h1 className="text-xl font-semibold text-white">
+              {newsLoading ? "Loading latest news..." : "No publisher articles are available right now."}
+            </h1>
+            <p className="mt-2 text-sm text-slate-400">
+              New stories will appear here when the publisher feeds provide them.
+            </p>
+          </div>
+        )}
       </section>
 
       {/* 4. MACRO WIRE FEED */}
@@ -430,7 +382,11 @@ export default function NeuroWirePlatform() {
 
 {filtered.length === 0 ? (
   <div className="p-12 rounded-2xl border border-slate-800 bg-slate-900/40 text-center text-slate-400">
-    Koi article nahi mila. Search ya category change karke dekhein.
+    {newsLoading
+      ? "Loading latest news..."
+      : news.length === 0
+        ? "Abhi publisher feeds se koi news available nahi."
+        : "Koi article nahi mila. Search ya category change karke dekhein."}
   </div>
 ) : (
 
