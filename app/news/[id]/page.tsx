@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { CheckCircle2, ArrowLeft, Lock, ShieldCheck, Bell, User, Key, Mail } from "lucide-react";
+import { CheckCircle2, ArrowLeft, Lock, ShieldCheck, Bell, User, Key, Mail, ExternalLink } from "lucide-react";
 
 export default function ArticlePage() {
   const params = useParams();
@@ -90,6 +90,7 @@ export default function ArticlePage() {
               return {
                 title: item.title,
                 source: item.source || "Source not provided",
+                publisherUrl: typeof item.publisher_url === "string" ? item.publisher_url : "",
                 publishedAt: item.created_at || "",
                 image: item.image_url || "",
                 summary: item.description || item.title || "No publisher summary is available.",
@@ -212,6 +213,20 @@ export default function ArticlePage() {
             <span className="px-2.5 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full">{story.source}</span>
             <span className="text-slate-400">{formatModernTimestamp(story.publishedAt)}</span>
           </div>
+
+          {story.publisherUrl ? (
+            <a
+              href={story.publisherUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-400 hover:text-cyan-300 underline underline-offset-4"
+            >
+              Open original article at {story.source}
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          ) : (
+            <p className="text-xs text-slate-500">Original publisher link is not available in this feed item.</p>
+          )}
 
           <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">
             {story.title}
