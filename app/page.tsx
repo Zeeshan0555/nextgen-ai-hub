@@ -149,7 +149,7 @@ export default function NeuroWirePlatform() {
 
    // Bloomberg / Reuters Style Market Terminal Timestamp Calculator
   const formatTimeAgo = (dateStr?: string) => {
-    if (!dateStr) return "Just now";
+    if (!dateStr) return "Date unavailable";
     try {
       const targetDate = new Date(dateStr);
       if (isNaN(targetDate.getTime())) return "Recently";
@@ -215,13 +215,13 @@ export default function NeuroWirePlatform() {
           id: item.id.toString(),
           title: item.title,
           category: item.category || "AI",
-          source: item.source || "NeuroWire Global Wire",
+          source: item.source || "Source not provided",
           readTime: "6 min read",
-          publishedAt: item.created_at || new Date().toISOString(),
+          publishedAt: item.created_at || "",
           image: item.image_url || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
           summary: item.description || item.title,
           fullReport: item.content ? item.content.split("\n\n") : [item.description || item.title],
-          bullets: ["Verified intelligence dispatch from NeuroWire secure vault."],
+          bullets: ["Publisher feed material; not independently verified by NeuroWire."],
         }));
 
         setNews(dbNews);
