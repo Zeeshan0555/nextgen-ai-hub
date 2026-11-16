@@ -42,12 +42,12 @@ type MarketQuote = {
 const MARKET_SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT"] as const;
 
 function formatMarketPrice(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: value >= 100 ? 2 : 2,
-    maximumFractionDigits: value >= 100 ? 2 : 6,
+  const formatted = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 6,
   }).format(value);
+
+  return `${formatted} USDT`;
 }
 
 export default function NeuroWirePlatform() {
@@ -92,7 +92,7 @@ export default function NeuroWirePlatform() {
 
         if (active) {
           setMarketQuotes(payload.quotes);
-          setMarketUpdatedAt(payload.updatedAt || null);
+          setMarketUpdatedAt(typeof payload.fetchedAt === "string" ? payload.fetchedAt : null);
           setMarketStatus("live");
         }
       } catch {
