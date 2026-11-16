@@ -82,7 +82,10 @@ export default function SidebarDrawer({ isOpen, onClose, activeCategory }: Sideb
                   <Link
                     key={cat.slug}
                     href={`/?category=${cat.slug}#categories`}
-                    onClick={onClose}
+                    onClick={() => {
+                      window.dispatchEvent(new CustomEvent("neurowire:category-select", { detail: cat.name }));
+                      onClose();
+                    }}
                     className={`group flex items-center justify-between p-3 rounded-xl border transition-all ${
                       isActive 
                         ? 'bg-blue-600/15 border-blue-500/50 text-white' 
