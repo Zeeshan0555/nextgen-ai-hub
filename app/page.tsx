@@ -155,7 +155,7 @@ export default function NeuroWirePlatform() {
           title: item.title,
           category: item.category || "AI",
           source: item.source || "Source not provided",
-          readTime: "6 min read",
+          readTime: `${Math.max(1, Math.ceil((item.content || item.description || "").trim().split(/\\s+/).length / 200))} min read`,
           publishedAt: item.created_at || "",
           image: item.image_url || "",
           summary: item.description || item.title,
@@ -346,7 +346,7 @@ export default function NeuroWirePlatform() {
               
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all"
             >
-              <BookOpen className="h-4 w-4" /> Read Full Story
+              <BookOpen className="h-4 w-4" /> Read Publisher Summary
             </button>
           </div>
         </div>
@@ -439,7 +439,7 @@ export default function NeuroWirePlatform() {
                   
                   className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-cyan-950 text-cyan-300 border border-cyan-800/40 hover:bg-cyan-900/60 font-semibold"
                 >
-                  <BookOpen className="h-3.5 w-3.5" /> Read Full In-Depth Story
+                  <BookOpen className="h-3.5 w-3.5" /> Read Publisher Summary
                 </button>
 
                 <button
