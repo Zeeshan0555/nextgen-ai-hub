@@ -33,12 +33,7 @@ interface NewsItem {
   bullets: string[];
 }
 
-const CRYPTO_PRICES = [
-  { pair: "BTC/USDT", price: "$98,450.20", change: "+3.4%" },
-  { pair: "ETH/USDT", price: "$3,620.80", change: "+2.1%" },
-  { pair: "SOL/USDT", price: "$235.40", change: "+6.8%" },
-  { pair: "NVDA (AI Index)", price: "$142.10", change: "+4.9%" },
-];
+const MARKET_PAIRS = ["BTC/USD", "ETH/USD", "SOL/USD"];
 
 export default function NeuroWirePlatform() {
     const router = useRouter();
@@ -250,15 +245,15 @@ export default function NeuroWirePlatform() {
       {/* 1. TICKER */}
       <div className="bg-slate-950 border-b border-slate-800/80 py-2 sticky top-0 z-40 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2 text-cyan-400 font-semibold uppercase shrink-0 pr-4 border-r border-slate-800">
-            <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span> 24/7 Global Wire
+          <div className="flex items-center gap-2 text-slate-300 font-semibold uppercase shrink-0 pr-4 border-r border-slate-800">
+            <span className="h-2 w-2 rounded-full bg-slate-500"></span> Market snapshot
           </div>
           <div className="flex items-center gap-6 overflow-x-auto whitespace-nowrap pl-4 no-scrollbar">
-            {CRYPTO_PRICES.map((c, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <span className="text-slate-400">{c.pair}</span>
-                <span className="font-semibold text-slate-200">{c.price}</span>
-                <span className="text-emerald-400 font-mono text-[11px]">{c.change}</span>
+            {MARKET_PAIRS.map((pair) => (
+              <div key={pair} className="flex items-center gap-2">
+                <span className="text-slate-400">{pair}</span>
+                <span className="font-semibold text-slate-300">—</span>
+                <span className="text-slate-500 font-mono text-[11px]">Quote feed not connected</span>
               </div>
             ))}
           </div>
