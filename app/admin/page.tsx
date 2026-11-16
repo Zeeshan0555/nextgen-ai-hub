@@ -28,6 +28,10 @@ export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [articleError, setArticleError] = useState(false);
+  const [marketStatus, setMarketStatus] = useState<"checking" | "available" | "unavailable">("checking");
+  const [marketQuoteCount, setMarketQuoteCount] = useState(0);
+  const [marketFetchedAt, setMarketFetchedAt] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchArticles() {
@@ -39,8 +43,10 @@ export default function AdminDashboard() {
           .limit(5);
 
         if (error) {
+          setArticleError(true);
           console.error('Error fetching articles:', error);
         } else if (data) {
+          setArticleError(false);
           setArticles(data);
         }
       } catch (err) {
@@ -51,6 +57,38 @@ export default function AdminDashboard() {
     }
 
     fetchArticles();
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function checkMarketFeed() {
+      try {
+        const response = await fetch("/api/market", { cache: "no-store" });
+        if (!response.ok) throw new Error("Market feed unavailable");
+
+        const payload: { success?: boolean; quotes?: unknown[]; fetchedAt?: string } = await response.json();
+        if (!payload.success || !Array.isArray(payload.quotes)) {
+          throw new Error("Market feed response was not valid");
+        }
+
+        if (active) {
+          setMarketQuoteCount(payload.quotes.length);
+          setMarketFetchedAt(typeof payload.fetchedAt === "string" ? payload.fetchedAt : null);
+          setMarketStatus("available");
+        }
+      } catch {
+        if (active) setMarketStatus("unavailable");
+      }
+    }
+
+    checkMarketFeed();
+    const intervalId = window.setInterval(checkMarketFeed, 60_000);
+
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+    };
   }, []);
 
   return (
@@ -99,9 +137,7 @@ export default function AdminDashboard() {
             <div className="h-10 w-10 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 flex items-center justify-center font-bold text-sm">Z</div>
             <div className="overflow-hidden">
               <p className="text-sm font-semibold truncate">Zeeshan0555</p>
-              <p className="text-xs text-purple-400 flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span> System Online
-              </p>
+              <p className="text-xs text-slate-400">Administrator</p>
             </div>
           </div>
         </div>
@@ -115,63 +151,64 @@ export default function AdminDashboard() {
               <Menu className="h-6 w-6" />
             </button>
             <div>
-              <h2 className="text-xl font-bold tracking-wide">Welcome back, Zeeshan</h2>
-              <p className="text-xs text-slate-400">Autonomous RSS feed & vector search running stable.</p>
+              <h2 className="text-xl font-bold tracking-wide">Admin Dashboard</h2>
+              <p className="text-xs text-slate-400">Recent article records and public market feed status.</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300">
-              <Clock className="h-3.5 w-3.5 text-cyan-400" />
-              <span>2:37 AM Today</span>
-            </div>
-            <div className="px-3 py-1.5 rounded-lg bg-purple-600/20 border border-purple-500/30 text-purple-300 text-xs font-semibold animate-pulse">
-              Live Feed Active
+            <div className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 text-xs font-medium">
+              Admin workspace
             </div>
           </div>
         </header>
 
         <main className="p-6 space-y-6 flex-1">
-          {/* Metrics Grid */}
+          {/* Live overview based only on data this page can verify */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Articles</p>
-              <h3 className="text-3xl font-extrabold mt-2 tracking-tight">50.8K</h3>
-              <p className="text-xs text-emerald-400 mt-2 flex items-center gap-1 font-medium">
-                <TrendingUp className="h-3.5 w-3.5" /> +14.2% from last week
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Recent Articles Loaded</p>
+              <h3 className="text-3xl font-extrabold mt-2 tracking-tight">
+                {loading ? "—" : articleError ? "Unavailable" : articles.length}
+              </h3>
+              <p className="text-xs text-slate-400 mt-2">Latest five records requested</p>
+            </div>
+
+            <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Categories in Recent Records</p>
+              <h3 className="text-3xl font-extrabold mt-2 tracking-tight">
+                {loading || articleError ? "—" : new Set(articles.map((article) => article.category).filter(Boolean)).size}
+              </h3>
+              <p className="text-xs text-slate-400 mt-2">Distinct categories in this sample</p>
+            </div>
+
+            <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Public Market Feed</p>
+              <h3 className={`text-2xl font-extrabold mt-2 tracking-tight ${marketStatus === "available" ? "text-emerald-400" : marketStatus === "unavailable" ? "text-amber-400" : "text-slate-300"}`}>
+                {marketStatus === "checking" ? "Checking" : marketStatus === "available" ? "Available" : "Unavailable"}
+              </h3>
+              <p className="text-xs text-slate-400 mt-2">
+                {marketQuoteCount} quote pairs returned
+                {marketFetchedAt ? ` · ${new Date(marketFetchedAt).toLocaleTimeString()}` : ""}
               </p>
             </div>
 
             <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">AI Processed</p>
-              <h3 className="text-3xl font-extrabold mt-2 tracking-tight">23.6K</h3>
-              <p className="text-xs text-cyan-400 mt-2 flex items-center gap-1 font-medium">
-                <Zap className="h-3.5 w-3.5" /> 99.8% Accuracy
-              </p>
-            </div>
-
-            <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Vector Embeddings</p>
-              <h3 className="text-3xl font-extrabold mt-2 tracking-tight">756</h3>
-              <p className="text-xs text-purple-400 mt-2 flex items-center gap-1 font-medium">
-                <Database className="h-3.5 w-3.5" /> pgvector indexed
-              </p>
-            </div>
-
-            <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">System Status</p>
-              <h3 className="text-3xl font-extrabold mt-2 tracking-tight text-emerald-400">100%</h3>
-              <p className="text-xs text-slate-400 mt-2 flex items-center gap-1 font-medium">
-                <Globe className="h-3.5 w-3.5" /> Vercel Edge Deployed
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Latest Publication</p>
+              <h3 className="text-lg font-extrabold mt-2 tracking-tight">
+                {loading ? "Loading" : articleError ? "Unavailable" : articles[0]?.published_at && !Number.isNaN(Date.parse(articles[0].published_at)) ? new Date(articles[0].published_at).toLocaleDateString() : "Not available"}
+              </h3>
+              <p className="text-xs text-slate-400 mt-2 line-clamp-2">
+                {articles[0]?.title || "No recent article title available"}
               </p>
             </div>
           </div>
 
-          {/* Real Supabase Database Stream Table */}
+          {/* Recent article records */}
           <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-bold text-lg">Live Supabase News Stream</h3>
-                <p className="text-xs text-slate-400">Real-time database records from public.news_articles</p>
+                <h3 className="font-bold text-lg">Recent News Articles</h3>
+                <p className="text-xs text-slate-400">Latest five records returned by the connected news table</p>
               </div>
               <button 
                 onClick={() => window.location.reload()}
@@ -195,13 +232,13 @@ export default function AdminDashboard() {
                   {loading ? (
                     <tr>
                       <td colSpan={4} className="py-6 text-center text-slate-500 text-xs">
-                        Connecting to Supabase pgvector stream...
+                        Loading recent articles...
                       </td>
                     </tr>
                   ) : articles.length === 0 ? (
                     <tr>
                       <td colSpan={4} className="py-6 text-center text-slate-500 text-xs">
-                        No articles found in database yet. Ready for AI Ingestion Engine.
+                        No recent articles were returned.
                       </td>
                     </tr>
                   ) : (
@@ -215,7 +252,7 @@ export default function AdminDashboard() {
                         </td>
                         <td className="py-3 px-4">
                           <span className="flex items-center gap-1.5 text-emerald-400 text-xs">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Live
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Published
                           </span>
                         </td>
                         <td className="py-3 px-4 text-xs text-slate-400">
