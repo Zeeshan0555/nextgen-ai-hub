@@ -324,7 +324,7 @@ export default function NeuroWirePlatform() {
 
           <div className="p-6 md:p-8 -mt-28 relative z-10 space-y-4">
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="bg-red-500/20 text-red-400 border border-red-500/40 px-3 py-1 rounded-full font-bold uppercase animate-pulse">
+              <span className="px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-semibold uppercase">
                 Latest story
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">
