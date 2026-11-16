@@ -42,8 +42,15 @@ export async function GET() {
         symbol: item.symbol as string,
         price: Number(item.lastPrice),
         changePercent: Number(item.priceChangePercent),
+        closeTime: Number(item.closeTime),
       }))
-      .filter((item) => Number.isFinite(item.price) && item.price > 0 && Number.isFinite(item.changePercent));
+      .filter((item) =>
+        Number.isFinite(item.price) &&
+        item.price > 0 &&
+        Number.isFinite(item.changePercent) &&
+        Number.isFinite(item.closeTime) &&
+        item.closeTime > 0
+      );
 
     if (quotes.length === 0) {
       return NextResponse.json(
@@ -55,7 +62,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       source: "Binance public market data",
-      updatedAt: new Date().toISOString(),
+      fetchedAt: new Date().toISOString(),
       refreshIntervalSeconds: 60,
       quotes,
     });
