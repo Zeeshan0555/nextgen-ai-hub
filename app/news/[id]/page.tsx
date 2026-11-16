@@ -125,13 +125,12 @@ export default function ArticlePage() {
             publishedAt: item.created_at || new Date().toISOString(),
             image: item.image_url || INITIAL_NEWS[0].image,
             summary: item.description || "Live intelligence wire update.",
-            fullReport: [
-              item.content || item.description || "Detailed analysis currently streaming from autonomous nodes.",
-              "Continuous automated monitoring indicates heightened activity across this sector."
-            ],
+            fullReport: (item.content || item.description || "")
+              .split(/\n\s*\n/)
+              .map((paragraph: string) => paragraph.trim())
+              .filter(Boolean),
             bullets: [
-              "Autonomous live intelligence feed update.",
-              "Cross-verified via decentralized node telemetry."
+              "This article uses material supplied through the publisher's RSS feed. NeuroWire has not independently verified every claim."
             ]
           }));
           allStories = [...formatted, ...INITIAL_NEWS];
