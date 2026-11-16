@@ -15,10 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: npm
@@ -31,3 +31,8 @@ jobs:
 
       - name: Run production build
         run: npm run build
+        env:
+          # Non-secret placeholders for static build validation only.
+          # No real Supabase project or credentials are accessed by this workflow.
+          NEXT_PUBLIC_SUPABASE_URL: https://build-placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: build-only-placeholder-not-a-real-key
