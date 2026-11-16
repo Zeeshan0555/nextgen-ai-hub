@@ -155,7 +155,7 @@ export default function NeuroWirePlatform() {
           title: item.title,
           category: item.category || "AI",
           source: item.source || "Source not provided",
-          readTime: `${Math.max(1, Math.ceil((item.content || item.description || "").trim().split(/\\s+/).length / 200))} min read`,
+          readTime: `${Math.max(1, Math.ceil((item.content || item.description || "").trim().split(/\s+/).length / 200))} min read`,
           publishedAt: item.created_at || "",
           image: item.image_url || "",
           summary: item.description || item.title,
