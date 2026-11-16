@@ -157,7 +157,7 @@ export default function NeuroWirePlatform() {
           source: item.source || "Source not provided",
           readTime: "6 min read",
           publishedAt: item.created_at || "",
-          image: item.image_url || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
+          image: item.image_url || "",
           summary: item.description || item.title,
           fullReport: item.content ? item.content.split("\n\n") : [item.description || item.title],
           bullets: ["Publisher feed material; not independently verified by NeuroWire."],
@@ -314,7 +314,11 @@ export default function NeuroWirePlatform() {
         {hero ? (
         <div className="relative rounded-3xl border border-slate-800 bg-slate-900/80 overflow-hidden shadow-2xl">
           <div className="relative h-72 md:h-96 w-full overflow-hidden">
-            <img src={hero.image} alt={hero.title} className="w-full h-full object-cover opacity-45" />
+            {hero.image ? (
+                <img src={hero.image} alt={hero.title} className="w-full h-full object-cover opacity-45" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-sm text-slate-500">Publisher image not available</div>
+              )}
             <div className="absolute inset-0 bg-gradient-to-t from-[#070b14] via-[#070b14]/70 to-transparent" />
           </div>
 
@@ -398,12 +402,18 @@ export default function NeuroWirePlatform() {
       >
               <div>
                 <div className="relative h-48 w-full rounded-2xl overflow-hidden mb-4 bg-slate-950">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-xs text-slate-500">
+                      Publisher image not available
+                    </div>
+                  )}
                   <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase bg-slate-950/80 backdrop-blur-md text-cyan-400 border border-cyan-500/30">
                     {item.category}
                   </span>
