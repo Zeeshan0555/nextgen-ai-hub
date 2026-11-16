@@ -97,7 +97,8 @@ export default function NeuroWirePlatform() {
         }
       } catch {
         if (active) {
-          setMarketStatus((current) => current === "live" ? "live" : "unavailable");
+          // Keep last successful quotes visible, but never show them as current after a failed refresh.
+          setMarketStatus("unavailable");
         }
       }
     }
@@ -299,12 +300,21 @@ export default function NeuroWirePlatform() {
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between text-xs">
           <div className="flex flex-col shrink-0 pr-4 border-r border-slate-800">
             <div className="flex items-center gap-2 text-slate-300 font-semibold uppercase">
-              <span className={`h-2 w-2 rounded-full ${marketStatus === "live" ? "bg-emerald-400" : "bg-slate-500"}`}></span>
+              <span className={`h-2 w-2 rounded-full ${marketStatus === "live" ? "bg-emerald-400" : marketStatus === "unavailable" ? "bg-amber-400" : "bg-slate-500"}`}></span>
               Market snapshot
             </div>
             <span className="text-[9px] text-slate-500 normal-case mt-0.5">
-              {marketUpdatedAt ? `Updated ${new Date(marketUpdatedAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}` : marketStatus === "loading" ? "Loading quotes..." : "Feed temporarily unavailable"}
+              {marketStatus === "loading"
+                ? "Loading quotes..."
+                : marketStatus === "unavailable"
+                  ? marketUpdatedAt
+                    ? `Refresh failed • last fetched ${new Date(marketUpdatedAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`
+                    : "Feed temporarily unavailable"
+                  : marketUpdatedAt
+                    ? `Fetched ${new Date(marketUpdatedAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`
+                    : "Waiting for quotes"}
             </span>
+            <span className="text-[9px] text-slate-600 normal-case">Binance • USDT pairs</span>
           </div>
           <div className="flex items-center gap-6 overflow-x-auto whitespace-nowrap pl-4 no-scrollbar">
             {MARKET_SYMBOLS.map((symbol) => {
