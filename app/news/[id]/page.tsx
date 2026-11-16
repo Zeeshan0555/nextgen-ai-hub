@@ -242,10 +242,10 @@ export default function ArticlePage() {
 
               <div className="space-y-2 max-w-lg mx-auto">
                 <h3 className="text-2xl font-bold text-white">
-                  {isLoginMode ? "Log In to Access Briefing" : "Create Account & Unlock Briefing"}
+                  {isLoginMode ? "Log In to View Summary" : "Create Account & View Summary"}
                 </h3>
                 <p className="text-slate-400 text-sm">
-                  {isLoginMode ? "Enter your credentials to access your intelligence session." : "Enter your email and create a password to unlock full proprietary analysis."}
+                  {isLoginMode ? "Enter your credentials to access your intelligence session." : "Enter your email and create a password to view the publisher's available article summary."}
                 </p>
               </div>
 
