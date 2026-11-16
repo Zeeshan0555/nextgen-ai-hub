@@ -84,40 +84,25 @@ export default function ArticlePage() {
         const res = await fetch("/api/news");
         const data = await res.json();
         
-        const INITIAL_NEWS = [
-          {
-            title: "Global AI Chip Demand Sparks Massive Semiconductor Surge",
-            source: "NeuroWire Global Wire",
-            publishedAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-            image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=800&auto=format&fit=crop",
-            summary: "Major foundries report unprecedented allocation requests for 3nm nodes as sovereign AI initiatives accelerate worldwide.",
-            fullReport: [
-              "The global race for specialized artificial intelligence silicon has reached a critical inflection point, with major semiconductor foundries reporting fully booked advanced packaging lines through late 2026.",
-              "Sovereign AI infrastructure projects across the Middle East, Europe, and Asia are driving a structural shift in demand away from consumer electronics toward enterprise-grade neural clusters."
-            ],
-            bullets: [
-              "3nm advanced packaging lines booked out for 18 months.",
-              "Sovereign AI initiatives represent 40% of current enterprise orders."
-            ]
-          },
-          {
-            title: "Autonomous Agent Swarms Redefine Enterprise Workflow Automation",
-            source: "Autonomous Systems Lab",
-            publishedAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-            image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
-            summary: "Multi-agent frameworks are moving from experimental sandboxes to core enterprise operations, executing complex, multi-day objectives autonomously.",
-            fullReport: [
-              "Enterprise software architectures are undergoing a paradigm shift from deterministic application logic to probabilistic, multi-agent orchestration layers.",
-              "Recent deployments in financial services and logistics demonstrate autonomous swarms reducing multi-day audit workflows into hours."
-            ],
-            bullets: [
-              "Transition from deterministic software to probabilistic agent swarms.",
-              "90% reduction in cycle time for complex audit compliance tasks."
-            ]
-          }
-        ];
-
-        let allStories = [...INITIAL_NEWS];
+        const allStories = Array.isArray(data?.news)
+          ? data.news.map((item: any) => {
+              const articleText = item.content || item.description || "";
+              return {
+                title: item.title,
+                source: item.source || "Source not provided",
+                publishedAt: item.created_at || "",
+                image: item.image_url || "",
+                summary: item.description || item.title || "No publisher summary is available.",
+                fullReport: articleText
+                  .split(/\n\s*\n/)
+                  .map((paragraph: string) => paragraph.trim())
+                  .filter(Boolean),
+                bullets: [
+                  "This article uses material supplied through the publisher's RSS feed. NeuroWire has not independently verified every claim."
+                ]
+              };
+            })
+          : [];
         if (data && data.news && data.news.length > 0) {
           const formatted = data.news.map((item: any) => ({
             title: item.title,
@@ -248,8 +233,14 @@ export default function ArticlePage() {
             {story.title}
           </h1>
 
-          <div className="h-72 md:h-96 w-full rounded-3xl overflow-hidden border border-slate-800 shadow-2xl">
-            <img src={story.image} alt={story.title} className="w-full h-full object-cover" />
+          <div className="h-72 md:h-96 w-full rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900">
+            {story.image ? (
+              <img src={story.image} alt={story.title} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-sm text-slate-500">
+                Publisher image not available
+              </div>
+            )}
           </div>
 
           <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80 text-lg text-slate-300 leading-relaxed">
