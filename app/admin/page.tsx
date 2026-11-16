@@ -11,10 +11,7 @@ import {
   Settings, 
   Menu, 
   X, 
-  TrendingUp, 
-  Zap, 
-  Globe, 
-  Clock 
+  Zap 
 } from 'lucide-react';
 
 interface Article {
