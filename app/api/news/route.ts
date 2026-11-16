@@ -3,18 +3,91 @@ import { createSupabaseServerClient } from "../../lib/supabase-server";
 
 export const dynamic = "force-dynamic";
 
-const TECH_PHOTOS = [
-  "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=800&auto=format&fit=crop",
+type RssItem = {
+  title?: string;
+  description?: string;
+  content?: string;
+  thumbnail?: string;
+  enclosure?: { link?: string };
+  pubDate?: string;
+};
+
+type RssResponse = {
+  items?: RssItem[];
+};
+
+type FeedConfig = {
+  url: string;
+  publisher: string;
+  category: string;
+};
+
+const FEEDS: FeedConfig[] = [
+  {
+    url: "https://api.rss2json.com/v1/api.json?rss_url=https://cointelegraph.com/rss",
+    publisher: "CoinTelegraph",
+    category: "Crypto",
+  },
+  {
+    url: "https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/category/artificial-intelligence/feed/",
+    publisher: "TechCrunch",
+    category: "AI",
+  },
 ];
 
-async function fetchRss(url: string) {
+function cleanFeedText(value: unknown): string {
+  if (typeof value !== "string") return "";
+
+  return value
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;|&#160;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parsePublishedAt(value?: string): string | null {
+  if (!value) return null;
+
+  const timestamp = new Date(value);
+  if (Number.isNaN(timestamp.getTime())) return null;
+
+  return timestamp.toISOString();
+}
+
+function getImageUrl(...values: unknown[]): string {
+  for (const value of values) {
+    if (typeof value !== "string" || !value.trim()) continue;
+
+    try {
+      const parsed = new URL(value.trim());
+      if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+        return parsed.toString();
+      }
+    } catch {
+      // Ignore malformed image URLs and let the UI use its normal fallback.
+    }
+  }
+
+  return "";
+}
+
+async function fetchRss(url: string): Promise<RssResponse | null> {
   try {
-    const res = await fetch(url, { next: { revalidate: 900 } });
-    if (!res.ok) return null;
-    return await res.json();
+    const response = await fetch(url, { next: { revalidate: 900 } });
+    if (!response.ok) return null;
+
+    const payload: unknown = await response.json();
+    if (!payload || typeof payload !== "object") return null;
+
+    const items = (payload as RssResponse).items;
+    return Array.isArray(items) ? { items } : null;
   } catch {
     return null;
   }
@@ -22,47 +95,69 @@ async function fetchRss(url: string) {
 
 export async function GET() {
   try {
-    const [cryptoData, aiData] = await Promise.all([
-      fetchRss("https://api.rss2json.com/v1/api.json?rss_url=https://cointelegraph.com/rss"),
-      fetchRss("https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/category/artificial-intelligence/feed/"),
-    ]);
+    const feedResults = await Promise.all(
+      FEEDS.map(async (feed) => ({
+        feed,
+        data: await fetchRss(feed.url),
+      }))
+    );
 
-    const incoming: any[] = [];
-
-    if (cryptoData?.items) {
-      cryptoData.items.slice(0, 3).forEach((item: any, i: number) => {
-        incoming.push({
-          title: item.title,
-          description: (item.description || item.title).replace(/<[^>]*>/g, "").slice(0, 180) + "...",
-          content: (item.description || item.title).replace(/<[^>]*>/g, "") + "\n\nReal-time market movement recorded across primary trading venues.\n\nInstitutional volume trends indicate sustained participant interest.\n\nVerified by CoinTelegraph global market intelligence desk.",
-          image_url: item.thumbnail || item.enclosure?.link || TECH_PHOTOS[i % TECH_PHOTOS.length],
-          created_at: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
-          source: "CoinTelegraph",
-          category: "Crypto",
-        });
-      });
+    if (feedResults.every(({ data }) => data === null)) {
+      return NextResponse.json(
+        { success: false, error: "News feeds are currently unavailable." },
+        { status: 502 }
+      );
     }
 
-    if (aiData?.items) {
-      aiData.items.slice(0, 3).forEach((item: any, i: number) => {
+    const incoming: Array<{
+      title: string;
+      description: string;
+      content: string;
+      image_url: string;
+      created_at: string;
+      source: string;
+      category: string;
+    }> = [];
+
+    for (const { feed, data } of feedResults) {
+      for (const item of (data?.items || []).slice(0, 3)) {
+        const title = cleanFeedText(item.title);
+        const articleText = cleanFeedText(item.content || item.description);
+        const publishedAt = parsePublishedAt(item.pubDate);
+
+        // Do not invent a publication time when the feed does not provide one.
+        if (!title || !publishedAt) continue;
+
+        const summaryText = articleText || title;
+        const description =
+          summaryText.length > 180
+            ? `${summaryText.slice(0, 177).trimEnd()}...`
+            : summaryText;
+
         incoming.push({
-          title: item.title,
-          description: (item.description || item.title).replace(/<[^>]*>/g, "").slice(0, 180) + "...",
-          content: (item.description || item.title).replace(/<[^>]*>/g, "") + "\n\nEngineers and researchers note that accelerated model scaling is directly reshaping commercial AI architectures.\n\nVenture capital consortia and enterprise developers have rapidly consolidated around this breakthrough.\n\nFiled directly through TechCrunch Silicon Valley dispatch.",
-          image_url: item.thumbnail || item.enclosure?.link || TECH_PHOTOS[(i + 2) % TECH_PHOTOS.length],
-          created_at: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
-          source: "TechCrunch",
-          category: "AI",
+          title,
+          description,
+          // Keep only text supplied by the publisher's RSS item.
+          content: summaryText,
+          image_url: getImageUrl(item.thumbnail, item.enclosure?.link),
+          created_at: publishedAt,
+          source: feed.publisher,
+          category: feed.category,
         });
-      });
+      }
     }
+
+    // Avoid sending duplicate titles from the same polling cycle.
+    const uniqueIncoming = Array.from(
+      new Map(incoming.map((item) => [item.title.toLocaleLowerCase(), item])).values()
+    );
 
     const supabase = createSupabaseServerClient();
 
-    if (incoming.length > 0) {
+    if (uniqueIncoming.length > 0) {
       const { error } = await supabase
         .from("news")
-        .upsert(incoming, {
+        .upsert(uniqueIncoming, {
           onConflict: "title_key",
           ignoreDuplicates: true,
         });
@@ -74,14 +169,16 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      count: incoming.length,
-      news: incoming,
+      count: uniqueIncoming.length,
+      news: uniqueIncoming,
     });
-
-  } catch (error: any) {
+  } catch (error) {
     console.error("News API error:", error);
     return NextResponse.json(
-      { success: false, error: error.message || "Unknown error" },
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
