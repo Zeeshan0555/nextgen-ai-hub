@@ -33,12 +33,30 @@ interface NewsItem {
   bullets: string[];
 }
 
-const MARKET_PAIRS = ["BTC/USD", "ETH/USD", "SOL/USD"];
+type MarketQuote = {
+  symbol: string;
+  price: number;
+  changePercent: number;
+};
+
+const MARKET_SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT"] as const;
+
+function formatMarketPrice(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: value >= 100 ? 2 : 2,
+    maximumFractionDigits: value >= 100 ? 2 : 6,
+  }).format(value);
+}
 
 export default function NeuroWirePlatform() {
     const router = useRouter();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [newsLoading, setNewsLoading] = useState(true);
+  const [marketQuotes, setMarketQuotes] = useState<MarketQuote[]>([]);
+  const [marketUpdatedAt, setMarketUpdatedAt] = useState<string | null>(null);
+  const [marketStatus, setMarketStatus] = useState<"loading" | "live" | "unavailable">("loading");
   const [activeTab, setActiveTab] = useState<string>("All");
   const [search, setSearch] = useState<string>("");
   const [activeStory, setActiveStory] = useState<NewsItem | null>(null);
@@ -57,6 +75,40 @@ export default function NeuroWirePlatform() {
       const sub = localStorage.getItem("neurowire_sub");
       if (sub) setIsSubscribed(true);
     }
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadMarketSnapshot() {
+      try {
+        const response = await fetch("/api/market", { cache: "no-store" });
+        if (!response.ok) throw new Error("Market feed unavailable");
+
+        const payload = await response.json();
+        if (!Array.isArray(payload.quotes) || payload.quotes.length === 0) {
+          throw new Error("No market quotes returned");
+        }
+
+        if (active) {
+          setMarketQuotes(payload.quotes);
+          setMarketUpdatedAt(payload.updatedAt || null);
+          setMarketStatus("live");
+        }
+      } catch {
+        if (active) {
+          setMarketStatus((current) => current === "live" ? "live" : "unavailable");
+        }
+      }
+    }
+
+    loadMarketSnapshot();
+    const intervalId = window.setInterval(loadMarketSnapshot, 60_000);
+
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+    };
   }, []);
 
   const handleSubscribe = async (e: React.FormEvent) => {
@@ -245,17 +297,37 @@ export default function NeuroWirePlatform() {
       {/* 1. TICKER */}
       <div className="bg-slate-950 border-b border-slate-800/80 py-2 sticky top-0 z-40 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2 text-slate-300 font-semibold uppercase shrink-0 pr-4 border-r border-slate-800">
-            <span className="h-2 w-2 rounded-full bg-slate-500"></span> Market snapshot
+          <div className="flex flex-col shrink-0 pr-4 border-r border-slate-800">
+            <div className="flex items-center gap-2 text-slate-300 font-semibold uppercase">
+              <span className={`h-2 w-2 rounded-full ${marketStatus === "live" ? "bg-emerald-400" : "bg-slate-500"}`}></span>
+              Market snapshot
+            </div>
+            <span className="text-[9px] text-slate-500 normal-case mt-0.5">
+              {marketUpdatedAt ? `Updated ${new Date(marketUpdatedAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}` : marketStatus === "loading" ? "Loading quotes..." : "Feed temporarily unavailable"}
+            </span>
           </div>
           <div className="flex items-center gap-6 overflow-x-auto whitespace-nowrap pl-4 no-scrollbar">
-            {MARKET_PAIRS.map((pair) => (
-              <div key={pair} className="flex items-center gap-2">
-                <span className="text-slate-400">{pair}</span>
-                <span className="font-semibold text-slate-300">—</span>
-                <span className="text-slate-500 font-mono text-[11px]">Quote feed not connected</span>
-              </div>
-            ))}
+            {MARKET_SYMBOLS.map((symbol) => {
+              const quote = marketQuotes.find((item) => item.symbol === symbol);
+              const label = symbol.replace("USDT", "/USDT");
+              return (
+                <div key={symbol} className="flex items-center gap-2">
+                  <span className="text-slate-400">{label}</span>
+                  {quote ? (
+                    <>
+                      <span className="font-semibold text-slate-100 tabular-nums">{formatMarketPrice(quote.price)}</span>
+                      <span className={`font-mono text-[11px] tabular-nums ${quote.changePercent >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                        {quote.changePercent > 0 ? "+" : ""}{quote.changePercent.toFixed(2)}%
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-slate-500 font-mono text-[11px]">
+                      {marketStatus === "loading" ? "Loading..." : "Unavailable"}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
