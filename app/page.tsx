@@ -89,9 +89,6 @@ export default function NeuroWirePlatform() {
   }, []);
 
   useEffect(() => {
-    const requestedSlug = new URLSearchParams(window.location.search).get("category");
-    if (!requestedSlug) return;
-
     const categoryBySlug: Record<string, NewsCategory> = {
       ai: "AI",
       crypto: "Crypto",
@@ -101,8 +98,17 @@ export default function NeuroWirePlatform() {
       leadership: "Leadership",
     };
 
-    const selectedCategory = categoryBySlug[requestedSlug.toLowerCase()];
-    if (selectedCategory) setActiveTab(selectedCategory);
+    const requestedSlug = new URLSearchParams(window.location.search).get("category");
+    const initialCategory = requestedSlug ? categoryBySlug[requestedSlug.toLowerCase()] : undefined;
+    if (initialCategory) setActiveTab(initialCategory);
+
+    const handleCategorySelect = (event: Event) => {
+      const selectedCategory = (event as CustomEvent<NewsCategory>).detail;
+      if (NEWS_CATEGORIES.includes(selectedCategory)) setActiveTab(selectedCategory);
+    };
+
+    window.addEventListener("neurowire:category-select", handleCategorySelect);
+    return () => window.removeEventListener("neurowire:category-select", handleCategorySelect);
   }, []);
 
   useEffect(() => {
