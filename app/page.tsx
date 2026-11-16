@@ -20,10 +20,21 @@ import {
   BookOpen,
 } from "lucide-react";
 
+type NewsCategory = "AI" | "Crypto" | "Policy" | "Technology" | "Fox News" | "Leadership";
+
+const NEWS_CATEGORIES: NewsCategory[] = [
+  "AI",
+  "Crypto",
+  "Policy",
+  "Technology",
+  "Fox News",
+  "Leadership",
+];
+
 interface NewsItem {
   id: string;
   title: string;
-  category: "AI" | "Crypto" | "Policy";
+  category: NewsCategory;
   source: string;
   readTime: string;
   publishedAt: string;
@@ -78,6 +89,23 @@ export default function NeuroWirePlatform() {
   }, []);
 
   useEffect(() => {
+    const requestedSlug = new URLSearchParams(window.location.search).get("category");
+    if (!requestedSlug) return;
+
+    const categoryBySlug: Record<string, NewsCategory> = {
+      ai: "AI",
+      crypto: "Crypto",
+      policy: "Policy",
+      technology: "Technology",
+      "fox-news": "Fox News",
+      leadership: "Leadership",
+    };
+
+    const selectedCategory = categoryBySlug[requestedSlug.toLowerCase()];
+    if (selectedCategory) setActiveTab(selectedCategory);
+  }, []);
+
+  useEffect(() => {
     let active = true;
 
     async function loadMarketSnapshot() {
@@ -127,7 +155,7 @@ export default function NeuroWirePlatform() {
   };
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [newTitle, setNewTitle] = useState("");
-  const [newCategory, setNewCategory] = useState<"AI" | "Crypto" | "Policy">("AI");
+  const [newCategory, setNewCategory] = useState<NewsCategory>("AI");
   const [newSource, setNewSource] = useState("");
   const [newImage, setNewImage] = useState("");
   const [newSummary, setNewSummary] = useState("");
@@ -447,7 +475,7 @@ export default function NeuroWirePlatform() {
           </h2>
 
           <div className="flex items-center gap-2 bg-slate-950 p-1.5 rounded-full border border-slate-800">
-            {["All", "AI", "Crypto", "Policy"].map((tab) => (
+            {["All", ...NEWS_CATEGORIES].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -577,9 +605,9 @@ export default function NeuroWirePlatform() {
                 <div>
                   <label className="text-slate-400 block mb-1">Category</label>
                   <select value={newCategory} onChange={(e: any) => setNewCategory(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500">
-                    <option value="AI">AI & Compute</option>
-                    <option value="Crypto">Crypto & Web3</option>
-                    <option value="Policy">Policy & Markets</option>
+                    {NEWS_CATEGORIES.map((category) => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
