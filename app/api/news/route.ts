@@ -53,6 +53,12 @@ function cleanFeedText(value: unknown): string {
     .trim();
 }
 
+function limitWords(value: string, maximumWords: number): string {
+  const words = value.trim().split(/\s+/).filter(Boolean);
+  if (words.length <= maximumWords) return value.trim();
+  return `${words.slice(0, maximumWords).join(" ")}…`;
+}
+
 function parsePublishedAt(value?: string): string | null {
   if (!value) return null;
 
@@ -149,11 +155,9 @@ export async function GET() {
           );
         }
 
-        const summaryText = articleText || title;
-        const description =
-          summaryText.length > 180
-            ? `${summaryText.slice(0, 177).trimEnd()}...`
-            : summaryText;
+        // Keep only a short publisher excerpt; readers should open the source for the full story.
+        const summaryText = articleText ? limitWords(articleText, 20) : "";
+        const description = summaryText || "Open the original publisher article for more details.";
 
         incoming.push({
           title,
