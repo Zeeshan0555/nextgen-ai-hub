@@ -51,11 +51,11 @@ jobs:
 
           git archive --format=tar "${CHECKPOINT_COMMIT}" | tar -xf - -C "${project_root}"
 
-          cat > "${checkpoint_root}/PROGRESS-REPORT.md" <<EOF
+          cat > "${checkpoint_root}/PROGRESS-REPORT.md" <<'EOF'
           # NeuroWire Repair Branch Snapshot
 
-          - Branch: ${CHECKPOINT_BRANCH}
-          - Source commit: ${CHECKPOINT_COMMIT}
+          - Branch: @CHECKPOINT_BRANCH@
+          - Source commit: @CHECKPOINT_COMMIT@
           - Snapshot date: 2026-11-16
           - Project source: `NeuroWire-Project/`
 
@@ -86,6 +86,11 @@ jobs:
           - Vercel preview/check status must be reviewed separately; this archive does not assert a successful Vercel deployment.
           - Admin authentication and browser push-notification functionality remain separate follow-up security/product tasks.
           EOF
+
+          sed -i \
+            -e "s|@CHECKPOINT_BRANCH@|${CHECKPOINT_BRANCH}|g" \
+            -e "s|@CHECKPOINT_COMMIT@|${CHECKPOINT_COMMIT}|g" \
+            "${checkpoint_root}/PROGRESS-REPORT.md"
 
           (
             cd "${checkpoint_root}"
