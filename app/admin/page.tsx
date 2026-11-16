@@ -18,7 +18,7 @@ interface Article {
   id: string;
   title: string;
   category: string;
-  published_at: string;
+  published_at?: string | null;
 }
 
 export default function AdminDashboard() {
@@ -248,12 +248,15 @@ export default function AdminDashboard() {
                           </span>
                         </td>
                         <td className="py-3 px-4">
-                          <span className="flex items-center gap-1.5 text-emerald-400 text-xs">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Published
+                          <span className="flex items-center gap-1.5 text-slate-400 text-xs">
+                            <span className="h-1.5 w-1.5 rounded-full bg-slate-500"></span>
+                            {art.published_at && !Number.isNaN(Date.parse(art.published_at)) ? "Published" : "Date unavailable"}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-xs text-slate-400">
-                          {new Date(art.published_at).toLocaleDateString()}
+                          {art.published_at && !Number.isNaN(Date.parse(art.published_at))
+                            ? new Date(art.published_at).toLocaleDateString()
+                            : "Date unavailable"}
                         </td>
                       </tr>
                     ))
