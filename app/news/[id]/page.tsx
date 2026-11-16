@@ -243,6 +243,7 @@ export default function ArticlePage() {
           </div>
 
           <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80 text-lg text-slate-300 leading-relaxed">
+            <p className="text-xs font-mono uppercase tracking-wider text-cyan-400 mb-2">Publisher excerpt</p>
             <p className="font-medium text-cyan-200/90">{story.summary}</p>
           </div>
 
@@ -257,10 +258,10 @@ export default function ArticlePage() {
 
               <div className="space-y-2 max-w-lg mx-auto">
                 <h3 className="text-2xl font-bold text-white">
-                  {isLoginMode ? "Log In to View Summary" : "Create Account & View Summary"}
+                  {isLoginMode ? "Log In to View Excerpt" : "Create Account & View Excerpt"}
                 </h3>
                 <p className="text-slate-400 text-sm">
-                  {isLoginMode ? "Enter your credentials to access your intelligence session." : "Enter your email and create a password to view the publisher's available article summary."}
+                  {isLoginMode ? "Enter your credentials to access your intelligence session." : "Enter your email and create a password to view the short publisher excerpt."}
                 </p>
               </div>
 
@@ -294,7 +295,7 @@ export default function ArticlePage() {
                   disabled={submitting}
                   className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-cyan-500/20 cursor-pointer"
                 >
-                  {submitting ? "Processing..." : isLoginMode ? "Log In & Unlock" : "Create Account & Unlock"}
+                  {submitting ? "Processing..." : isLoginMode ? "Log In & View Excerpt" : "Create Account & View Excerpt"}
                 </button>
               </form>
 
