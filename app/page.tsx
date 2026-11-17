@@ -304,51 +304,108 @@ export default function NeuroWirePlatform() {
     };
   }, []);
 
-  // Load publisher stories from the existing public news feed.
+  // Load stored newsroom articles first, then merge in the live publisher feed.
+  // This keeps the homepage populated when the database is empty or temporarily unavailable.
   useEffect(() => {
+    let active = true;
+
     async function loadVaultNews() {
-    try {
-      const { data, error } = await supabase
-        .from("news")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const storedStories: NewsItem[] = [];
 
-      if (error) {
-        console.error("News feed fetch error:", error.message);
-        setNews([]);
-        return;
+      try {
+        const { data, error } = await supabase
+          .from("news")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error("News feed fetch error:", error.message);
+        } else if (Array.isArray(data)) {
+          storedStories.push(...data.map((item: any) => ({
+            id: String(item.id),
+            title: String(item.title || "Untitled story"),
+            category: NEWS_CATEGORIES.includes(item.category as NewsCategory)
+              ? (item.category as NewsCategory)
+              : "Uncategorized",
+            source: String(item.source || "Source not provided"),
+            readTime: `${Math.max(1, Math.ceil(String(item.content || item.description || "").trim().split(/\\s+/).filter(Boolean).length / 200))} min read`,
+            publishedAt: String(item.created_at || ""),
+            image: String(item.image_url || ""),
+            summary: String(item.description || item.title || ""),
+            fullReport: typeof item.content === "string" && item.content.trim()
+              ? item.content.split("\\n\\n")
+              : [String(item.description || item.title || "")],
+            bullets: ["Publisher material; NeuroWire has not independently verified every claim."],
+          })));
+        }
+      } catch (error) {
+        console.error("Stored news could not be loaded:", error);
       }
 
-      if (data && data.length > 0) {
-        const dbNews: NewsItem[] = data.map((item: any) => ({
-          id: item.id.toString(),
-          title: item.title,
-          category: NEWS_CATEGORIES.includes(item.category as NewsCategory)
-            ? (item.category as NewsCategory)
-            : "Uncategorized",
-          source: item.source || "Source not provided",
-          readTime: `${Math.max(1, Math.ceil((item.content || item.description || "").trim().split(/\s+/).length / 200))} min read`,
-          publishedAt: item.created_at || "",
-          image: item.image_url || "",
-          summary: item.description || item.title,
-          fullReport: item.content ? item.content.split("\n\n") : [item.description || item.title],
-          bullets: ["Publisher feed material; not independently verified by NeuroWire."],
-        }));
+      try {
+        const response = await fetch("/api/news", { cache: "no-store" });
+        if (!response.ok) throw new Error("Live publisher feeds are unavailable.");
+        const payload = await response.json();
 
-        setNews(dbNews);
-        return;
+        if (payload?.success === true && Array.isArray(payload.news)) {
+          const liveStories: NewsItem[] = payload.news
+            .filter((item: any) =>
+              typeof item?.title === "string" &&
+              item.title.trim().length > 0 &&
+              NEWS_CATEGORIES.includes(item.category as NewsCategory) &&
+              typeof item.source === "string" &&
+              typeof item.created_at === "string" &&
+              Number.isFinite(Date.parse(item.created_at))
+            )
+            .map((item: any) => {
+              const articleText = typeof item.content === "string" ? item.content : "";
+              const summary = typeof item.description === "string" && item.description.trim()
+                ? item.description
+                : "Open the publisher's original report for the full story.";
+              return {
+                // The article route accepts a title when a story is not stored in the database.
+                id: item.title,
+                title: item.title,
+                category: item.category as NewsCategory,
+                source: item.source,
+                readTime: `${Math.max(1, Math.ceil((articleText || summary).trim().split(/\\s+/).filter(Boolean).length / 200))} min read`,
+                publishedAt: item.created_at,
+                image: typeof item.image_url === "string" ? item.image_url : "",
+                summary,
+                fullReport: articleText ? articleText.split("\\n\\n") : [summary],
+                bullets: ["Live publisher feed material. Open the original source for full context."],
+              };
+            });
+
+          const seenTitles = new Set(storedStories.map((story) => story.title.trim().toLocaleLowerCase()));
+          for (const story of liveStories) {
+            const key = story.title.trim().toLocaleLowerCase();
+            if (!seenTitles.has(key)) {
+              storedStories.push(story);
+              seenTitles.add(key);
+            }
+          }
+        }
+      } catch (error) {
+        console.warn("Live publisher feed could not be merged:", error);
       }
 
-      setNews([]);
-    } catch (e: any) {
-      console.error("News feed fetch failed:", e?.message || e);
-      setNews([]);
-    } finally {
-      setNewsLoading(false);
-    }
+      if (active) {
+        const sorted = storedStories.sort((left, right) => {
+          const leftTime = Date.parse(left.publishedAt);
+          const rightTime = Date.parse(right.publishedAt);
+          return (Number.isFinite(rightTime) ? rightTime : 0) -
+            (Number.isFinite(leftTime) ? leftTime : 0);
+        });
+        setNews(sorted);
+        setNewsLoading(false);
+      }
     }
 
     loadVaultNews();
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Publish through a server route that validates the signed admin session.
