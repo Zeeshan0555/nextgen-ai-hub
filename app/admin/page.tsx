@@ -248,7 +248,7 @@ export default function AdminDashboard() {
               </div>
               <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
                 <p className="text-xs text-slate-400">Automatic news coverage</p>
-                <p className="mt-2 text-sm font-semibold text-amber-300">Limited source setup</p>
+                <p className="mt-2 text-sm font-semibold text-amber-300">Six categories configured</p>
                 <p className="text-[11px] text-slate-400 mt-1">Publisher feeds are now configured for all six categories. Individual feed uptime and freshness are not yet measured here.</p>
               </div>
             </div>
