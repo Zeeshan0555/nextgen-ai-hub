@@ -843,11 +843,12 @@ export default function NeuroWirePlatform() {
       </section>
 
       <footer id="site-footer" className="mt-20 border-t border-slate-800 py-10 px-4 text-slate-400 text-sm flex flex-col items-center gap-5">
-        <div className="flex items-center gap-4">
+        <nav aria-label="Site information" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+          <a href="/about" className="hover:text-cyan-400 transition-colors">About</a>
+          <a href="/editorial-policy" className="hover:text-cyan-400 transition-colors">Editorial Policy</a>
+          <a href="/ai-disclosure" className="hover:text-cyan-400 transition-colors">AI & Automation</a>
           <a href="/privacy" className="hover:text-cyan-400 transition-colors">Privacy Policy</a>
-          <span>•</span>
-          <a href="/about" className="hover:text-cyan-400 transition-colors">Contact & Editorial Desk</a>
-        </div>
+        </nav>
 
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2 border-t border-slate-800/80 w-full max-w-xl">
           {!isAdmin && (
