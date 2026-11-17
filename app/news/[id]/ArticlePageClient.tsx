@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ExternalLink, ShieldCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
-type ArticleStory = {
+export type ArticleStory = {
   title: string;
   source: string;
   category: string;
@@ -58,17 +58,23 @@ function formatModernTimestamp(isoString: string): string {
   }).format(date);
 }
 
-export default function ArticlePage() {
+export default function ArticlePageClient({ initialStory }: { initialStory: ArticleStory | null }) {
   const params = useParams();
   const rawId = params?.id;
   const decodedTitle = Array.isArray(rawId) ? rawId[0] : rawId || "";
   const router = useRouter();
 
-  const [story, setStory] = useState<ArticleStory | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [story, setStory] = useState<ArticleStory | null>(initialStory);
+  const [loading, setLoading] = useState(!initialStory);
   const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
+    if (initialStory) {
+      setStory(initialStory);
+      setLoading(false);
+      return;
+    }
+
     let active = true;
 
     async function fetchStory() {
@@ -189,7 +195,7 @@ export default function ArticlePage() {
     return () => {
       active = false;
     };
-  }, [decodedTitle]);
+  }, [decodedTitle, initialStory]);
 
   if (loading) {
     return (
