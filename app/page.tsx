@@ -770,7 +770,7 @@ export default function NeuroWirePlatform() {
                 <textarea required rows={5} value={newArticle} onChange={(e) => setNewArticle(e.target.value)} placeholder="Write the full report here... Double enter for new paragraphs." className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500" />
               </div>
               <button type="submit" className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all mt-2">
-                Publish Directly to NeuroWire Live
+                Publish to NeuroWire
               </button>
             </form>
           </div>
