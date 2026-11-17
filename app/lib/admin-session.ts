@@ -81,5 +81,5 @@ export function hasAdminSession(request: Request): boolean {
   if (!cookie) return false;
 
   const token = cookie.slice(ADMIN_SESSION_COOKIE.length + 1);
-  return isAdminSessionTokenValid(decodeURIComponent(token));
+  return isAdminSessionTokenValid(token);
 }
