@@ -17,7 +17,12 @@ function safeEqual(left: string, right: string): boolean {
 
 export function verifyAdminPassword(candidate: unknown): boolean {
   const configuredPassword = process.env.NEUROWIRE_ADMIN_PASSWORD;
-  if (typeof candidate !== "string" || !configuredPassword) return false;
+  if (
+    typeof candidate !== "string" ||
+    candidate.length === 0 ||
+    candidate.length > 256 ||
+    !configuredPassword
+  ) return false;
   return safeEqual(candidate, configuredPassword);
 }
 
