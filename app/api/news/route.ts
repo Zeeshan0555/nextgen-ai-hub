@@ -24,14 +24,44 @@ type FeedConfig = {
 
 const FEEDS: FeedConfig[] = [
   {
+    url: "https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/category/artificial-intelligence/feed/",
+    publisher: "TechCrunch",
+    category: "AI",
+  },
+  {
     url: "https://api.rss2json.com/v1/api.json?rss_url=https://cointelegraph.com/rss",
     publisher: "CoinTelegraph",
     category: "Crypto",
   },
   {
-    url: "https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/category/artificial-intelligence/feed/",
+    url: "https://api.rss2json.com/v1/api.json?rss_url=https://www.theverge.com/rss/policy/index.xml",
+    publisher: "The Verge",
+    category: "Policy",
+  },
+  {
+    url: "https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/category/government-policy/feed/",
     publisher: "TechCrunch",
-    category: "AI",
+    category: "Policy",
+  },
+  {
+    url: "https://api.rss2json.com/v1/api.json?rss_url=https://www.theverge.com/rss/tech/index.xml",
+    publisher: "The Verge",
+    category: "Technology",
+  },
+  {
+    url: "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.arstechnica.com/arstechnica/index",
+    publisher: "Ars Technica",
+    category: "Technology",
+  },
+  {
+    url: "https://api.rss2json.com/v1/api.json?rss_url=https://moxie.foxnews.com/google-publisher/latest.xml",
+    publisher: "Fox News",
+    category: "Fox News",
+  },
+  {
+    url: "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.hbr.org/harvardbusiness",
+    publisher: "Harvard Business Review",
+    category: "Leadership",
   },
 ];
 
@@ -138,7 +168,7 @@ export async function GET() {
     }> = [];
 
     for (const { feed, data } of feedResults) {
-      for (const item of (data?.items || []).slice(0, 3)) {
+      for (const item of (data?.items || []).slice(0, 8)) {
         const title = cleanFeedText(item.title);
         const articleText = cleanFeedText(item.content || item.description);
         const publishedAt = parsePublishedAt(item.pubDate);
