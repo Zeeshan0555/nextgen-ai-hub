@@ -683,6 +683,51 @@ export default function NeuroWirePlatform() {
         </p>
       </footer>
       
+        {/* Secure admin sign-in */}
+      {showAdminLogin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-sm w-full p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-white">Admin sign in</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAdminLogin(false);
+                  setAdminPassword("");
+                  setAdminLoginError("");
+                }}
+                className="p-2 text-slate-400 hover:text-white rounded-full bg-slate-800"
+                aria-label="Close admin sign-in"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <form onSubmit={handleAdminLogin} className="space-y-3">
+              <label className="block text-xs text-slate-400">
+                Admin password
+                <input
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  value={adminPassword}
+                  onChange={(event) => setAdminPassword(event.target.value)}
+                  className="mt-1 w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500"
+                />
+              </label>
+              {adminLoginError && (
+                <p role="alert" className="text-xs text-rose-400">{adminLoginError}</p>
+              )}
+              <button
+                type="submit"
+                className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs"
+              >
+                Sign in securely
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
         {/* 7. PUBLISHING MODAL */}
       {showPublishModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
