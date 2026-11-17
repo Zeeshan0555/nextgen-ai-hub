@@ -212,7 +212,29 @@ export default function NeuroWirePlatform() {
     }
   };
 
-  // Secret Admin & Supabase Sync
+  // Verify admin access from the signed server-side session.
+  useEffect(() => {
+    let active = true;
+    fetch("/api/admin/session", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Admin session unavailable");
+        return response.json();
+      })
+      .then((payload) => {
+        if (active) setIsAdmin(payload.isAuthenticated === true);
+      })
+      .catch(() => {
+        if (active) setIsAdmin(false);
+      })
+      .finally(() => {
+        if (active) setAdminStatusLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Load publisher stories from the existing public news feed.
   useEffect(() => {
     async function loadVaultNews() {
     try {
