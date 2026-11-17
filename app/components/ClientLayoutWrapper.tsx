@@ -1,26 +1,59 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Bell, Menu, Sparkles, X } from 'lucide-react';
 import SidebarDrawer from '@/app/components/SidebarDrawer';
 import NotificationPopup from '@/app/components/NotificationPopup';
 import NewsTicker from '@/app/components/NewsTicker';
 
+type BrowserNotificationState = 'checking' | 'unsupported' | 'default' | 'granted' | 'denied';
+
 export default function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationState, setNotificationState] = useState<BrowserNotificationState>('checking');
+
+  useEffect(() => {
+    if (!('Notification' in window)) {
+      setNotificationState('unsupported');
+      return;
+    }
+    setNotificationState(Notification.permission);
+  }, []);
+
+  const requestBrowserNotificationPermission = async () => {
+    if (!('Notification' in window)) {
+      setNotificationState('unsupported');
+      return;
+    }
+
+    try {
+      const permission = Notification.permission === 'granted'
+        ? 'granted'
+        : await Notification.requestPermission();
+      setNotificationState(permission);
+    } catch {
+      setNotificationState('default');
+    }
+  };
+
+  const notificationButtonLabel =
+    notificationState === 'checking' ? 'Checking...' :
+    notificationState === 'unsupported' ? 'Not supported' :
+    notificationState === 'granted' ? 'Permission allowed' :
+    notificationState === 'denied' ? 'Blocked in browser' :
+    'Allow permission';
 
   return (
     <>
-      {/* 1. CYBERPUNK GLOBAL HEADER */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-[#060814]/80 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <button 
+            <button
               onClick={() => setIsSidebarOpen(true)}
               className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-colors flex items-center space-x-2"
+              aria-label="Open topic menu"
             >
               <Menu className="w-4 h-4 text-blue-400" />
               <span className="hidden sm:inline text-xs font-mono">DASHBOARD</span>
@@ -37,12 +70,13 @@ export default function ClientLayoutWrapper({ children }: { children: React.Reac
           </div>
 
           <div className="flex items-center space-x-3 relative">
-            <button 
+            <button
               onClick={() => setShowNotifications(!showNotifications)}
               className="relative p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-colors"
+              aria-label="Open browser notification settings"
+              aria-expanded={showNotifications}
             >
-              <Bell className="w-4 h-4 text-blue-400 animate-pulse" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
+              <Bell className="w-4 h-4 text-blue-400" />
             </button>
 
             {showNotifications && (
@@ -50,24 +84,27 @@ export default function ClientLayoutWrapper({ children }: { children: React.Reac
                 <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-3">
                   <div className="flex items-center space-x-2">
                     <Sparkles className="w-4 h-4 text-blue-400" />
-                    <span className="font-bold text-xs font-['Space_Grotesk'] tracking-wider">LIVE INTEL ALERTS</span>
+                    <span className="font-bold text-xs font-['Space_Grotesk'] tracking-wider">BROWSER NOTIFICATIONS</span>
                   </div>
-                  <button onClick={() => setShowNotifications(false)} className="text-slate-500 hover:text-white">
+                  <button
+                    onClick={() => setShowNotifications(false)}
+                    className="text-slate-500 hover:text-white"
+                    aria-label="Close notification settings"
+                  >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/10 flex items-center justify-between">
+                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/10 flex items-center justify-between gap-3">
                   <div>
-                    <div className="text-xs font-semibold text-slate-200">Push Alerts</div>
-                    <div className="text-[10px] text-slate-400 font-mono">Real-time breaking updates</div>
+                    <div className="text-xs font-semibold text-slate-200">Browser permission</div>
+                    <div className="text-[10px] text-slate-400">Permission only; news alerts are not connected yet.</div>
                   </div>
                   <button
-                    onClick={() => setNotificationsEnabled(!notificationsEnabled)}
-                    className={`px-3 py-1 rounded-lg text-xs font-mono ${
-                      notificationsEnabled ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-blue-600 text-white'
-                    }`}
+                    onClick={requestBrowserNotificationPermission}
+                    disabled={notificationState === 'checking' || notificationState === 'unsupported' || notificationState === 'granted'}
+                    className="px-3 py-1 rounded-lg text-xs bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {notificationsEnabled ? 'Enabled ✓' : 'Turn On'}
+                    {notificationButtonLabel}
                   </button>
                 </div>
               </div>
@@ -80,16 +117,9 @@ export default function ClientLayoutWrapper({ children }: { children: React.Reac
         </div>
       </header>
 
-      {/* 2. LIVE REALTIME TICKER BAR */}
       <NewsTicker />
-
-      {/* 3. SIDEBAR DRAWER */}
       <SidebarDrawer isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-
-      {/* 4. MAIN PAGE CONTENT */}
       <main className="flex-1">{children}</main>
-
-      {/* 5. NOTIFICATION POPUP */}
       <NotificationPopup />
     </>
   );
