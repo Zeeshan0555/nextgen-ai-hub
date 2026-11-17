@@ -16,6 +16,16 @@ type ArticleStory = {
   content: string;
 };
 
+function getSafePublisherUrl(value: unknown): string {
+  if (typeof value !== "string" || !value.trim()) return "";
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "https:" ? parsed.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
 function formatModernTimestamp(isoString: string): string {
   if (!isoString) return "Publication date unavailable";
 
@@ -43,6 +53,9 @@ export default function ArticlePage() {
 
     async function fetchStory() {
       try {
+        const queryPublisherUrl = getSafePublisherUrl(
+          new URLSearchParams(window.location.search).get("source")
+        );
         // First look for the story already published in NeuroWire's news table.
         // This keeps manually published and scheduled stories readable as well.
         const { data: storedStory, error: storedStoryError } = await supabase
@@ -67,11 +80,9 @@ export default function ArticlePage() {
               source: typeof storedStory.source === "string" ? storedStory.source : "Source not provided",
               category: typeof storedStory.category === "string" ? storedStory.category : "Uncategorized",
               publisherUrl:
-                typeof storedStory.publisher_url === "string"
-                  ? storedStory.publisher_url
-                  : typeof storedStory.source_url === "string"
-                    ? storedStory.source_url
-                    : "",
+                getSafePublisherUrl(storedStory.publisher_url) ||
+                getSafePublisherUrl(storedStory.source_url) ||
+                queryPublisherUrl,
               publishedAt: typeof storedStory.created_at === "string" ? storedStory.created_at : "",
               image: typeof storedStory.image_url === "string" ? storedStory.image_url : "",
               summary: typeof storedStory.description === "string" ? storedStory.description : storedContent,
@@ -116,7 +127,7 @@ export default function ArticlePage() {
             title: typeof found.title === "string" ? found.title : "Untitled story",
             source: typeof found.source === "string" ? found.source : "Publisher not provided",
             category: typeof found.category === "string" ? found.category : "News",
-            publisherUrl: typeof found.publisher_url === "string" ? found.publisher_url : "",
+            publisherUrl: getSafePublisherUrl(found.publisher_url) || queryPublisherUrl,
             publishedAt: typeof found.created_at === "string" ? found.created_at : "",
             image: typeof found.image_url === "string" ? found.image_url : "",
             summary: typeof found.description === "string" ? found.description : articleText,
