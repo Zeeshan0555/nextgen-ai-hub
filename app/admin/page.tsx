@@ -192,7 +192,7 @@ export default function AdminDashboard() {
             <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
               <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Latest Publication</p>
               <h3 className="text-lg font-extrabold mt-2 tracking-tight">
-                {loading ? "Loading" : articleError ? "Unavailable" : articles[0]?.created_at && !Number.isNaN(Date.parse(articles[0].published_at)) ? new Date(articles[0].published_at).toLocaleDateString() : "Not available"}
+                {loading ? "Loading" : articleError ? "Unavailable" : articles[0]?.created_at && !Number.isNaN(Date.parse(articles[0].created_at)) ? new Date(articles[0].created_at).toLocaleDateString() : "Not available"}
               </h3>
               <p className="text-xs text-slate-400 mt-2 line-clamp-2">
                 {articles[0]?.title || "No recent article title available"}
