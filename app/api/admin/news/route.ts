@@ -57,6 +57,9 @@ export async function POST(request: NextRequest) {
   let body: PublishBody;
   try {
     body = await request.json();
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      throw new Error("Invalid article details");
+    }
   } catch {
     return NextResponse.json(
       { success: false, error: "The article details could not be read." },
