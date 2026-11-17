@@ -108,9 +108,8 @@ export default function ArticlePageClient({ initialStory }: { initialStory: Arti
           const storedSourceUrl = sourceUrlLine
             ? sourceUrlLine.slice("ORIGINAL_SOURCE_URL:".length).trim()
             : "";
-          const isTaggedContent = contentLines[0]?.startsWith("NEUROWIRE_") === true;
           const storedContent = contentLines
-            .filter((line, index) => !(index === 0 && isTaggedContent) && !line.startsWith("ORIGINAL_SOURCE_URL:"))
+            .filter((line) => !line.startsWith("NEUROWIRE_") && !line.startsWith("ORIGINAL_SOURCE_URL:"))
             .join("\n")
             .trim();
           const isEditorialBriefing = storedRawContent.startsWith("NEUROWIRE_EDITORIAL_BRIEF_V1");
