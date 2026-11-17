@@ -83,7 +83,7 @@ export async function createEditorialBriefing(
   const model = cleanString(process.env.GEMINI_MODEL, 80) || "gemini-3.8-flash";
   const prompt = [
     "You are the careful research editor for NeuroWire News.",
-    "Create a useful, original editorial briefing from ONLY the supplied publisher RSS text.",
+    "Create a useful, original editorial briefing from ONLY the editor-supplied source material.",
     "Do not use outside knowledge, browsing, assumptions, forecasts, invented context, invented numbers, invented quotes, or claims not directly supported by the supplied text.",
     "Do not rewrite the source paragraph sentence by sentence. Explain the central development clearly and distinguish confirmed details from what the source does not establish.",
     "Keep the supplied headline, publisher name, category and publication date unchanged; they are metadata, not facts to embellish.",
@@ -116,7 +116,7 @@ export async function createEditorialBriefing(
                 "Publisher publication date: " + input.publishedAt,
                 "Original publisher URL: " + input.publisherUrl,
                 "",
-                "SOURCE TEXT (the only factual source you may use):",
+                "SOURCE MATERIAL (the only factual source you may use):",
                 sourceText,
               ].join("\n"),
             }],
@@ -195,7 +195,7 @@ export function formatEditorialBriefing(
     openQuestions,
     "",
     "## Editorial note",
-    "AI-assisted briefing based only on the publisher text supplied to NeuroWire. Evidence excerpts are shown for transparency. This is not an independent investigation or a substitute for the original report.",
+    "AI-assisted briefing based only on source material supplied by the editor. Short evidence excerpts show what the key points are based on. This is not an independent investigation or a substitute for the original report.",
     "",
     "ORIGINAL_SOURCE_URL: " + publisherUrl,
   ].join("\n");
@@ -213,4 +213,97 @@ export function formatSourceExcerpt(sourceText: string, publisherUrl: string): s
     "",
     "ORIGINAL_SOURCE_URL: " + publisherUrl,
   ].join("\n");
+}
+
+
+export type HeadlineCategory = "AI" | "Crypto" | "Policy" | "Technology" | "Leadership";
+
+export type HeadlineClassification = {
+  category: HeadlineCategory;
+  confidence: number;
+};
+
+export async function classifyNewsHeadline(input: {
+  title: string;
+  publisher: string;
+  defaultCategory: HeadlineCategory;
+}): Promise<HeadlineClassification | null> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+
+  const title = cleanString(input.title, 180);
+  const publisher = cleanString(input.publisher, 100);
+  if (!title) return null;
+
+  const model = cleanString(process.env.GEMINI_MODEL, 80) || "gemini-3.8-flash";
+  const prompt = [
+    "Classify a news headline into exactly one section using only the headline and publisher name.",
+    "Allowed sections: AI, Crypto, Policy, Technology, Leadership.",
+    "Do not invent facts, context, or story details. Do not summarize or rewrite the headline.",
+    "Choose the most specific section supported by the headline. If it is unclear, choose the provided default section.",
+    "Return only JSON with keys category and confidence. confidence must be a number from 0 to 1.",
+  ].join("\n");
+
+  try {
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: prompt }] },
+          contents: [{
+            role: "user",
+            parts: [{
+              text: [
+                "Headline: " + title,
+                "Publisher: " + publisher,
+                "Default section: " + input.defaultCategory,
+              ].join("\n"),
+            }],
+          }],
+          generationConfig: {
+            temperature: 0,
+            maxOutputTokens: 120,
+            responseMimeType: "application/json",
+          },
+        }),
+        signal: AbortSignal.timeout(12000),
+      }
+    );
+
+    if (!response.ok) return null;
+    const payload = await response.json() as GeminiGenerateResponse;
+    const rawText = payload.candidates?.[0]?.content?.parts
+      ?.map((part) => part.text || "")
+      .join("\n")
+      .trim();
+    if (!rawText) return null;
+
+    const parsed: unknown = JSON.parse(rawText);
+    if (!parsed || typeof parsed !== "object") return null;
+    const data = parsed as Record<string, unknown>;
+    const allowed = new Set<HeadlineCategory>(["AI", "Crypto", "Policy", "Technology", "Leadership"]);
+    const category = data.category;
+    const confidence = Number(data.confidence);
+
+    if (
+      typeof category !== "string" ||
+      !allowed.has(category as HeadlineCategory) ||
+      !Number.isFinite(confidence) ||
+      confidence < 0.82 ||
+      confidence > 1
+    ) return null;
+
+    return { category: category as HeadlineCategory, confidence };
+  } catch (error) {
+    console.warn(
+      "Gemini headline classification unavailable:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    return null;
+  }
 }
