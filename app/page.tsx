@@ -51,7 +51,8 @@ function mapStoredStory(item: Record<string, unknown>): NewsItem | null {
   if (!title) return null;
 
   const publishedAt = typeof item.created_at === "string" ? item.created_at : "";
-  const contentWords = content.trim().split(/\s+/).filter(Boolean).length;
+  const displayContent = content.split("\n").filter((line) => !line.startsWith("NEUROWIRE_") && !line.startsWith("ORIGINAL_SOURCE_URL:")).join("\n").trim();
+  const contentWords = displayContent.trim().split(/\s+/).filter(Boolean).length;
 
   return {
     id: String(item.id ?? title),
@@ -69,7 +70,7 @@ function mapStoredStory(item: Record<string, unknown>): NewsItem | null {
     summary: typeof item.description === "string" && item.description.trim()
       ? item.description.trim()
       : title,
-    fullReport: content ? content.split("\n\n") : [title],
+    fullReport: displayContent ? displayContent.split("\n\n") : [title],
     bullets: isReviewedBriefing
       ? ["AI-assisted briefing reviewed by the NeuroWire Admin; check the original source for complete context."]
       : ["NeuroWire has not independently verified every statement in the original publisher report."],
