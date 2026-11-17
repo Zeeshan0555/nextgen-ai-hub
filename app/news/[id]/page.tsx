@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ArticlePageClient, { type ArticleStory } from "./ArticlePageClient";
 import { createSupabaseServerClient } from "@/app/lib/supabase-server";
+import { isIndexableEditorialArticle } from "@/app/lib/article-quality";
 
 type ArticlePageProps = {
   params: Promise<{ id: string }>;
@@ -110,12 +111,10 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     if (error || !data) throw new Error("Article metadata unavailable");
 
     const content = typeof data.content === "string" ? data.content : "";
-    const isIndexableBriefing =
-      content.startsWith(BRIEFING_MARKER) &&
-      content.length >= 500 &&
-      REQUIRED_SECTIONS.every((section) => content.includes(section));
+    const isIndexableBriefing = content.startsWith(BRIEFING_MARKER) && content.length >= 500 && REQUIRED_SECTIONS.every((section) => content.includes(section));
+    const isIndexableArticle = isIndexableEditorialArticle({ title: data.title, description: data.description, source: data.source, content });
 
-    if (!isIndexableBriefing) {
+    if (!isIndexableBriefing && !isIndexableArticle) {
       return {
         title: articleTitle + " | NeuroWire News",
         robots: { index: false, follow: true },
