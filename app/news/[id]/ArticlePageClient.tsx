@@ -15,6 +15,7 @@ export type ArticleStory = {
   summary: string;
   content: string;
   isEditorialBriefing: boolean;
+  isEditorialArticle: boolean;
   isHeadlineOnly: boolean;
 };
 
@@ -113,6 +114,7 @@ export default function ArticlePageClient({ initialStory }: { initialStory: Arti
             .join("\n")
             .trim();
           const isEditorialBriefing = storedRawContent.startsWith("NEUROWIRE_EDITORIAL_BRIEF_V1");
+          const isEditorialArticle = storedRawContent.startsWith("NEUROWIRE_EDITORIAL_ARTICLE_V1");
           const isHeadlineOnly = storedRawContent.startsWith("NEUROWIRE_SOURCE_LINK_V1");
 
           if (active) {
@@ -130,6 +132,7 @@ export default function ArticlePageClient({ initialStory }: { initialStory: Arti
               summary: typeof storedStory.description === "string" ? storedStory.description : storedContent,
               content: isHeadlineOnly ? "" : storedContent,
               isEditorialBriefing,
+              isEditorialArticle,
               isHeadlineOnly,
             });
           }
@@ -177,6 +180,7 @@ export default function ArticlePageClient({ initialStory }: { initialStory: Arti
             summary: typeof found.description === "string" ? found.description : articleText,
             content: articleText,
             isEditorialBriefing: false,
+            isEditorialArticle: false,
             isHeadlineOnly: true,
           });
         }
@@ -283,7 +287,7 @@ export default function ArticlePageClient({ initialStory }: { initialStory: Arti
           </section>
         ) : (
           <section className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80">
-            <h2 className="text-xs uppercase tracking-wider text-cyan-400 mb-3">{story.isEditorialBriefing ? "NeuroWire AI-assisted briefing" : "Publisher excerpt"}</h2>
+            <h2 className="text-xs uppercase tracking-wider text-cyan-400 mb-3">{story.isEditorialBriefing ? "NeuroWire AI-assisted briefing" : story.isEditorialArticle ? "NeuroWire original article" : "Publisher excerpt"}</h2>
             <div className="text-base text-slate-200 leading-relaxed whitespace-pre-line">
               {(story.content || story.summary || "The publisher did not provide an excerpt.").replace(/^## /gm, "").replace(/^- /gm, "• ").replace(/^  Evidence from source:/gm, "Evidence from source:")}
             </div>
@@ -293,7 +297,7 @@ export default function ArticlePageClient({ initialStory }: { initialStory: Arti
         <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-950 border border-slate-800">
           <ShieldCheck className="h-5 w-5 text-cyan-400 shrink-0 mt-0.5" />
           <p className="text-xs text-slate-400 leading-relaxed">
-            {story.isHeadlineOnly ? "This page provides a headline and a direct link only. NeuroWire does not republish the publisher article here." : story.isEditorialBriefing ? "This AI-assisted briefing was created from editor-provided source notes. Evidence excerpts are included, but the briefing has not been independently fact-checked. Open the original publisher report for full context and updates." : "This is a publisher excerpt, not a full NeuroWire investigation. Open the original publisher link for the complete article and any updates. NeuroWire has not independently verified every claim."}
+            {story.isHeadlineOnly ? "This page provides a headline and a direct link only. NeuroWire does not republish the publisher article here." : story.isEditorialBriefing ? "This AI-assisted briefing was created from editor-provided source notes. Evidence excerpts are included, but the briefing has not been independently fact-checked. Open the original publisher report for full context and updates." : story.isEditorialArticle ? "This original NeuroWire article was prepared for this newsroom and should be read alongside its cited source links. Corrections should be made when an error is identified." : "This is a publisher excerpt, not a full NeuroWire investigation. Open the original publisher link for the complete article and any updates. NeuroWire has not independently verified every claim."}
           </p>
         </div>
       </main>
