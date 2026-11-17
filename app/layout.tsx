@@ -14,8 +14,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: 'NeuroWire - Autonomous AI News Platform',
-  description: 'Cyberpunk-themed high-performance real-time AI news intelligence hub',
+  title: 'NeuroWire News | AI, Crypto & Technology Updates',
+  description: 'Follow the latest AI, crypto, policy, technology, Fox News and leadership stories with clear publisher attribution.',
 };
 
 export default function RootLayout({
