@@ -753,8 +753,8 @@ export default function NeuroWirePlatform() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-slate-400 block mb-1">Source Name</label>
-                  <input type="text" value={newSource} onChange={(e) => setNewSource(e.target.value)} placeholder="e.g. Bloomberg / Reuters / Your Desk" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500" />
+                  <label className="text-slate-400 block mb-1">Publisher / Source Name *</label>
+                  <input type="text" required maxLength={120} value={newSource} onChange={(e) => setNewSource(e.target.value)} placeholder="Enter the real publisher or source" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500" />
                 </div>
               </div>
               <div>
