@@ -328,14 +328,19 @@ export default function AdminDashboard() {
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
-                <p className="text-sm font-semibold text-amber-300">Scheduled publisher</p>
-                <p className="text-xs text-slate-300 mt-2">The scheduled publisher currently reads TechCrunch AI only. It now requires a valid CRON_SECRET before it can run.</p>
-                <p className="text-[11px] text-slate-500 mt-2">Server secret configuration and the last successful run have not been checked from this dashboard.</p>
+                <p className="text-sm font-semibold text-amber-300">Scheduled headline publisher</p>
+                <p className="text-xs text-slate-300 mt-2">The protected cron route checks the configured official source feeds and saves one eligible headline per run. It requires CRON_SECRET and the existing server-side database access.</p>
+                <p className="text-[11px] text-slate-500 mt-2">The scheduler, server secrets and last successful run have not been verified from this dashboard.</p>
               </div>
               <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
-                <p className="text-sm font-semibold text-amber-300">Category feed coverage</p>
-                <p className="text-xs text-slate-300 mt-2">The feed API currently defines Crypto and AI sources only. Policy, Technology, Fox News and Leadership still need dedicated sources.</p>
-                <p className="text-[11px] text-slate-500 mt-2">The six category filters are present; that does not mean all six have automatic feeds.</p>
+                <p className="text-sm font-semibold text-amber-300">Category source coverage</p>
+                <p className="text-xs text-slate-300 mt-2">Official feeds are configured for AI, Crypto, Policy, Technology and Leadership. Fox News stays as a direct publisher link rather than an automated RSS copy.</p>
+                <p className="text-[11px] text-slate-500 mt-2">Individual feed uptime and the last successful collection time are not measured here yet.</p>
+              </div>
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 md:col-span-2">
+                <p className="text-sm font-semibold text-amber-300">Gemini AI drafting and classification</p>
+                <p className="text-xs text-slate-300 mt-2">Headline classification uses the title and publisher only when Gemini is configured. Admin can request a draft from original notes or material they have permission to use; evidence excerpts are checked before a draft is returned.</p>
+                <p className="text-[11px] text-slate-500 mt-2">AI drafts are not published automatically. The Admin must review and publish them. GEMINI_API_KEY configuration has not been checked by this dashboard.</p>
               </div>
             </div>
           </section>
