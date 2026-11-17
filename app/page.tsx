@@ -395,7 +395,16 @@ export default function NeuroWirePlatform() {
 
   const searchTerm = search.trim().toLowerCase();
 
-  const filtered = news.filter((item) => {
+  // Keep the homepage feed in publication order, with undated records last.
+  const sortedNews = [...news].sort((left, right) => {
+    const leftTime = Date.parse(left.publishedAt);
+    const rightTime = Date.parse(right.publishedAt);
+    const safeLeftTime = Number.isFinite(leftTime) ? leftTime : 0;
+    const safeRightTime = Number.isFinite(rightTime) ? rightTime : 0;
+    return safeRightTime - safeLeftTime;
+  });
+
+  const filtered = sortedNews.filter((item) => {
     const matchesTab = activeTab === "All" || item.category === activeTab;
     const searchableFields = [item.title, item.summary, item.source, item.category];
     const matchesSearch = searchableFields.some((field) =>
@@ -404,7 +413,17 @@ export default function NeuroWirePlatform() {
     return matchesTab && matchesSearch;
   });
 
-  const hero = filtered[0] || news[0] || null;
+  // Never show an unrelated story when a selected category has no results.
+  const hero = filtered[0] || null;
+
+  const handleCategoryChange = (category: string) => {
+    setActiveTab(category);
+    setVisibleCount(6);
+    const nextUrl = new URL(window.location.href);
+    if (category === "All") nextUrl.searchParams.delete("category");
+    else nextUrl.searchParams.set("category", category.toLowerCase().split(" ").join("-"));
+    window.history.replaceState(null, "", nextUrl.toString());
+  };
 
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-black">
@@ -560,20 +579,25 @@ export default function NeuroWirePlatform() {
       {/* 4. MACRO WIRE FEED */}
       <section id="categories" className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Cpu className="h-6 w-6 text-cyan-400" /> Frontier Wire Feed
-          </h2>
+          <div>
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <Cpu className="h-6 w-6 text-cyan-400" /> {activeTab === "All" ? "Latest News" : activeTab + " News"}
+            </h2>
+            <p className="mt-1 text-xs text-slate-400">
+              {activeTab === "All" ? "The latest stories across all six categories." : "Showing stories from this category only."}
+            </p>
+          </div>
 
-          <div className="flex items-center gap-2 bg-slate-950 p-1.5 rounded-full border border-slate-800">
+          <div className="flex max-w-full items-center gap-2 overflow-x-auto bg-slate-950 p-1.5 rounded-full border border-slate-800">
             {["All", ...NEWS_CATEGORIES].map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => handleCategoryChange(tab)}
                 className={`px-4 py-1.5 rounded-full text-xs font-semibold ${
                   activeTab === tab ? "bg-cyan-500 text-black font-bold" : "text-slate-400"
                 }`}
               >
-                {tab}
+                {tab === "All" ? "Latest" : tab}
               </button>
             ))}
           </div>
