@@ -417,13 +417,13 @@ export default function NeuroWirePlatform() {
                 title: item.title,
                 category: item.category as NewsCategory,
                 source: item.source,
-                readTime: `${Math.max(1, Math.ceil((articleText || summary).trim().split(/\s+/).filter(Boolean).length / 200))} min read`,
+                readTime: "Source link",
                 publishedAt: item.created_at,
                 image: typeof item.image_url === "string" ? item.image_url : "",
                 publisherUrl: typeof item.publisher_url === "string" ? item.publisher_url : "",
                 summary,
-                fullReport: articleText ? articleText.split("\n\n") : [summary],
-                bullets: ["Live publisher feed material. Open the original source for full context."],
+                fullReport: [],
+                bullets: ["Headline only. Open the original source for the complete report."],
               };
             });
 
@@ -755,7 +755,7 @@ export default function NeuroWirePlatform() {
             {hero.image ? (
                 <img src={hero.image} alt={hero.title} className="w-full h-full object-cover opacity-45" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-sm text-slate-500">Publisher image not available</div>
+                <div className="w-full h-full flex items-center justify-center text-sm text-slate-500">Original publisher report</div>
               )}
             <div className="absolute inset-0 bg-gradient-to-t from-[#070b14] via-[#070b14]/70 to-transparent" />
           </div>
@@ -779,13 +779,23 @@ export default function NeuroWirePlatform() {
               {hero.summary}
             </p>
 
-            <button
-              onClick={() => router.push(`/news/${encodeURIComponent(hero.title)}${hero.publisherUrl ? `?source=${encodeURIComponent(hero.publisherUrl)}` : ""}`)}
-              
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all"
-            >
-              <BookOpen className="h-4 w-4" /> Read Publisher Summary
-            </button>
+            {hero.publisherUrl ? (
+              <a
+                href={hero.publisherUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all"
+              >
+                <BookOpen className="h-4 w-4" /> Open original report
+              </a>
+            ) : (
+              <button
+                onClick={() => router.push("/news/" + encodeURIComponent(hero.title))}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all"
+              >
+                <BookOpen className="h-4 w-4" /> Read NeuroWire briefing
+              </button>
+            )}
           </div>
         </div>
         ) : (
@@ -854,12 +864,38 @@ export default function NeuroWirePlatform() {
         )}
 
 {filtered.length === 0 ? (
-  <div className="p-12 rounded-2xl border border-slate-800 bg-slate-900/40 text-center text-slate-400">
-    {newsLoading
-      ? "Loading latest news..."
-      : news.length === 0
-        ? "Abhi publisher feeds se koi news available nahi."
-        : "Koi article nahi mila. Search ya category change karke dekhein."}
+  <div className="p-8 md:p-10 rounded-2xl border border-slate-800 bg-slate-900/40 text-center">
+    <h3 className="text-base font-semibold text-white">
+      {newsLoading ? "Loading latest headlines..." : news.length === 0 ? "No fresh headlines at the moment" : "No headlines match this view"}
+    </h3>
+    <p className="mt-2 text-sm text-slate-400">
+      {newsLoading
+        ? "The newsroom is checking its publisher sources."
+        : news.length === 0
+          ? "Open an official source page while new headlines are being collected."
+          : "Try another topic or clear the search to see more stories."}
+    </p>
+    {!newsLoading && (
+      <div className="mt-5 flex flex-wrap justify-center gap-2">
+        {(activeTab === "All"
+          ? NEWS_CATEGORIES.map((category) => ({
+              label: category,
+              url: CATEGORY_SOURCE_LINKS[category][0]?.url || "/",
+            }))
+          : CATEGORY_SOURCE_LINKS[activeTab as NewsCategory]
+        ).map((link) => (
+          <a
+            key={link.label}
+            href={link.url}
+            target={link.url.startsWith("https://") ? "_blank" : undefined}
+            rel={link.url.startsWith("https://") ? "noopener noreferrer" : undefined}
+            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs font-semibold text-cyan-300 hover:border-cyan-500/50"
+          >
+            {activeTab === "All" ? link.label + " sources" : link.label}
+          </a>
+        ))}
+      </div>
+    )}
   </div>
 ) : (
 
@@ -903,13 +939,23 @@ export default function NeuroWirePlatform() {
               </div>
 
               <div className="border-t border-slate-800 pt-3 flex items-center justify-between">
-                <button
-                  onClick={() => router.push(`/news/${encodeURIComponent(item.title)}${item.publisherUrl ? `?source=${encodeURIComponent(item.publisherUrl)}` : ""}`)}
-                  
-                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-cyan-950 text-cyan-300 border border-cyan-800/40 hover:bg-cyan-900/60 font-semibold"
-                >
-                  <BookOpen className="h-3.5 w-3.5" /> Read Publisher Summary
-                </button>
+                {item.publisherUrl ? (
+                  <a
+                    href={item.publisherUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-cyan-950 text-cyan-300 border border-cyan-800/40 hover:bg-cyan-900/60 font-semibold"
+                  >
+                    <BookOpen className="h-3.5 w-3.5" /> Open original report
+                  </a>
+                ) : (
+                  <button
+                    onClick={() => router.push("/news/" + encodeURIComponent(item.title))}
+                    className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-cyan-950 text-cyan-300 border border-cyan-800/40 hover:bg-cyan-900/60 font-semibold"
+                  >
+                    <BookOpen className="h-3.5 w-3.5" /> Read NeuroWire briefing
+                  </button>
+                )}
 
                 <button
                   onClick={() => toggleVoiceReader(item)}
