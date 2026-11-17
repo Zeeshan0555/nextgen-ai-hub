@@ -9,6 +9,7 @@ type RssItem = {
   thumbnail?: string;
   enclosure?: { link?: string };
   pubDate?: string;
+  link?: string;
 };
 
 type RssResponse = {
@@ -89,47 +90,50 @@ export async function GET(request: Request) {
   }
 
   try {
-    const response = await fetch(
-      "https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/category/artificial-intelligence/feed/"
+    const feeds = [
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/category/artificial-intelligence/feed/", publisher: "TechCrunch", category: "AI" },
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://cointelegraph.com/rss", publisher: "CoinTelegraph", category: "Crypto" },
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://www.theverge.com/rss/policy/index.xml", publisher: "The Verge", category: "Policy" },
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/category/government-policy/feed/", publisher: "TechCrunch", category: "Policy" },
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://www.theverge.com/rss/tech/index.xml", publisher: "The Verge", category: "Technology" },
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.arstechnica.com/arstechnica/index", publisher: "Ars Technica", category: "Technology" },
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://moxie.foxnews.com/google-publisher/latest.xml", publisher: "Fox News", category: "Fox News" },
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.hbr.org/harvardbusiness", publisher: "Harvard Business Review", category: "Leadership" },
+    ];
+
+    const feedResults = await Promise.all(feeds.map(async (feed) => {
+      try {
+        const response = await fetch(feed.url, { signal: AbortSignal.timeout(12000) });
+        if (!response.ok) return { feed, items: [] as RssItem[] };
+        const payload: unknown = await response.json();
+        const data = payload && typeof payload === "object" ? payload as RssResponse : null;
+        return { feed, items: Array.isArray(data?.items) ? data.items : [] };
+      } catch {
+        return { feed, items: [] as RssItem[] };
+      }
+    }));
+
+    const candidates = feedResults.flatMap(({ feed, items }) =>
+      items
+        .filter((candidate) =>
+          cleanFeedText(candidate.title) &&
+          parsePublishedAt(candidate.pubDate) &&
+          (cleanFeedText(candidate.content) || cleanFeedText(candidate.description))
+        )
+        .map((candidate) => ({ item: candidate, publisher: feed.publisher, category: feed.category }))
+    ).sort((left, right) =>
+      Date.parse(parsePublishedAt(right.item.pubDate) || "") -
+      Date.parse(parsePublishedAt(left.item.pubDate) || "")
     );
 
-    if (!response.ok) {
+    if (candidates.length === 0) {
       return NextResponse.json(
-        { success: false, message: "RSS feed unavailable" },
+        { success: false, message: "No valid news items were available from the configured publisher feeds." },
         { status: 502 }
       );
     }
 
-    const payload: unknown = await response.json();
-    const data =
-      payload && typeof payload === "object"
-        ? (payload as RssResponse)
-        : null;
-
-    if (!data || !Array.isArray(data.items) || data.items.length === 0) {
-      return NextResponse.json(
-        { success: false, message: "No publisher feed items available" },
-        { status: 404 }
-      );
-    }
-
-    const item = data.items.find(
-      (candidate) =>
-        cleanFeedText(candidate.title) &&
-        parsePublishedAt(candidate.pubDate) &&
-        (cleanFeedText(candidate.content) || cleanFeedText(candidate.description))
-    );
-
-    if (!item) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "No feed item has a title, article text, and valid publication date.",
-        },
-        { status: 422 }
-      );
-    }
-
+    const { item, publisher, category } = candidates[0];
     const title = cleanFeedText(item.title);
     const articleText = cleanFeedText(item.content || item.description);
     const publishedAt = parsePublishedAt(item.pubDate);
@@ -174,8 +178,8 @@ export async function GET(request: Request) {
         // Store only the text present in the publisher's feed.
         content: articleText,
         image_url: getImageUrl(item.thumbnail, item.enclosure?.link),
-        source: "TechCrunch",
-        category: "AI",
+        source: publisher,
+        category,
         // Preserve the publisher's date rather than assigning the time of this cron run.
         created_at: publishedAt,
       },
@@ -192,7 +196,8 @@ export async function GET(request: Request) {
     return NextResponse.json({
       success: true,
       dispatched: title,
-      source: "TechCrunch",
+      source: publisher,
+      category,
       publishedAt,
     });
   } catch (error) {
