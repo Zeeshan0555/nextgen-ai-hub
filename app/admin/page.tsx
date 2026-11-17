@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { 
   LayoutDashboard, 
@@ -22,7 +23,10 @@ interface Article {
 }
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState("");
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [articleError, setArticleError] = useState(false);
@@ -153,9 +157,27 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 text-xs font-medium">
-              Admin workspace
-            </div>
+            {signOutError && <span role="alert" className="text-xs text-rose-400">{signOutError}</span>}
+            <button
+              type="button"
+              disabled={signingOut}
+              onClick={async () => {
+                setSigningOut(true);
+                setSignOutError("");
+                try {
+                  const response = await fetch("/api/admin/session", { method: "DELETE" });
+                  if (!response.ok) throw new Error("Sign out failed");
+                  router.replace("/");
+                  router.refresh();
+                } catch {
+                  setSignOutError("Could not sign out. Please try again.");
+                  setSigningOut(false);
+                }
+              }}
+              className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white disabled:opacity-50 text-xs font-medium"
+            >
+              {signingOut ? "Signing out..." : "Sign out"}
+            </button>
           </div>
         </header>
 
