@@ -102,7 +102,12 @@ function getNewsSubcategory(item: NewsItem): string {
   const rules = CATEGORY_TOPICS[item.category as NewsCategory];
   if (!rules) return "Other";
   const text = `${item.title} ${item.summary} ${item.source}`.toLowerCase();
-  return rules.find((rule) => rule.keywords.some((keyword) => text.includes(keyword)))?.label || "Other";
+  return rules.find((rule) => rule.keywords.some((keyword) => {
+    const normalizedKeyword = keyword.trim();
+    return normalizedKeyword.includes(" ")
+      ? text.includes(normalizedKeyword)
+      : new RegExp("\\b" + normalizedKeyword + "\\b").test(text);
+  }))?.label || "Other";
 }
 
 const MARKET_SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT"] as const;
@@ -165,7 +170,10 @@ export default function NeuroWirePlatform() {
     const initialCategory = requestedSlug ? categoryBySlug[requestedSlug.toLowerCase()] : undefined;
     if (initialCategory) setActiveTab(initialCategory);
     const requestedTopic = new URLSearchParams(window.location.search).get("topic");
-    if (requestedTopic) setActiveSubcategory(requestedTopic);
+    if (requestedTopic && initialCategory) {
+      const validTopics = [...CATEGORY_TOPICS[initialCategory].map((topic) => topic.label), "Other"];
+      if (validTopics.includes(requestedTopic)) setActiveSubcategory(requestedTopic);
+    }
 
     const handleCategorySelect = (event: Event) => {
       const selectedCategory = (event as CustomEvent<NewsCategory>).detail;
