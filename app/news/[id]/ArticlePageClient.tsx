@@ -17,11 +17,23 @@ type ArticleStory = {
   isEditorialBriefing: boolean;
 };
 
-function getSafePublisherUrl(value: unknown): string {
+function getSafePublisherUrl(value: unknown, publisher: string): string {
   if (typeof value !== "string" || !value.trim()) return "";
+  const publisherHosts: Record<string, string[]> = {
+    "TechCrunch": ["techcrunch.com"],
+    "The Verge": ["theverge.com"],
+    "CoinTelegraph": ["cointelegraph.com"],
+    "Ars Technica": ["arstechnica.com"],
+    "Fox News": ["foxnews.com"],
+    "Harvard Business Review": ["hbr.org"],
+  };
   try {
     const parsed = new URL(value);
-    return parsed.protocol === "https:" ? parsed.toString() : "";
+    const host = parsed.hostname.toLocaleLowerCase();
+    const allowed = (publisherHosts[publisher] || []).some((domain) =>
+      host === domain || host.endsWith("." + domain)
+    );
+    return parsed.protocol === "https:" && allowed ? parsed.toString() : "";
   } catch {
     return "";
   }
@@ -74,10 +86,15 @@ export default function ArticlePage() {
               : typeof storedStory.description === "string"
                 ? storedStory.description.trim()
                 : "";
-          const sourceUrlMatch = storedRawContent.match(/(?:^|\\n)ORIGINAL_SOURCE_URL:\\s*(https:\\/\\/\\S+)/i);
-          const storedContent = storedRawContent
-            .replace(/^\\s*NEUROWIRE_(?:EDITORIAL_BRIEF|SOURCE_EXCERPT)_V1\\s*/, "")
-            .replace(/\\nORIGINAL_SOURCE_URL:\\s*https:\\/\\/\\S+\\s*$/i, "")
+          const contentLines = storedRawContent.split("\n");
+          const sourceUrlLine = contentLines.find((line) => line.startsWith("ORIGINAL_SOURCE_URL:"));
+          const storedSourceUrl = sourceUrlLine
+            ? sourceUrlLine.slice("ORIGINAL_SOURCE_URL:".length).trim()
+            : "";
+          const isTaggedContent = contentLines[0]?.startsWith("NEUROWIRE_") === true;
+          const storedContent = contentLines
+            .filter((line, index) => !(index === 0 && isTaggedContent) && !line.startsWith("ORIGINAL_SOURCE_URL:"))
+            .join("\n")
             .trim();
           const isEditorialBriefing = storedRawContent.startsWith("NEUROWIRE_EDITORIAL_BRIEF_V1");
 
@@ -87,9 +104,9 @@ export default function ArticlePage() {
               source: typeof storedStory.source === "string" ? storedStory.source : "Source not provided",
               category: typeof storedStory.category === "string" ? storedStory.category : "Uncategorized",
               publisherUrl:
-                getSafePublisherUrl(sourceUrlMatch?.[1]) ||
-                getSafePublisherUrl(storedStory.publisher_url) ||
-                getSafePublisherUrl(storedStory.source_url) ||
+                getSafePublisherUrl(storedSourceUrl, typeof storedStory.source === "string" ? storedStory.source : "") ||
+                getSafePublisherUrl(storedStory.publisher_url, typeof storedStory.source === "string" ? storedStory.source : "") ||
+                getSafePublisherUrl(storedStory.source_url, typeof storedStory.source === "string" ? storedStory.source : "") ||
                 queryPublisherUrl,
               publishedAt: typeof storedStory.created_at === "string" ? storedStory.created_at : "",
               image: typeof storedStory.image_url === "string" ? storedStory.image_url : "",
@@ -136,7 +153,7 @@ export default function ArticlePage() {
             title: typeof found.title === "string" ? found.title : "Untitled story",
             source: typeof found.source === "string" ? found.source : "Publisher not provided",
             category: typeof found.category === "string" ? found.category : "News",
-            publisherUrl: getSafePublisherUrl(found.publisher_url) || queryPublisherUrl,
+            publisherUrl: getSafePublisherUrl(found.publisher_url, typeof found.source === "string" ? found.source : "") || getSafePublisherUrl(queryPublisherUrl, typeof found.source === "string" ? found.source : ""),
             publishedAt: typeof found.created_at === "string" ? found.created_at : "",
             image: typeof found.image_url === "string" ? found.image_url : "",
             summary: typeof found.description === "string" ? found.description : articleText,
@@ -240,7 +257,7 @@ export default function ArticlePage() {
         <section className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80">
           <h2 className="text-xs uppercase tracking-wider text-cyan-400 mb-3">{story.isEditorialBriefing ? "NeuroWire AI-assisted briefing" : "Publisher excerpt"}</h2>
           <div className="text-base text-slate-200 leading-relaxed whitespace-pre-line">
-            {story.content || story.summary || "The publisher did not provide an excerpt."}
+            {(story.content || story.summary || "The publisher did not provide an excerpt.").replace(/^## /gm, "").replace(/^- /gm, "• ").replace(/^  Evidence from source:/gm, "Evidence from source:")}
           </div>
         </section>
 
