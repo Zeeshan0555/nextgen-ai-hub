@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - fix/news-source-accuracy
+      - project/neurowire-next-work
   workflow_dispatch:
 
 permissions:
