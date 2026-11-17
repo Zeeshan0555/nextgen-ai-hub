@@ -18,3 +18,4 @@ Manual article publishing is routed through the protected server endpoint and us
 - This is a single-admin password gate, not a multi-author account and approval system.
 - Login attempt rate limiting and central session revocation still need a deployment-level solution before treating this as a complete production identity system.
 - The project branch has not been deployed. Its environment variables have not been configured or tested here.
+- Supabase Row Level Security policies were not inspected or changed. Until those policies are verified separately, do not assume this route prevents every possible direct write using a public database key.
