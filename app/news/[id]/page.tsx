@@ -113,10 +113,14 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     if (error || !data) throw new Error("Article metadata unavailable");
 
     const content = typeof data.content === "string" ? data.content : "";
-    const isIndexableBriefing = content.startsWith(BRIEFING_MARKER) && content.length >= 500 && REQUIRED_SECTIONS.every((section) => content.includes(section));
-    const isIndexableArticle = isIndexableEditorialArticle({ title: data.title, description: data.description, source: data.source, content });
+    const isIndexableArticle = isIndexableEditorialArticle({
+      title: data.title,
+      description: data.description,
+      source: data.source,
+      content,
+    });
 
-    if (!isIndexableBriefing && !isIndexableArticle) {
+    if (!isIndexableArticle) {
       return {
         title: articleTitle + " | NeuroWire News",
         robots: { index: false, follow: true },
@@ -161,16 +165,16 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { id } = await params;
   const initialStory = await getInitialArticle(id || "");
-  const isIndexableBriefing = Boolean(
-    initialStory?.isEditorialBriefing &&
-    initialStory.content.length >= 500 &&
-    REQUIRED_SECTIONS.every((section) => initialStory.content.includes(section))
-  );
   const articleMarkerContent = initialStory
-    ? (initialStory.isEditorialArticle ? ARTICLE_MARKER + "\n\n" : "") + initialStory.content
+    ? (initialStory.isEditorialBriefing
+        ? BRIEFING_MARKER + "\n\n"
+        : initialStory.isEditorialArticle
+          ? ARTICLE_MARKER + "\n\n"
+          : "") + initialStory.content
     : "";
-  const isIndexableOriginalArticle = Boolean(
-    initialStory?.isEditorialArticle &&
+  const isStructuredArticle = Boolean(
+    initialStory &&
+    (initialStory.isEditorialBriefing || initialStory.isEditorialArticle) &&
     isIndexableEditorialArticle({
       title: initialStory.title,
       description: initialStory.summary,
@@ -178,7 +182,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       content: articleMarkerContent,
     })
   );
-  const isStructuredArticle = isIndexableBriefing || isIndexableOriginalArticle;
   const publishedAt = initialStory?.publishedAt;
   const canonicalUrl = "https://neurowire-news.vercel.app/news/" + encodeURIComponent(initialStory?.title || id || "");
 
