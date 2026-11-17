@@ -362,23 +362,30 @@ export default function NeuroWirePlatform() {
         if (error) {
           console.error("News feed fetch error:", error.message);
         } else if (Array.isArray(data)) {
-          storedStories.push(...data.map((item: any): NewsItem => ({
-            id: String(item.id),
-            title: String(item.title || "Untitled story"),
-            category: NEWS_CATEGORIES.includes(item.category as NewsCategory)
-              ? (item.category as NewsCategory)
-              : "Uncategorized",
-            source: String(item.source || "Source not provided"),
-            readTime: `${Math.max(1, Math.ceil(String(item.content || item.description || "").trim().split(/\s+/).filter(Boolean).length / 200))} min read`,
-            publishedAt: String(item.created_at || ""),
-            image: String(item.image_url || ""),
-            publisherUrl: typeof item.publisher_url === "string" ? item.publisher_url : "",
-            summary: String(item.description || item.title || ""),
-            fullReport: typeof item.content === "string" && item.content.trim()
-              ? item.content.split("\n\n")
-              : [String(item.description || item.title || "")],
-            bullets: ["Publisher material; NeuroWire has not independently verified every claim."],
-          })));
+          storedStories.push(...data.map((item: any): NewsItem => {
+            const storedContent = typeof item.content === "string" ? item.content : "";
+            const sourceLine = storedContent.split("\n").find((line: string) => line.startsWith("ORIGINAL_SOURCE_URL:"));
+            const storedSourceUrl = sourceLine
+              ? sourceLine.slice("ORIGINAL_SOURCE_URL:".length).trim()
+              : "";
+            return {
+              id: String(item.id),
+              title: String(item.title || "Untitled story"),
+              category: NEWS_CATEGORIES.includes(item.category as NewsCategory)
+                ? (item.category as NewsCategory)
+                : "Uncategorized",
+              source: String(item.source || "Source not provided"),
+              readTime: storedContent.startsWith("NEUROWIRE_SOURCE_LINK_V1")
+                ? "Source link"
+                : String(Math.max(1, Math.ceil(storedContent.trim().split(/\s+/).filter(Boolean).length / 200))) + " min read",
+              publishedAt: String(item.created_at || ""),
+              image: "",
+              publisherUrl: typeof item.publisher_url === "string" ? item.publisher_url : storedSourceUrl,
+              summary: String(item.description || item.title || ""),
+              fullReport: storedContent ? storedContent.split("\n\n") : [String(item.description || item.title || "")],
+              bullets: ["Use the original source link for the complete report and updates."],
+            };
+          }));;
         }
       } catch (error) {
         console.error("Stored news could not be loaded:", error);
