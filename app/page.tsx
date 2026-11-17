@@ -50,6 +50,61 @@ type MarketQuote = {
   changePercent: number;
 };
 
+type TopicRule = { label: string; keywords: string[] };
+
+const CATEGORY_TOPICS: Record<NewsCategory, TopicRule[]> = {
+  AI: [
+    { label: "AI Models & Tools", keywords: ["model", "chatgpt", "claude", "gemini", "copilot", "llm", "tool"] },
+    { label: "AI Research", keywords: ["research", "study", "paper", "benchmark", "breakthrough"] },
+    { label: "Generative AI", keywords: ["generative", "image generation", "video generation", "text-to-image", " sora "] },
+    { label: "AI Agents & Automation", keywords: ["agent", "automation", "workflow", "autonomous"] },
+    { label: "Robotics", keywords: ["robot", "humanoid", "robotics"] },
+    { label: "AI Business", keywords: ["enterprise", "business", "startup", "investment", "revenue"] },
+  ],
+  Crypto: [
+    { label: "Bitcoin", keywords: ["bitcoin", "btc"] },
+    { label: "Ethereum & Altcoins", keywords: ["ethereum", "ether", "eth", "solana", "sol ", "altcoin"] },
+    { label: "Blockchain & Web3", keywords: ["blockchain", "web3", "web 3"] },
+    { label: "DeFi", keywords: ["defi", "decentralized finance", "liquidity pool"] },
+    { label: "Crypto Regulations", keywords: ["crypto regulation", "crypto law", "sec ", "regulator", "legislation"] },
+  ],
+  Policy: [
+    { label: "AI Regulations", keywords: ["artificial intelligence act", "ai regulation", "ai safety law", "ai policy"] },
+    { label: "Technology Laws", keywords: ["technology law", "digital law", "online safety act", "antitrust"] },
+    { label: "Government Decisions", keywords: ["government", "minister", "parliament", "white house", "cabinet"] },
+    { label: "Data Privacy", keywords: ["privacy", "data protection", "personal data", "gdpr"] },
+    { label: "Cybersecurity Policy", keywords: ["cybersecurity policy", "cyber security law", "security directive"] },
+  ],
+  Technology: [
+    { label: "Smartphones & Devices", keywords: ["iphone", "smartphone", "android", "device", "laptop", "chip"] },
+    { label: "Software", keywords: ["software", "app", "operating system", "windows", "browser"] },
+    { label: "Cybersecurity", keywords: ["cybersecurity", "cyber attack", "hacking", "malware", "data breach"] },
+    { label: "Space & Science", keywords: ["space", " nasa ", "satellite", "scientist", "science", "mission"] },
+    { label: "Robotics", keywords: ["robot", "robotics", "humanoid"] },
+    { label: "Big Tech Companies", keywords: ["apple", "google", "microsoft", "meta", "amazon", "nvidia"] },
+  ],
+  "Fox News": [
+    { label: "US Politics", keywords: ["trump", "congress", "senate", "election", "white house", "republican", "democrat"] },
+    { label: "World News", keywords: ["world", "international", "ukraine", "china", "middle east", "foreign"] },
+    { label: "Business & Economy", keywords: ["business", "economy", "market", "inflation", "jobs", "company"] },
+    { label: "Technology Coverage", keywords: ["technology", "artificial intelligence", "cyber", "tech"] },
+  ],
+  Leadership: [
+    { label: "Tech CEOs", keywords: ["ceo", "chief executive", "founder"] },
+    { label: "AI Industry Leaders", keywords: ["openai", "anthropic", "deepmind", "ai leader"] },
+    { label: "Business Strategies", keywords: ["strategy", "business plan", "growth", "leadership strategy"] },
+    { label: "Company Leadership", keywords: ["executive", "board", "management", "appointed"] },
+    { label: "Interviews & Innovation", keywords: ["interview", "innovation", "vision", "future of"] },
+  ],
+};
+
+function getNewsSubcategory(item: NewsItem): string {
+  const rules = CATEGORY_TOPICS[item.category as NewsCategory];
+  if (!rules) return "Other";
+  const text = `${item.title} ${item.summary} ${item.source}`.toLowerCase();
+  return rules.find((rule) => rule.keywords.some((keyword) => text.includes(keyword)))?.label || "Other";
+}
+
 const MARKET_SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT"] as const;
 
 function formatMarketPrice(value: number): string {
@@ -69,6 +124,7 @@ export default function NeuroWirePlatform() {
   const [marketUpdatedAt, setMarketUpdatedAt] = useState<string | null>(null);
   const [marketStatus, setMarketStatus] = useState<"loading" | "live" | "unavailable">("loading");
   const [activeTab, setActiveTab] = useState<string>("All");
+  const [activeSubcategory, setActiveSubcategory] = useState<string>("All topics");
   const [search, setSearch] = useState<string>("");
   const [activeStory, setActiveStory] = useState<NewsItem | null>(null);
   const [isReading, setIsReading] = useState(false);
@@ -108,10 +164,15 @@ export default function NeuroWirePlatform() {
     const requestedSlug = new URLSearchParams(window.location.search).get("category");
     const initialCategory = requestedSlug ? categoryBySlug[requestedSlug.toLowerCase()] : undefined;
     if (initialCategory) setActiveTab(initialCategory);
+    const requestedTopic = new URLSearchParams(window.location.search).get("topic");
+    if (requestedTopic) setActiveSubcategory(requestedTopic);
 
     const handleCategorySelect = (event: Event) => {
       const selectedCategory = (event as CustomEvent<NewsCategory>).detail;
-      if (NEWS_CATEGORIES.includes(selectedCategory)) setActiveTab(selectedCategory);
+      if (NEWS_CATEGORIES.includes(selectedCategory)) {
+        setActiveTab(selectedCategory);
+        setActiveSubcategory("All topics");
+      }
     };
 
     window.addEventListener("neurowire:category-select", handleCategorySelect);
@@ -406,11 +467,12 @@ export default function NeuroWirePlatform() {
 
   const filtered = sortedNews.filter((item) => {
     const matchesTab = activeTab === "All" || item.category === activeTab;
+    const matchesSubcategory = activeSubcategory === "All topics" || getNewsSubcategory(item) === activeSubcategory;
     const searchableFields = [item.title, item.summary, item.source, item.category];
     const matchesSearch = searchableFields.some((field) =>
       field.toLowerCase().includes(searchTerm)
     );
-    return matchesTab && matchesSearch;
+    return matchesTab && matchesSubcategory && matchesSearch;
   });
 
   // Never show an unrelated story when a selected category has no results.
@@ -602,6 +664,32 @@ export default function NeuroWirePlatform() {
             ))}
           </div>
         </div>
+
+        {activeTab !== "All" && (
+          <div className="mb-6">
+            <p className="text-[11px] uppercase tracking-wider text-slate-500 mb-2">Filter by topic</p>
+            <div className="flex max-w-full items-center gap-2 overflow-x-auto pb-2">
+              {["All topics", ...(CATEGORY_TOPICS[activeTab as NewsCategory] || []).map((topic) => topic.label), "Other"].map((topic) => (
+                <button
+                  key={topic}
+                  type="button"
+                  onClick={() => {
+                    setActiveSubcategory(topic);
+                    setVisibleCount(6);
+                    const nextUrl = new URL(window.location.href);
+                    if (topic === "All topics") nextUrl.searchParams.delete("topic");
+                    else nextUrl.searchParams.set("topic", topic);
+                    window.history.replaceState(null, "", nextUrl.toString());
+                  }}
+                  className={`shrink-0 px-3 py-1.5 rounded-full border text-xs font-medium ${activeSubcategory === topic ? "bg-indigo-500/20 border-indigo-400 text-indigo-200" : "bg-slate-950 border-slate-800 text-slate-400 hover:text-white"}`}
+                >
+                  {topic}
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-slate-500 mt-1">Topics are suggested from headline and summary keywords; check the article itself for its full context.</p>
+          </div>
+        )}
 
 {filtered.length === 0 ? (
   <div className="p-12 rounded-2xl border border-slate-800 bg-slate-900/40 text-center text-slate-400">
