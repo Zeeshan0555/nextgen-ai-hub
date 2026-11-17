@@ -51,6 +51,7 @@ export default function AdminDashboard() {
           setArticles(data);
         }
       } catch (err) {
+        setArticleError(true);
         console.error('Unexpected error:', err);
       } finally {
         setLoading(false);
@@ -118,6 +119,9 @@ export default function AdminDashboard() {
           </a>
           <a href="#recent-articles" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
             <FileText className="h-5 w-5" /> News Articles
+          </a>
+          <a href="#system-health" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
+            <ShieldCheck className="h-5 w-5" /> System Health
           </a>
           <a href="#automation-status" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
             <Cpu className="h-5 w-5" /> AI Automation
@@ -221,6 +225,35 @@ export default function AdminDashboard() {
               </p>
             </div>
           </div>
+
+          <section id="system-health" className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-6 space-y-4 scroll-mt-24">
+            <div>
+              <h3 className="font-bold text-lg">System Health & Monitoring</h3>
+              <p className="text-xs text-slate-400 mt-1">Private admin view. These indicators report only checks this dashboard actually performs.</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+                <p className="text-xs text-slate-400">News database read</p>
+                <p className={"mt-2 text-sm font-semibold " + (loading ? "text-slate-300" : articleError ? "text-rose-300" : "text-emerald-300")}>
+                  {loading ? "Checking" : articleError ? "Unavailable" : "Read successful"}
+                </p>
+                <p className="text-[11px] text-slate-500 mt-1">Based on the latest articles query already used by this dashboard.</p>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
+                <p className="text-xs text-slate-400">Market API</p>
+                <p className={"mt-2 text-sm font-semibold " + (marketStatus === "checking" ? "text-slate-300" : marketStatus === "available" ? "text-emerald-300" : "text-amber-300")}>
+                  {marketStatus === "checking" ? "Checking" : marketStatus === "available" ? "Available" : "Unavailable"}
+                </p>
+                <p className="text-[11px] text-slate-500 mt-1">{marketQuoteCount} quote pairs returned{marketFetchedAt ? " · Last checked " + new Date(marketFetchedAt).toLocaleTimeString() : ""}.</p>
+              </div>
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+                <p className="text-xs text-slate-400">Automatic news coverage</p>
+                <p className="mt-2 text-sm font-semibold text-amber-300">Limited source setup</p>
+                <p className="text-[11px] text-slate-400 mt-1">Current publisher code covers AI and Crypto sources only. The other four categories need dedicated source feeds.</p>
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-500">No live source-health, cron-history, traffic, or security-event endpoint is connected yet. Those items are not shown as working or healthy until real data is available.</p>
+          </section>
 
           {/* Recent article records */}
           <div id="recent-articles" className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-6 scroll-mt-24">
