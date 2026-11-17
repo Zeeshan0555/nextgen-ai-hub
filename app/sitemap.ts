@@ -5,13 +5,6 @@ import { isIndexableEditorialArticle } from "@/app/lib/article-quality";
 export const revalidate = 3600;
 
 const SITE_URL = "https://neurowire-news.vercel.app";
-const BRIEFING_MARKER = "NEUROWIRE_EDITORIAL_BRIEF_V1";
-const REQUIRED_SECTIONS = [
-  "## What happened",
-  "## Key details",
-  "## Why it matters",
-  "## What the source does not tell us",
-];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
@@ -34,11 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (error || !Array.isArray(data)) return staticPages;
 
     const articlePages: MetadataRoute.Sitemap = data
-      .filter((item) => {
-        const content = typeof item.content === "string" ? item.content : "";
-        const isReviewedBriefing = content.startsWith(BRIEFING_MARKER) && content.length >= 500 && REQUIRED_SECTIONS.every((section) => content.includes(section));
-        return isReviewedBriefing || isIndexableEditorialArticle(item);
-      })
+      .filter((item) => isIndexableEditorialArticle(item))
       .map((item) => ({
         url: SITE_URL + "/news/" + encodeURIComponent(item.title),
         lastModified:
