@@ -26,6 +26,13 @@ function getSafePublisherUrl(value: unknown, publisher: string): string {
     "Ars Technica": ["arstechnica.com"],
     "Fox News": ["foxnews.com"],
     "Harvard Business Review": ["hbr.org"],
+    "OpenAI": ["openai.com"],
+    "Google DeepMind": ["deepmind.google"],
+    "Google": ["blog.google"],
+    "Microsoft": ["news.microsoft.com"],
+    "U.S. Securities and Exchange Commission": ["sec.gov"],
+    "U.S. Federal Trade Commission": ["ftc.gov"],
+    "NASA": ["nasa.gov"],
   };
   try {
     const parsed = new URL(value);
