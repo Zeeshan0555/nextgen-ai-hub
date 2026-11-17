@@ -112,23 +112,23 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        <nav className="p-4 space-y-1.5 flex-1">
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-purple-600/10 text-purple-400 border border-purple-500/20 font-medium">
+        <nav className="p-4 space-y-1.5 flex-1" aria-label="Admin sections">
+          <a href="#overview" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-purple-600/10 text-purple-400 border border-purple-500/20 font-medium">
             <LayoutDashboard className="h-5 w-5" /> Dashboard
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
-            <FileText className="h-5 w-5" /> CMS Articles
+          <a href="#recent-articles" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
+            <FileText className="h-5 w-5" /> News Articles
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
+          <a href="#automation-status" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
             <Cpu className="h-5 w-5" /> AI Automation
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
-            <Database className="h-5 w-5" /> Vector DB (pgvector)
+          <a href="#vector-status" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
+            <Database className="h-5 w-5" /> Vector Search
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
-            <ShieldCheck className="h-5 w-5" /> Security & RLS
+          <a href="#security-status" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
+            <ShieldCheck className="h-5 w-5" /> Security
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
+          <a href="#settings-status" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
             <Settings className="h-5 w-5" /> Settings
           </a>
         </nav>
@@ -181,7 +181,7 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        <main className="p-6 space-y-6 flex-1">
+        <main id="overview" className="p-6 space-y-6 flex-1 scroll-mt-24">
           {/* Live overview based only on data this page can verify */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
@@ -223,7 +223,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Recent article records */}
-          <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-6">
+          <div id="recent-articles" className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-6 scroll-mt-24">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-bold text-lg">Recent News Articles</h3>
@@ -287,6 +287,43 @@ export default function AdminDashboard() {
               </table>
             </div>
           </div>
+
+          <section id="automation-status" className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-6 space-y-3 scroll-mt-24">
+            <div>
+              <h3 className="font-bold text-lg">News automation status</h3>
+              <p className="text-xs text-slate-400 mt-1">This is what the current code actually contains; a successful live run has not been verified here.</p>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+                <p className="text-sm font-semibold text-amber-300">Scheduled publisher</p>
+                <p className="text-xs text-slate-300 mt-2">The scheduled publisher currently reads TechCrunch AI only. It now requires a valid CRON_SECRET before it can run.</p>
+                <p className="text-[11px] text-slate-500 mt-2">Server secret configuration and the last successful run have not been checked from this dashboard.</p>
+              </div>
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+                <p className="text-sm font-semibold text-amber-300">Category feed coverage</p>
+                <p className="text-xs text-slate-300 mt-2">The feed API currently defines Crypto and AI sources only. Policy, Technology, Fox News and Leadership still need dedicated sources.</p>
+                <p className="text-[11px] text-slate-500 mt-2">The six category filters are present; that does not mean all six have automatic feeds.</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="vector-status" className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-6 scroll-mt-24">
+            <h3 className="font-bold text-lg">Vector search</h3>
+            <p className="text-xs text-amber-300 mt-2">Not implemented in this dashboard.</p>
+            <p className="text-xs text-slate-400 mt-1">The previous Vector DB menu was only a placeholder. No working vector search controls are available here.</p>
+          </section>
+
+          <section id="security-status" className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-6 scroll-mt-24">
+            <h3 className="font-bold text-lg">Admin access</h3>
+            <p className="text-xs text-emerald-300 mt-2">The Admin page checks a signed, time-limited server session.</p>
+            <p className="text-xs text-slate-400 mt-1">A full database access-policy review has not been performed as part of this update.</p>
+          </section>
+
+          <section id="settings-status" className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-6 scroll-mt-24">
+            <h3 className="font-bold text-lg">Settings</h3>
+            <p className="text-xs text-amber-300 mt-2">Site settings controls are not available in this dashboard yet.</p>
+            <p className="text-xs text-slate-400 mt-1">No database or Supabase configuration was changed.</p>
+          </section>
 
         </main>
       </div>
