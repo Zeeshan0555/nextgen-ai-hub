@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 
 export const metadata = {
   title: "Editorial Policy | NeuroWire News",
-  description: "NeuroWire News sourcing, attribution, categorisation, corrections and publishing standards.",
+  description: "NeuroWire News rules for primary sources, headline attribution, category assignment and reviewed original briefings.",
 };
 
 export default function EditorialPolicyPage() {
@@ -16,17 +16,17 @@ export default function EditorialPolicyPage() {
           <h1 className="mt-2 text-3xl font-bold">Editorial Policy</h1>
         </header>
         <section className="space-y-4 text-sm leading-7 text-slate-300">
-          <h2 className="text-lg font-semibold text-white">Sources and attribution</h2>
-          <p>NeuroWire collects headlines and excerpts from named publisher feeds. The publisher label identifies where an item came from; it does not mean NeuroWire independently reported or verified every statement. Readers should open the original publisher report for the full context, corrections and updates.</p>
-          <h2 className="text-lg font-semibold text-white">News categories</h2>
-          <p>Stories are assigned to one of six sections: AI, Crypto, Policy, Technology, Fox News and Leadership. Fox News is a publisher-based section. Other sections are topic-based. Automated categorisation may be imperfect, and readers can use the original source to confirm context.</p>
-          <h2 className="text-lg font-semibold text-white">Quality checks</h2>
-          <p>Automated checks look for a usable headline, publisher text, publication date and a relevant topic signal. Similar headlines are checked to reduce duplicates. These checks reduce obvious errors but do not replace independent fact-checking or guarantee that every feed item is accurate.</p>
-          <h2 className="text-lg font-semibold text-white">Corrections and updates</h2>
-          <p>Incorrect publisher attribution, category or date should be corrected when identified. If an original publisher changes or removes a report, the linked source remains the best place to check its latest version. NeuroWire does not claim to have a staffed 24-hour fact-checking desk.</p>
-          <h2 className="text-lg font-semibold text-white">What we do not do</h2>
-          <p>We do not invent authors, quotes, sources, publication dates, statistics or verification labels. A publisher excerpt is not presented as a complete NeuroWire investigation. If an item does not meet basic feed checks, it should not be added just to increase article count.</p>
-          <div className="border-t border-slate-800 pt-5"><Link href="/ai-disclosure" className="text-cyan-400 hover:text-cyan-300">Read our AI and automation disclosure</Link></div>
+          <h2 className="text-lg font-semibold text-white">Primary sources and attribution</h2>
+          <p>Automated headline collection is limited to selected official company and public-agency feeds. NeuroWire displays the headline, source name, publication date and a direct link to the original publisher. It does not copy the full feed article or publisher image into the automated headline list.</p>
+          <p>A source label tells readers where the headline came from. It does not mean NeuroWire independently reported, endorsed or verified every statement in the original report.</p>
+          <h2 className="text-lg font-semibold text-white">Six news sections</h2>
+          <p>NeuroWire has six sections: AI, Crypto, Policy, Technology, Fox News and Leadership. The first five automated sections use their configured official sources. Fox News is a publisher-specific section that links to Fox News directly; it is not a general world-news category.</p>
+          <h2 className="text-lg font-semibold text-white">AI and human review</h2>
+          <p>Gemini may help classify a headline using its title and publisher name only. Uncertain classifications fall back to the configured source category. AI-assisted article drafts are available to the signed-in Admin only and are based on original notes or material the editor has permission to use. An Admin must review and approve every draft before publication.</p>
+          <h2 className="text-lg font-semibold text-white">Quality, corrections and search</h2>
+          <p>Automated checks remove unusable dates, unsafe source links and obvious duplicate headlines. These checks reduce common errors but cannot guarantee accuracy. Headline-only pages link readers to the original report and are excluded from the article sitemap. Only substantial, reviewed NeuroWire briefings may be included for search indexing.</p>
+          <p>We do not invent authors, quotes, facts, statistics, publication dates or verification labels. AI evidence matching is not the same as independent fact-checking. If you find an error in NeuroWire's own briefing, it should be corrected when identified.</p>
+          <div className="border-t border-slate-800 pt-5"><Link href="/ai-disclosure" className="text-cyan-400 hover:text-cyan-300">Read our AI and Automation Disclosure</Link></div>
         </section>
       </article>
     </main>
