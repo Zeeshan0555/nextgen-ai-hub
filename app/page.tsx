@@ -390,11 +390,14 @@ export default function NeuroWirePlatform() {
     }
   };
 
+  const searchTerm = search.trim().toLowerCase();
+
   const filtered = news.filter((item) => {
     const matchesTab = activeTab === "All" || item.category === activeTab;
-    const matchesSearch =
-      item.title.toLowerCase().includes(search.toLowerCase()) ||
-      item.summary.toLowerCase().includes(search.toLowerCase());
+    const searchableFields = [item.title, item.summary, item.source, item.category];
+    const matchesSearch = searchableFields.some((field) =>
+      field.toLowerCase().includes(searchTerm)
+    );
     return matchesTab && matchesSearch;
   });
 
