@@ -35,6 +35,9 @@ export async function POST(request: NextRequest) {
   let body: { password?: unknown };
   try {
     body = await request.json();
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      throw new Error("Invalid sign-in request");
+    }
   } catch {
     return NextResponse.json(
       { success: false, error: "Enter the admin password and try again." },
