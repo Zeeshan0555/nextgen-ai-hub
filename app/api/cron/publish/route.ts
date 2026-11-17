@@ -33,6 +33,20 @@ function cleanFeedText(value: unknown): string {
     .trim();
 }
 
+const CATEGORY_SIGNALS: Record<string, string[]> = {
+  AI: ["artificial intelligence", "machine learning", "generative ai", "language model", "chatgpt", "openai", "anthropic", "gemini", "ai model", "ai agent"],
+  Crypto: ["bitcoin", "ethereum", "crypto", "cryptocurrency", "blockchain", "web3", "defi", "digital asset", "stablecoin", "solana"],
+  Policy: ["policy", "regulation", "regulatory", "legislation", "lawmakers", "government", "parliament", "congress", "privacy law", "antitrust", "data protection"],
+  Technology: ["technology", "tech", "software", "smartphone", "computer", "semiconductor", "chip", "cybersecurity", "robotics", "spacecraft", "operating system"],
+  Leadership: ["leadership", "chief executive", "ceo", "founder", "executive", "management", "board of directors", "business strategy", "workplace culture"],
+};
+
+function isCategoryRelevant(category: string, title: string, articleText: string): boolean {
+  if (category === "Fox News") return true;
+  const text = `${title} ${articleText.slice(0, 1800)}`.toLocaleLowerCase();
+  return (CATEGORY_SIGNALS[category] || []).some((signal) => text.includes(signal));
+}
+
 function parsePublishedAt(value?: string): string | null {
   if (!value) return null;
 
@@ -115,11 +129,18 @@ export async function GET(request: Request) {
 
     const candidates = feedResults.flatMap(({ feed, items }) =>
       items
-        .filter((candidate) =>
-          cleanFeedText(candidate.title) &&
-          parsePublishedAt(candidate.pubDate) &&
-          (cleanFeedText(candidate.content) || cleanFeedText(candidate.description))
-        )
+        .filter((candidate) => {
+          const title = cleanFeedText(candidate.title);
+          const articleText = cleanFeedText(candidate.content || candidate.description);
+          const publishedAt = parsePublishedAt(candidate.pubDate);
+          return Boolean(
+            title.length >= 12 &&
+            articleText.length >= 40 &&
+            publishedAt &&
+            Date.parse(publishedAt) <= Date.now() + 24 * 60 * 60 * 1000 &&
+            isCategoryRelevant(feed.category, title, articleText)
+          );
+        })
         .map((candidate) => ({ item: candidate, publisher: feed.publisher, category: feed.category }))
     ).sort((left, right) =>
       Date.parse(parsePublishedAt(right.item.pubDate) || "") -
