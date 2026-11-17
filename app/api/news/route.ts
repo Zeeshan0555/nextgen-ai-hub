@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "../../lib/supabase-server";
 
 export const dynamic = "force-dynamic";
 
@@ -177,25 +176,13 @@ export async function GET() {
       new Map(incoming.map((item) => [item.title.toLocaleLowerCase(), item])).values()
     );
 
-    const supabase = createSupabaseServerClient();
-
-    if (uniqueIncoming.length > 0) {
-      const { error } = await supabase
-        .from("news")
-        .upsert(uniqueIncoming, {
-          onConflict: "title_key",
-          ignoreDuplicates: true,
-        });
-
-      if (error) {
-        console.error("News upsert error:", error.message);
-      }
-    }
+    // This endpoint is public and is used by article readers. It only returns
+    // publisher feed data; database writes belong to the protected cron/admin routes.
 
     return NextResponse.json({
       success: true,
       count: uniqueIncoming.length,
-      // Return publisher links to readers without adding unknown columns to the database upsert.
+      // Return the source link with each read-only feed item.
       news: uniqueIncoming.map((item) => ({
         ...item,
         publisher_url:
