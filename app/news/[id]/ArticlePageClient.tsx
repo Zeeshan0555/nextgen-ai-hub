@@ -15,6 +15,7 @@ export type ArticleStory = {
   summary: string;
   content: string;
   isEditorialBriefing: boolean;
+  isHeadlineOnly: boolean;
 };
 
 function getSafePublisherUrl(value: unknown, publisher: string): string {
@@ -112,6 +113,7 @@ export default function ArticlePageClient({ initialStory }: { initialStory: Arti
             .join("\n")
             .trim();
           const isEditorialBriefing = storedRawContent.startsWith("NEUROWIRE_EDITORIAL_BRIEF_V1");
+          const isHeadlineOnly = storedRawContent.startsWith("NEUROWIRE_SOURCE_LINK_V1");
 
           if (active) {
             setStory({
@@ -124,10 +126,11 @@ export default function ArticlePageClient({ initialStory }: { initialStory: Arti
                 getSafePublisherUrl(storedStory.source_url, typeof storedStory.source === "string" ? storedStory.source : "") ||
                 getSafePublisherUrl(queryPublisherUrl, typeof storedStory.source === "string" ? storedStory.source : ""),
               publishedAt: typeof storedStory.created_at === "string" ? storedStory.created_at : "",
-              image: typeof storedStory.image_url === "string" ? storedStory.image_url : "",
+              image: !isHeadlineOnly && typeof storedStory.image_url === "string" ? storedStory.image_url : "",
               summary: typeof storedStory.description === "string" ? storedStory.description : storedContent,
-              content: storedContent,
+              content: isHeadlineOnly ? "" : storedContent,
               isEditorialBriefing,
+              isHeadlineOnly,
             });
           }
           return;
@@ -174,6 +177,7 @@ export default function ArticlePageClient({ initialStory }: { initialStory: Arti
             summary: typeof found.description === "string" ? found.description : articleText,
             content: articleText,
             isEditorialBriefing: false,
+            isHeadlineOnly: true,
           });
         }
       } catch (error) {
@@ -259,6 +263,7 @@ export default function ArticlePageClient({ initialStory }: { initialStory: Arti
           </a>
         )}
 
+        {!story.isHeadlineOnly && (
         <div className="h-64 md:h-96 w-full rounded-3xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-900">
           {story.image ? (
             <img src={story.image} alt={story.title} className="w-full h-full object-cover" />
@@ -267,19 +272,28 @@ export default function ArticlePageClient({ initialStory }: { initialStory: Arti
               Publisher image not available
             </div>
           )}
-        </div>
+        </div>        )}
 
-        <section className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80">
-          <h2 className="text-xs uppercase tracking-wider text-cyan-400 mb-3">{story.isEditorialBriefing ? "NeuroWire AI-assisted briefing" : "Publisher excerpt"}</h2>
-          <div className="text-base text-slate-200 leading-relaxed whitespace-pre-line">
-            {(story.content || story.summary || "The publisher did not provide an excerpt.").replace(/^## /gm, "").replace(/^- /gm, "• ").replace(/^  Evidence from source:/gm, "Evidence from source:")}
-          </div>
-        </section>
+        {story.isHeadlineOnly ? (
+          <section className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80">
+            <h2 className="text-xs uppercase tracking-wider text-cyan-400 mb-3">Headline listing</h2>
+            <p className="text-sm text-slate-300 leading-relaxed">
+              This page only points to the publisher's headline. Open the original report above for the full story and latest updates.
+            </p>
+          </section>
+        ) : (
+          <section className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80">
+            <h2 className="text-xs uppercase tracking-wider text-cyan-400 mb-3">{story.isEditorialBriefing ? "NeuroWire AI-assisted briefing" : "Publisher excerpt"}</h2>
+            <div className="text-base text-slate-200 leading-relaxed whitespace-pre-line">
+              {(story.content || story.summary || "The publisher did not provide an excerpt.").replace(/^## /gm, "").replace(/^- /gm, "• ").replace(/^  Evidence from source:/gm, "Evidence from source:")}
+            </div>
+          </section>
+        )}
 
         <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-950 border border-slate-800">
           <ShieldCheck className="h-5 w-5 text-cyan-400 shrink-0 mt-0.5" />
           <p className="text-xs text-slate-400 leading-relaxed">
-            {story.isEditorialBriefing ? "This AI-assisted briefing was created only from the publisher text shown in the source feed. Evidence excerpts are included, but the briefing has not been independently fact-checked. Open the original publisher report for full context and updates." : "This is a publisher RSS excerpt, not a full NeuroWire investigation. Open the original publisher link for the complete article and any updates. NeuroWire has not independently verified every claim."}
+            {story.isHeadlineOnly ? "This page provides a headline and a direct link only. NeuroWire does not republish the publisher article here." : story.isEditorialBriefing ? "This AI-assisted briefing was created from editor-provided source notes. Evidence excerpts are included, but the briefing has not been independently fact-checked. Open the original publisher report for full context and updates." : "This is a publisher excerpt, not a full NeuroWire investigation. Open the original publisher link for the complete article and any updates. NeuroWire has not independently verified every claim."}
           </p>
         </div>
       </main>
