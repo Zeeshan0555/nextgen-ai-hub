@@ -333,7 +333,7 @@ export default function NeuroWirePlatform() {
         if (error) {
           console.error("News feed fetch error:", error.message);
         } else if (Array.isArray(data)) {
-          storedStories.push(...data.map((item: any) => ({
+          storedStories.push(...data.map((item: any): NewsItem => ({
             id: String(item.id),
             title: String(item.title || "Untitled story"),
             category: NEWS_CATEGORIES.includes(item.category as NewsCategory)
