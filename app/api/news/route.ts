@@ -155,8 +155,8 @@ export async function GET() {
           );
         }
 
-        // Keep only a short publisher excerpt; readers should open the source for the full story.
-        const summaryText = articleText ? limitWords(articleText, 20) : "";
+        // Keep a readable publisher excerpt; readers can open the source for the complete story.
+        const summaryText = articleText ? limitWords(articleText, 150) : "";
         const description = summaryText || "Open the original publisher article for more details.";
 
         incoming.push({
