@@ -362,7 +362,21 @@ export default function NeuroWirePlatform() {
         if (error) {
           console.error("News feed fetch error:", error.message);
         } else if (Array.isArray(data)) {
-          storedStories.push(...data.map((item: any): NewsItem => {
+          const legacyFeedPublishers = new Set([
+            "techcrunch",
+            "cointelegraph",
+            "the verge",
+            "ars technica",
+            "fox news",
+            "harvard business review",
+          ]);
+          const visibleRecords = data.filter((item: any) => {
+            const source = String(item.source || "").trim().toLocaleLowerCase();
+            const content = typeof item.content === "string" ? item.content : "";
+            // Keep reviewed original NeuroWire briefings, but stop showing legacy copied-feed records.
+            return content.startsWith("NEUROWIRE_EDITORIAL_BRIEF_V1") || !legacyFeedPublishers.has(source);
+          });
+          storedStories.push(...visibleRecords.map((item: any): NewsItem => {
             const storedContent = typeof item.content === "string" ? item.content : "";
             const sourceLine = storedContent.split("\n").find((line: string) => line.startsWith("ORIGINAL_SOURCE_URL:"));
             const storedSourceUrl = sourceLine
