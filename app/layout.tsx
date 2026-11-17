@@ -14,8 +14,21 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://neurowire-news.vercel.app'),
   title: 'NeuroWire News | AI, Crypto & Technology Updates',
-  description: 'Follow the latest AI, crypto, policy, technology, Fox News and leadership stories with clear publisher attribution.',
+  description: 'Follow the latest AI, crypto, policy, technology, Fox News and leadership headlines with direct links to original publishers.',
+  openGraph: {
+    title: 'NeuroWire News | AI, Crypto & Technology Updates',
+    description: 'Six focused news sections, clear publisher attribution and source links.',
+    siteName: 'NeuroWire News',
+    url: 'https://neurowire-news.vercel.app',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'NeuroWire News | AI, Crypto & Technology Updates',
+    description: 'Six focused news sections with direct links to original publishers.',
+  },
 };
 
 export default function RootLayout({
