@@ -247,9 +247,9 @@ export default function AdminDashboard() {
                 <p className="text-[11px] text-slate-500 mt-1">{marketQuoteCount} quote pairs returned{marketFetchedAt ? " · Last checked " + new Date(marketFetchedAt).toLocaleTimeString() : ""}.</p>
               </div>
               <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
-                <p className="text-xs text-slate-400">Automatic news coverage</p>
-                <p className="mt-2 text-sm font-semibold text-amber-300">Six categories configured</p>
-                <p className="text-[11px] text-slate-400 mt-1">Publisher feeds are now configured for all six categories. Individual feed uptime and freshness are not yet measured here.</p>
+                <p className="text-xs text-slate-400">Automatic source setup</p>
+                <p className="mt-2 text-sm font-semibold text-amber-300">Five source-driven sections + Fox link</p>
+                <p className="text-[11px] text-slate-400 mt-1">Official feeds are configured for AI, Crypto, Policy, Technology and Leadership. Fox News remains a direct publisher link. Feed uptime and freshness are not measured here yet.</p>
               </div>
             </div>
             <p className="text-[11px] text-slate-500">No live source-health, cron-history, traffic, or security-event endpoint is connected yet. Those items are not shown as working or healthy until real data is available.</p>
