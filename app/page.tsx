@@ -453,6 +453,46 @@ export default function NeuroWirePlatform() {
     };
   }, []);
 
+  // Generate a draft from Admin-provided source notes. This action never publishes automatically.
+  const handleGenerateAiDraft = async () => {
+    setDraftError("");
+    if (!newTitle.trim() || !newSource.trim() || !newSourceUrl.trim()) {
+      setDraftError("Add the headline, publisher name and original source URL first.");
+      return;
+    }
+    if (draftSourceText.trim().length < 900) {
+      setDraftError("Add more original notes or source material you have permission to use (at least 900 characters).");
+      return;
+    }
+
+    setIsDrafting(true);
+    try {
+      const response = await fetch("/api/admin/briefing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: newTitle.trim(),
+          category: newCategory,
+          publisher: newSource.trim(),
+          publisherUrl: newSourceUrl.trim(),
+          sourceText: draftSourceText.trim(),
+        }),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok || result?.success !== true || typeof result.content !== "string") {
+        throw new Error(result?.error || "AI could not prepare a checked draft.");
+      }
+
+      setNewSummary(String(result.briefing?.summary || ""));
+      setNewArticle(result.content);
+      setDraftError("Draft ready. Review and edit each section before publishing.");
+    } catch (error) {
+      setDraftError(error instanceof Error ? error.message : "AI drafting is unavailable.");
+    } finally {
+      setIsDrafting(false);
+    }
+  };
+
   // Publish through a server route that validates the signed admin session.
   const handlePublishWire = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -465,6 +505,7 @@ export default function NeuroWirePlatform() {
       description: newSummary.trim() || newArticle.trim().slice(0, 240),
       content: newArticle.trim(),
       image_url: newImage.trim(),
+      source_url: newSourceUrl.trim(),
     };
 
     if (!payload.title || !payload.source || payload.content.length < 40) {
@@ -494,6 +535,7 @@ export default function NeuroWirePlatform() {
         readTime: `${Math.max(1, Math.ceil(savedContent.trim().split(/\s+/).length / 200))} min read`,
         publishedAt: saved.created_at || new Date().toISOString(),
         image: saved.image_url || "",
+        publisherUrl: newSourceUrl.trim(),
         summary: saved.description || saved.title,
         fullReport: savedContent.split("\n\n").filter((paragraph: string) => paragraph.trim().length > 0),
         bullets: [],
@@ -502,6 +544,9 @@ export default function NeuroWirePlatform() {
       setNews((current) => [userStory, ...current]);
       setNewTitle("");
       setNewSource("");
+      setNewSourceUrl("");
+      setDraftSourceText("");
+      setDraftError("");
       setNewImage("");
       setNewSummary("");
       setNewArticle("");
