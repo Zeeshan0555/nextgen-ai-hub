@@ -110,8 +110,8 @@ export default function ClientLayoutWrapper({ children }: { children: React.Reac
               </div>
             )}
 
-            <Link href="/auth/signup" className="hidden sm:flex items-center space-x-2 bg-blue-600 hover:bg-blue-500 px-3.5 py-1.5 rounded-lg text-xs font-mono text-white transition-colors shadow-lg shadow-blue-500/20">
-              <span>Sign Up</span>
+            <Link href="/#categories" className="hidden sm:flex items-center space-x-2 bg-blue-600 hover:bg-blue-500 px-3.5 py-1.5 rounded-lg text-xs font-mono text-white transition-colors shadow-lg shadow-blue-500/20">
+              <span>Explore News</span>
             </Link>
           </div>
         </div>
