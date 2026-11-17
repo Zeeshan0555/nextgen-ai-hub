@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ExternalLink, ShieldCheck } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 type ArticleStory = {
   title: string;
@@ -42,6 +43,48 @@ export default function ArticlePage() {
 
     async function fetchStory() {
       try {
+        // First look for the story already published in NeuroWire's news table.
+        // This keeps manually published and scheduled stories readable as well.
+        const { data: storedStory, error: storedStoryError } = await supabase
+          .from("news")
+          .select("*")
+          .eq("title", decodedTitle)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (storedStory) {
+          const storedContent =
+            typeof storedStory.content === "string" && storedStory.content.trim()
+              ? storedStory.content.trim()
+              : typeof storedStory.description === "string"
+                ? storedStory.description.trim()
+                : "";
+
+          if (active) {
+            setStory({
+              title: typeof storedStory.title === "string" ? storedStory.title : decodedTitle,
+              source: typeof storedStory.source === "string" ? storedStory.source : "Source not provided",
+              category: typeof storedStory.category === "string" ? storedStory.category : "Uncategorized",
+              publisherUrl:
+                typeof storedStory.publisher_url === "string"
+                  ? storedStory.publisher_url
+                  : typeof storedStory.source_url === "string"
+                    ? storedStory.source_url
+                    : "",
+              publishedAt: typeof storedStory.created_at === "string" ? storedStory.created_at : "",
+              image: typeof storedStory.image_url === "string" ? storedStory.image_url : "",
+              summary: typeof storedStory.description === "string" ? storedStory.description : storedContent,
+              content: storedContent,
+            });
+          }
+          return;
+        }
+
+        if (storedStoryError) {
+          console.warn("Stored story lookup was unavailable; checking publisher feeds.", storedStoryError.message);
+        }
+
         const response = await fetch("/api/news", { cache: "no-store" });
         if (!response.ok) throw new Error("The publisher feeds could not be reached.");
 
