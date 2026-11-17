@@ -66,9 +66,11 @@ export default function ArticlePage() {
 
     async function fetchStory() {
       try {
-        const queryPublisherUrl = getSafePublisherUrl(
-          new URLSearchParams(window.location.search).get("source")
-        );
+        const queryPublisherValue = new URLSearchParams(window.location.search).get("source");
+        const queryPublisherUrl = typeof queryPublisherValue === "string" &&
+          queryPublisherValue.startsWith("https://")
+          ? queryPublisherValue
+          : "";
         // First look for the story already published in NeuroWire's news table.
         // This keeps manually published and scheduled stories readable as well.
         const { data: storedStory, error: storedStoryError } = await supabase
@@ -107,7 +109,7 @@ export default function ArticlePage() {
                 getSafePublisherUrl(storedSourceUrl, typeof storedStory.source === "string" ? storedStory.source : "") ||
                 getSafePublisherUrl(storedStory.publisher_url, typeof storedStory.source === "string" ? storedStory.source : "") ||
                 getSafePublisherUrl(storedStory.source_url, typeof storedStory.source === "string" ? storedStory.source : "") ||
-                queryPublisherUrl,
+                getSafePublisherUrl(queryPublisherUrl, typeof storedStory.source === "string" ? storedStory.source : ""),
               publishedAt: typeof storedStory.created_at === "string" ? storedStory.created_at : "",
               image: typeof storedStory.image_url === "string" ? storedStory.image_url : "",
               summary: typeof storedStory.description === "string" ? storedStory.description : storedContent,
