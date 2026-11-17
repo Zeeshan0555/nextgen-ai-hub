@@ -18,7 +18,7 @@ interface Article {
   id: string;
   title: string;
   category: string;
-  published_at?: string | null;
+  created_at?: string | null;
 }
 
 export default function AdminDashboard() {
@@ -34,9 +34,9 @@ export default function AdminDashboard() {
     async function fetchArticles() {
       try {
         const { data, error } = await supabase
-          .from('news_articles')
-          .select('id, title, category, published_at')
-          .order('published_at', { ascending: false })
+          .from('news')
+          .select('id, title, category, created_at')
+          .order('created_at', { ascending: false })
           .limit(5);
 
         if (error) {
@@ -192,7 +192,7 @@ export default function AdminDashboard() {
             <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
               <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Latest Publication</p>
               <h3 className="text-lg font-extrabold mt-2 tracking-tight">
-                {loading ? "Loading" : articleError ? "Unavailable" : articles[0]?.published_at && !Number.isNaN(Date.parse(articles[0].published_at)) ? new Date(articles[0].published_at).toLocaleDateString() : "Not available"}
+                {loading ? "Loading" : articleError ? "Unavailable" : articles[0]?.created_at && !Number.isNaN(Date.parse(articles[0].published_at)) ? new Date(articles[0].published_at).toLocaleDateString() : "Not available"}
               </h3>
               <p className="text-xs text-slate-400 mt-2 line-clamp-2">
                 {articles[0]?.title || "No recent article title available"}
@@ -250,12 +250,12 @@ export default function AdminDashboard() {
                         <td className="py-3 px-4">
                           <span className="flex items-center gap-1.5 text-slate-400 text-xs">
                             <span className="h-1.5 w-1.5 rounded-full bg-slate-500"></span>
-                            {art.published_at && !Number.isNaN(Date.parse(art.published_at)) ? "Published" : "Date unavailable"}
+                            {art.created_at && !Number.isNaN(Date.parse(art.created_at)) ? "Published" : "Date unavailable"}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-xs text-slate-400">
-                          {art.published_at && !Number.isNaN(Date.parse(art.published_at))
-                            ? new Date(art.published_at).toLocaleDateString()
+                          {art.created_at && !Number.isNaN(Date.parse(art.created_at))
+                            ? new Date(art.created_at).toLocaleDateString()
                             : "Date unavailable"}
                         </td>
                       </tr>
