@@ -102,6 +102,12 @@ export async function POST(request: NextRequest) {
   }
 
   let storedContent = content;
+  if (!storedContent.startsWith("NEUROWIRE_EDITORIAL_BRIEF_V1") && !storedContent.startsWith("NEUROWIRE_EDITORIAL_ARTICLE_V1")) {
+    storedContent = "NEUROWIRE_EDITORIAL_ARTICLE_V1\n\n" + storedContent;
+  }
+  if (storedContent.startsWith("NEUROWIRE_EDITORIAL_ARTICLE_V1") && !storedContent.includes("NEUROWIRE_AUTHOR_NAME:")) {
+    storedContent += "\n\nNEUROWIRE_AUTHOR_NAME: NeuroWire Admin";
+  }
   if (sourceUrl) {
     try {
       if (new URL(sourceUrl).protocol !== "https:") throw new Error("HTTPS required");
