@@ -39,6 +39,7 @@ interface NewsItem {
   readTime: string;
   publishedAt: string;
   image: string;
+  publisherUrl?: string;
   summary: string;
   fullReport: string[];
   bullets: string[];
@@ -343,6 +344,7 @@ export default function NeuroWirePlatform() {
             readTime: `${Math.max(1, Math.ceil(String(item.content || item.description || "").trim().split(/\s+/).filter(Boolean).length / 200))} min read`,
             publishedAt: String(item.created_at || ""),
             image: String(item.image_url || ""),
+            publisherUrl: typeof item.publisher_url === "string" ? item.publisher_url : "",
             summary: String(item.description || item.title || ""),
             fullReport: typeof item.content === "string" && item.content.trim()
               ? item.content.split("\n\n")
@@ -383,18 +385,21 @@ export default function NeuroWirePlatform() {
                 readTime: `${Math.max(1, Math.ceil((articleText || summary).trim().split(/\s+/).filter(Boolean).length / 200))} min read`,
                 publishedAt: item.created_at,
                 image: typeof item.image_url === "string" ? item.image_url : "",
+                publisherUrl: typeof item.publisher_url === "string" ? item.publisher_url : "",
                 summary,
                 fullReport: articleText ? articleText.split("\n\n") : [summary],
                 bullets: ["Live publisher feed material. Open the original source for full context."],
               };
             });
 
-          const seenTitles = new Set(storedStories.map((story) => story.title.trim().toLocaleLowerCase()));
           for (const story of liveStories) {
             const key = story.title.trim().toLocaleLowerCase();
-            if (!seenTitles.has(key)) {
+            const storedMatch = storedStories.find((stored) => stored.title.trim().toLocaleLowerCase() === key);
+            if (storedMatch) {
+              // Enrich stored stories with their original publisher link when the live feed has it.
+              if (!storedMatch.publisherUrl && story.publisherUrl) storedMatch.publisherUrl = story.publisherUrl;
+            } else {
               storedStories.push(story);
-              seenTitles.add(key);
             }
           }
         }
@@ -695,7 +700,7 @@ export default function NeuroWirePlatform() {
             </p>
 
             <button
-              onClick={() => router.push(`/news/${encodeURIComponent(hero.title)}`)}
+              onClick={() => router.push(`/news/${encodeURIComponent(hero.title)}${hero.publisherUrl ? `?source=${encodeURIComponent(hero.publisherUrl)}` : ""}`)}
               
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all"
             >
@@ -819,7 +824,7 @@ export default function NeuroWirePlatform() {
 
               <div className="border-t border-slate-800 pt-3 flex items-center justify-between">
                 <button
-                  onClick={() => router.push(`/news/${encodeURIComponent(item.title)}`)}
+                  onClick={() => router.push(`/news/${encodeURIComponent(item.title)}${item.publisherUrl ? `?source=${encodeURIComponent(item.publisherUrl)}` : ""}`)}
                   
                   className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-cyan-950 text-cyan-300 border border-cyan-800/40 hover:bg-cyan-900/60 font-semibold"
                 >
