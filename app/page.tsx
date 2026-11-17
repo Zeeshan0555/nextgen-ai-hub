@@ -479,17 +479,35 @@ export default function NeuroWirePlatform() {
   <a href="#categories" className="text-slate-300 hover:text-cyan-400 transition-colors">Categories</a>
   <a href="/about" className="text-slate-400 hover:text-slate-200 transition-colors">About</a>
 </nav>
-          {/* TAREEQA 2: SIRF ADMIN KO DIKHEGA */}
-          {isAdmin && (
-            <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {isAdmin ? (
+              <>
+                <button
+                  onClick={() => setShowPublishModal(true)}
+                  className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/20 hover:opacity-90 transition-all"
+                >
+                  <Plus className="h-4 w-4" /> Publish Wire
+                </button>
+                <button
+                  onClick={handleAdminLogout}
+                  className="px-3 py-2 rounded-xl border border-slate-700 text-slate-300 hover:text-white text-xs"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
               <button
-                onClick={() => setShowPublishModal(true)}
-                className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/20 hover:opacity-90 transition-all"
+                onClick={() => {
+                  setAdminLoginError("");
+                  setShowAdminLogin(true);
+                }}
+                disabled={adminStatusLoading}
+                className="px-3 py-2 rounded-xl border border-slate-700 text-slate-300 hover:text-white disabled:opacity-50 text-xs"
               >
-                <Plus className="h-4 w-4" /> Publish Wire (Admin)
+                {adminStatusLoading ? "Checking..." : "Admin sign in"}
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </header>
 
