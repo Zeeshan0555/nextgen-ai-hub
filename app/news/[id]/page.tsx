@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import ArticlePageClient, { type ArticleStory } from "./ArticlePageClient";
 import { createSupabaseServerClient } from "@/app/lib/supabase-server";
 import { isIndexableEditorialArticle } from "@/app/lib/article-quality";
-import { isIndexableEditorialArticle } from "@/app/lib/article-quality";
 
 type ArticlePageProps = {
   params: Promise<{ id: string }>;
@@ -69,9 +68,8 @@ async function getInitialArticle(title: string): Promise<ArticleStory | null> {
     const sourceUrl = sourceLine
       ? sourceLine.slice("ORIGINAL_SOURCE_URL:".length).trim()
       : "";
-    const hasMarker = lines[0]?.startsWith("NEUROWIRE_") === true;
     const content = lines
-      .filter((line, index) => !(index === 0 && hasMarker) && !line.startsWith("ORIGINAL_SOURCE_URL:"))
+      .filter((line) => !line.startsWith("NEUROWIRE_") && !line.startsWith("ORIGINAL_SOURCE_URL:"))
       .join("\n")
       .trim();
     const source = typeof data.source === "string" ? data.source : "Source not provided";
@@ -193,7 +191,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         articleSection: initialStory.category,
         author: {
           "@type": "Organization",
-          name: "NeuroWire News",
+          name: isIndexableOriginalArticle ? "NeuroWire Admin" : "NeuroWire News",
         },
         publisher: {
           "@type": "Organization",
