@@ -1116,7 +1116,7 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
               <X className="h-4 w-4" />
             </button>
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <Plus className="h-5 w-5 text-cyan-400" /> Publish Exclusive Wire Story
+              <Plus className="h-5 w-5 text-cyan-400" /> Write / Publish Article
             </h3>
             <form onSubmit={handlePublishWire} className="space-y-3 text-xs">
               <div>
@@ -1159,17 +1159,8 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
                 {draftError && <p role="status" className="mt-2 text-xs text-amber-300">{draftError}</p>}
               </div>
               <div>
-                <label className="text-slate-400 block mb-1">Your source notes / material you have permission to use</label>
-                <textarea rows={4} value={draftSourceText} onChange={(e) => setDraftSourceText(e.target.value)} placeholder="Add your original notes, key facts and short evidence. Do not paste a full third-party article unless you have permission." className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500" />
-                <p className="mt-1 text-[11px] text-slate-500">Gemini uses only the material you enter. It does not fetch articles or invent missing facts.</p>
-                <button type="button" onClick={handleGenerateAiDraft} disabled={isDrafting || !draftSourceText.trim()} className="mt-2 w-full py-2 rounded-xl border border-indigo-500/40 bg-indigo-500/10 text-indigo-200 hover:bg-indigo-500/20 disabled:opacity-50 font-semibold">
-                  {isDrafting ? "Preparing AI draft..." : "Generate AI briefing draft"}
-                </button>
-                {draftError && <p role="status" className="mt-2 text-xs text-amber-300">{draftError}</p>}
-              </div>
-              <div>
-                <label className="text-slate-400 block mb-1">Final article or AI-assisted draft (review before publishing) *</label>
-                <textarea required rows={5} value={newArticle} onChange={(e) => setNewArticle(e.target.value)} placeholder="Write the full report here... Double enter for new paragraphs." className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500" />
+                <label className="text-slate-400 block mb-1">Original article or reviewed AI-assisted draft *</label>
+                <textarea required rows={5} value={newArticle} onChange={(e) => setNewArticle(e.target.value)} placeholder="Write original content in clear paragraphs. Use at least two section headings for a complete article." className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500" />
               </div>
               {publishingError && <p role="alert" className="text-xs text-rose-400">{publishingError}</p>}
               <button type="submit" disabled={isPublishing} className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-black font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all mt-2">
