@@ -1,24 +1,34 @@
-# NeuroWire AI Editorial Briefing Setup
+# NeuroWire AI and automated newsroom setup
 
-The publisher feed collector continues to work without an AI key. In that state, stories can still appear in the homepage feed as clearly labelled publisher excerpts, while excerpt-only article pages are kept out of the article sitemap and marked noindex.
+## What the automatic feed does
 
-## Server-side environment variables
+The scheduled feed checks selected official company and public-agency RSS sources. It stores only a headline, publisher name, publication date, category and a direct HTTPS link to the original publisher. It does not copy the RSS article text or publisher images into automated headline records.
 
-Add these in the deployment provider's server environment settings:
+The homepage can still show fresh headline cards if the database is temporarily empty, because it merges the live public headline feed with saved newsroom records. Headline cards link directly to the source. Headline-only records are not included in the article sitemap and their internal article routes are marked noindex.
 
-- `GEMINI_API_KEY`: API key from Google AI Studio. Keep it private. Never use a `NEXT_PUBLIC_` prefix.
-- `GEMINI_MODEL`: Optional. Defaults to `gemini-3.8-flash`.
+Fox News remains a category in the website, but it is a direct link to Fox News' official website rather than an automated Fox RSS republication feed.
 
-The key is used only in the protected scheduled publishing route. It is not sent to the browser and is never returned by the API.
+## Gemini configuration
 
-The existing publishing route also relies on the already-configured `CRON_SECRET`, `SUPABASE_URL` (or `NEXT_PUBLIC_SUPABASE_URL`), and `SUPABASE_SERVICE_ROLE_KEY`. This code change does not change any Supabase settings or database schema.
+Add these server-side environment variables in the deployment provider:
 
-## What happens when the AI service is unavailable
+- `GEMINI_API_KEY`: private API key created through Google AI Studio. Never expose it in browser code and never use a `NEXT_PUBLIC_` prefix.
+- `GEMINI_MODEL`: optional model override. The default is `gemini-3.8-flash`.
 
-The publisher story is still eligible for the normal homepage feed. The cron route falls back to a short, clearly labelled source excerpt and stores the original publisher URL with the article text. It does not invent a summary, author, fact-check or source.
+The same key is used by two separate features:
+1. Optional headline classification using only the headline and publisher name. If it is not configured or returns an uncertain result, the feed keeps its configured category.
+2. An Admin-only draft endpoint. It accepts editor-provided notes or source material the editor is authorised to use, requires at least 900 characters, and asks Gemini for a structured briefing with short evidence excerpts. Every excerpt is matched against the submitted material before the draft is returned.
 
-## Evidence checks
+## Human review and publishing
 
-The AI prompt is restricted to the supplied publisher text. The generated briefing must include 2–4 key points with short evidence excerpts. Each evidence excerpt is checked against the supplied text before the briefing is accepted. Failed or incomplete outputs use the source-excerpt fallback instead.
+The AI endpoint only returns a draft. It does not write to the database and it does not publish. The signed-in Admin must review and edit the final content, then explicitly submit it through the existing protected Admin publishing route.
 
-The AI-assisted briefing is still not a human fact-check or independent investigation. Editorial review and original reporting remain important before relying on the site for high-stakes news.
+Do not paste an entire copyrighted article into the draft tool unless NeuroWire has permission to use it. Prefer original notes, multiple properly attributed facts, and short source evidence that the editor is allowed to use.
+
+## Fallback behaviour
+
+The automatic headline feed continues to work without a Gemini key. If AI classification is unavailable, source-configured categories are used. If AI drafting is unavailable or its evidence checks fail, no draft is returned; the Admin can edit their own original notes or try again later.
+
+## Existing service settings
+
+The publishing route continues to use the existing server environment values `CRON_SECRET`, `SUPABASE_URL` (or `NEXT_PUBLIC_SUPABASE_URL`) and `SUPABASE_SERVICE_ROLE_KEY`. This work does not change Supabase settings, schema, policies, migrations or production data.
