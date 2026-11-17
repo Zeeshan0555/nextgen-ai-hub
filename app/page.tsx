@@ -340,12 +340,12 @@ export default function NeuroWirePlatform() {
               ? (item.category as NewsCategory)
               : "Uncategorized",
             source: String(item.source || "Source not provided"),
-            readTime: `${Math.max(1, Math.ceil(String(item.content || item.description || "").trim().split(/\\s+/).filter(Boolean).length / 200))} min read`,
+            readTime: `${Math.max(1, Math.ceil(String(item.content || item.description || "").trim().split(/\s+/).filter(Boolean).length / 200))} min read`,
             publishedAt: String(item.created_at || ""),
             image: String(item.image_url || ""),
             summary: String(item.description || item.title || ""),
             fullReport: typeof item.content === "string" && item.content.trim()
-              ? item.content.split("\\n\\n")
+              ? item.content.split("\n\n")
               : [String(item.description || item.title || "")],
             bullets: ["Publisher material; NeuroWire has not independently verified every claim."],
           })));
@@ -380,11 +380,11 @@ export default function NeuroWirePlatform() {
                 title: item.title,
                 category: item.category as NewsCategory,
                 source: item.source,
-                readTime: `${Math.max(1, Math.ceil((articleText || summary).trim().split(/\\s+/).filter(Boolean).length / 200))} min read`,
+                readTime: `${Math.max(1, Math.ceil((articleText || summary).trim().split(/\s+/).filter(Boolean).length / 200))} min read`,
                 publishedAt: item.created_at,
                 image: typeof item.image_url === "string" ? item.image_url : "",
                 summary,
-                fullReport: articleText ? articleText.split("\\n\\n") : [summary],
+                fullReport: articleText ? articleText.split("\n\n") : [summary],
                 bullets: ["Live publisher feed material. Open the original source for full context."],
               };
             });
