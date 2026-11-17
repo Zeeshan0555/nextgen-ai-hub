@@ -18,6 +18,7 @@ type PublishBody = {
   category?: unknown;
   source?: unknown;
   image_url?: unknown;
+  source_url?: unknown;
   description?: unknown;
   content?: unknown;
 };
@@ -73,6 +74,7 @@ export async function POST(request: NextRequest) {
   const description = cleanText(body.description, 1000);
   const content = cleanText(body.content, 30000);
   const imageUrl = cleanText(body.image_url, 2048);
+  const sourceUrl = cleanText(body.source_url, 2048);
 
   if (!title || !source || content.length < 40) {
     return NextResponse.json(
@@ -99,6 +101,21 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  let storedContent = content;
+  if (sourceUrl) {
+    try {
+      if (new URL(sourceUrl).protocol !== "https:") throw new Error("HTTPS required");
+      if (!storedContent.includes("ORIGINAL_SOURCE_URL:")) {
+        storedContent += "\n\nORIGINAL_SOURCE_URL: " + sourceUrl;
+      }
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Use a valid HTTPS source link, or leave it empty." },
+        { status: 400, headers: { "Cache-Control": "no-store" } }
+      );
+    }
+  }
+
   try {
     const supabase = createSupabaseServerClient();
     const { data, error } = await supabase
@@ -108,7 +125,7 @@ export async function POST(request: NextRequest) {
         category,
         source,
         description: description || content.slice(0, 240),
-        content,
+        content: storedContent,
         image_url: imageUrl || null,
       })
       .select("id, title, category, source, description, content, image_url, created_at")
