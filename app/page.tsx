@@ -76,6 +76,7 @@ export default function NeuroWirePlatform() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminStatusLoading, setAdminStatusLoading] = useState(true);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [showAuthorNotice, setShowAuthorNotice] = useState(false);
   const [adminPassword, setAdminPassword] = useState("");
   const [adminLoginError, setAdminLoginError] = useState("");
   const [publishingError, setPublishingError] = useState("");
@@ -482,35 +483,22 @@ export default function NeuroWirePlatform() {
   <a href="#categories" className="text-slate-300 hover:text-cyan-400 transition-colors">Categories</a>
   <a href="/about" className="text-slate-400 hover:text-slate-200 transition-colors">About</a>
 </nav>
-          <div className="flex items-center gap-2">
-            {isAdmin ? (
-              <>
-                <button
-                  onClick={() => setShowPublishModal(true)}
-                  className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/20 hover:opacity-90 transition-all"
-                >
-                  <Plus className="h-4 w-4" /> Publish Wire
-                </button>
-                <button
-                  onClick={handleAdminLogout}
-                  className="px-3 py-2 rounded-xl border border-slate-700 text-slate-300 hover:text-white text-xs"
-                >
-                  Sign out
-                </button>
-              </>
-            ) : (
+          {isAdmin && (
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => {
-                  setAdminLoginError("");
-                  setShowAdminLogin(true);
-                }}
-                disabled={adminStatusLoading}
-                className="px-3 py-2 rounded-xl border border-slate-700 text-slate-300 hover:text-white disabled:opacity-50 text-xs"
+                onClick={() => setShowPublishModal(true)}
+                className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/20 hover:opacity-90 transition-all"
               >
-                {adminStatusLoading ? "Checking..." : "Admin sign in"}
+                <Plus className="h-4 w-4" /> Publish Wire
               </button>
-            )}
-          </div>
+              <button
+                onClick={handleAdminLogout}
+                className="px-3 py-2 rounded-xl border border-slate-700 text-slate-300 hover:text-white text-xs"
+              >
+                Sign out
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -675,18 +663,70 @@ export default function NeuroWirePlatform() {
         )}
       </section>
 
-                <footer className="mt-20 border-t border-slate-800 py-8 px-4 text-slate-400 text-sm flex flex-col items-center gap-4">
+      <footer id="site-footer" className="mt-20 border-t border-slate-800 py-10 px-4 text-slate-400 text-sm flex flex-col items-center gap-5">
         <div className="flex items-center gap-4">
           <a href="/privacy" className="hover:text-cyan-400 transition-colors">Privacy Policy</a>
           <span>•</span>
           <a href="/about" className="hover:text-cyan-400 transition-colors">Contact & Editorial Desk</a>
         </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2 border-t border-slate-800/80 w-full max-w-xl">
+          {!isAdmin && (
+            <button
+              type="button"
+              onClick={() => {
+                setAdminLoginError("");
+                setShowAdminLogin(true);
+              }}
+              disabled={adminStatusLoading}
+              className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-900/70 text-slate-300 hover:text-white hover:border-cyan-500/50 disabled:opacity-50 text-xs font-semibold transition-colors"
+            >
+              {adminStatusLoading ? "Checking admin access..." : "Admin sign in"}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setShowAuthorNotice(true)}
+            className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-900/70 text-slate-300 hover:text-white hover:border-purple-500/50 text-xs font-semibold transition-colors"
+          >
+            Author sign in
+          </button>
+        </div>
+
         <p className="text-center text-xs text-slate-600">
           © 2026 NeuroWire. All rights reserved.
         </p>
       </footer>
       
         {/* Secure admin sign-in */}
+      {showAuthorNotice && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-sm w-full p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-white">Author access</h3>
+              <button
+                type="button"
+                onClick={() => setShowAuthorNotice(false)}
+                className="p-2 text-slate-400 hover:text-white rounded-full bg-slate-800"
+                aria-label="Close author access notice"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <p className="text-sm text-slate-300 leading-relaxed">
+              Author sign-in is not available yet. The author application, approval and secure login system still needs to be built.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowAuthorNotice(false)}
+              className="mt-5 w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       {showAdminLogin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
           <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-sm w-full p-6 shadow-2xl">
