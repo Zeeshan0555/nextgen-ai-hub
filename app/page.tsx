@@ -279,44 +279,99 @@ export default function NeuroWirePlatform() {
     loadVaultNews();
   }, []);
 
-  // REAL SUPABASE INSERT PUBLISHING
+  // Publish through a server route that validates the signed admin session.
   const handlePublishWire = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle.trim() || !newArticle.trim()) return;
+    setPublishingError("");
 
     const payload = {
       title: newTitle.trim(),
-      description: newSummary.trim() || newArticle.slice(0, 150) + "...",
-      content: newArticle,
-      image_url: newImage.trim() || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
+      category: newCategory,
+      source: newSource.trim(),
+      description: newSummary.trim() || newArticle.trim().slice(0, 240),
+      content: newArticle.trim(),
+      image_url: newImage.trim(),
     };
 
-    try {
-      await supabase.from("news").insert([payload]);
-    } catch (err) {
-      console.error("Supabase insert error", err);
+    if (!payload.title || !payload.source || payload.content.length < 40) {
+      setPublishingError("Headline, source name, and a full article are required.");
+      return;
     }
 
-    const userStory: NewsItem = {
-      id: Date.now().toString(),
-      title: payload.title,
-      category: newCategory,
-      source: newSource.trim() || "NeuroWire Editorial Bureau",
-      readTime: "5 min read",
-      publishedAt: new Date().toISOString(),
-      image: payload.image_url,
-      summary: payload.description,
-      fullReport: newArticle.split("\n\n").filter((p) => p.trim().length > 0),
-      bullets: ["Exclusive scoop filed directly to the NeuroWire global intelligence wire."],
-    };
+    setIsPublishing(true);
+    try {
+      const response = await fetch("/api/admin/news", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok || !result?.success || !result.story) {
+        throw new Error(result?.error || "The article could not be published.");
+      }
 
-    setNews([userStory, ...news]);
-    setNewTitle("");
-    setNewSource("");
-    setNewImage("");
-    setNewSummary("");
-    setNewArticle("");
-    setShowPublishModal(false);
+      const saved = result.story;
+      const savedContent = typeof saved.content === "string" ? saved.content : payload.content;
+      const userStory: NewsItem = {
+        id: String(saved.id),
+        title: saved.title,
+        category: saved.category,
+        source: saved.source,
+        readTime: `${Math.max(1, Math.ceil(savedContent.trim().split(/\\s+/).length / 200))} min read`,
+        publishedAt: saved.created_at || new Date().toISOString(),
+        image: saved.image_url || "",
+        summary: saved.description || saved.title,
+        fullReport: savedContent.split("\n\n").filter((paragraph: string) => paragraph.trim().length > 0),
+        bullets: [],
+      };
+
+      setNews((current) => [userStory, ...current]);
+      setNewTitle("");
+      setNewSource("");
+      setNewImage("");
+      setNewSummary("");
+      setNewArticle("");
+      setPublishingError("");
+      setShowPublishModal(false);
+    } catch (error) {
+      setPublishingError(error instanceof Error ? error.message : "The article could not be published.");
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminLoginError("");
+    try {
+      const response = await fetch("/api/admin/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: adminPassword }),
+      });
+      const result = await response.json().catch(() => null);
+      if (!response.ok || result?.isAuthenticated !== true) {
+        throw new Error(result?.error || "Admin sign-in failed.");
+      }
+      setIsAdmin(true);
+      setAdminPassword("");
+      setShowAdminLogin(false);
+    } catch (error) {
+      setAdminLoginError(error instanceof Error ? error.message : "Admin sign-in failed.");
+    }
+  };
+
+  const handleAdminLogout = async () => {
+    try {
+      const response = await fetch("/api/admin/session", { method: "DELETE" });
+      if (!response.ok) throw new Error("Sign out failed.");
+      setIsAdmin(false);
+      setShowPublishModal(false);
+      setAdminPassword("");
+      setAdminLoginError("");
+    } catch {
+      setAdminLoginError("Could not sign out. Please try again.");
+    }
   };
 
   const toggleVoiceReader = (story: NewsItem) => {
