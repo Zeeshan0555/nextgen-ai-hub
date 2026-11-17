@@ -29,6 +29,11 @@ const FEEDS: FeedConfig[] = [
     category: "AI",
   },
   {
+    url: "https://api.rss2json.com/v1/api.json?rss_url=https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+    publisher: "The Verge",
+    category: "AI",
+  },
+  {
     url: "https://api.rss2json.com/v1/api.json?rss_url=https://cointelegraph.com/rss",
     publisher: "CoinTelegraph",
     category: "Crypto",
@@ -39,8 +44,8 @@ const FEEDS: FeedConfig[] = [
     category: "Policy",
   },
   {
-    url: "https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/category/government-policy/feed/",
-    publisher: "TechCrunch",
+    url: "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.arstechnica.com/arstechnica/tech-policy",
+    publisher: "Ars Technica",
     category: "Policy",
   },
   {
@@ -155,7 +160,7 @@ function areNearDuplicateTitles(left: string, right: string): boolean {
 
 async function fetchRss(url: string): Promise<RssResponse | null> {
   try {
-    const response = await fetch(url, { next: { revalidate: 900 } });
+    const response = await fetch(url, { next: { revalidate: 900 }, signal: AbortSignal.timeout(10000) });
     if (!response.ok) return null;
 
     const payload: unknown = await response.json();
