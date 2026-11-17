@@ -26,23 +26,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </button>
       </div>
 
-      <nav className="p-4 space-y-1.5 flex-1">
-        <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-purple-600/10 text-purple-400 border border-purple-500/20 font-medium">
+      <nav className="p-4 space-y-1.5 flex-1" aria-label="Admin sections">
+        <a href="#overview" onClick={onClose} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-purple-600/10 text-purple-400 border border-purple-500/20 font-medium">
           <LayoutDashboard className="h-5 w-5" /> Dashboard
         </a>
-        <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
-          <FileText className="h-5 w-5" /> CMS Articles
+        <a href="#recent-articles" onClick={onClose} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
+          <FileText className="h-5 w-5" /> News Articles
         </a>
-        <a href="#" className="files items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
+        <a href="#automation-status" onClick={onClose} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
           <Cpu className="h-5 w-5" /> AI Automation
         </a>
-        <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
-          <Database className="h-5 w-5" /> Vector DB (pgvector)
+        <a href="#vector-status" onClick={onClose} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
+          <Database className="h-5 w-5" /> Vector Search
         </a>
-        <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
-          <ShieldCheck className="h-5 w-5" /> Security & RLS
+        <a href="#security-status" onClick={onClose} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
+          <ShieldCheck className="h-5 w-5" /> Security
         </a>
-        <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
+        <a href="#settings-status" onClick={onClose} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
           <Settings className="h-5 w-5" /> Settings
         </a>
       </nav>
@@ -52,9 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           <div className="h-10 w-10 rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 flex items-center justify-center font-bold text-sm">Z</div>
           <div className="overflow-hidden">
             <p className="text-sm font-semibold truncate">Zeeshan0555</p>
-            <p className="text-xs text-purple-400 flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span> System Online
-            </p>
+            <p className="text-xs text-slate-400">Administrator</p>
           </div>
         </div>
       </div>
