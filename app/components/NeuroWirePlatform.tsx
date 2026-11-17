@@ -793,7 +793,7 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
               {hero.summary}
             </p>
 
-            {hero.publisherUrl ? (
+            {hero.publisherUrl && hero.readTime === "Source link" ? (
               <a
                 href={hero.publisherUrl}
                 target="_blank"
@@ -953,7 +953,7 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
               </div>
 
               <div className="border-t border-slate-800 pt-3 flex items-center justify-between">
-                {item.publisherUrl ? (
+                {item.publisherUrl && item.readTime === "Source link" ? (
                   <a
                     href={item.publisherUrl}
                     target="_blank"
