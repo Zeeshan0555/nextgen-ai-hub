@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import { createSupabaseServerClient } from "@/app/lib/supabase-server";
+import { isIndexableEditorialArticle } from "@/app/lib/article-quality";
 
 export const revalidate = 3600;
 
@@ -26,7 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const supabase = createSupabaseServerClient();
     const { data, error } = await supabase
       .from("news")
-      .select("title, created_at, content")
+      .select("title, created_at, content, description, source")
       .order("created_at", { ascending: false })
       .limit(500);
 
@@ -35,13 +36,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const articlePages: MetadataRoute.Sitemap = data
       .filter((item) => {
         const content = typeof item.content === "string" ? item.content : "";
-        return (
-          typeof item.title === "string" &&
-          item.title.trim().length > 0 &&
-          content.startsWith(BRIEFING_MARKER) &&
-          content.length >= 500 &&
-          REQUIRED_SECTIONS.every((section) => content.includes(section))
-        );
+        const isReviewedBriefing = content.startsWith(BRIEFING_MARKER) && content.length >= 500 && REQUIRED_SECTIONS.every((section) => content.includes(section));
+        return isReviewedBriefing || isIndexableEditorialArticle(item);
       })
       .map((item) => ({
         url: SITE_URL + "/news/" + encodeURIComponent(item.title),
