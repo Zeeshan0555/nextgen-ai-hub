@@ -101,7 +101,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     const supabase = createSupabaseServerClient();
     const { data, error } = await supabase
       .from("news")
-      .select("title, description, content")
+      .select("title, description, content, created_at")
       .eq("title", articleTitle)
       .order("created_at", { ascending: false })
       .limit(1)
