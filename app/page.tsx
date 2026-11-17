@@ -34,7 +34,7 @@ const NEWS_CATEGORIES: NewsCategory[] = [
 interface NewsItem {
   id: string;
   title: string;
-  category: NewsCategory;
+  category: NewsCategory | "Uncategorized";
   source: string;
   readTime: string;
   publishedAt: string;
@@ -254,7 +254,9 @@ export default function NeuroWirePlatform() {
         const dbNews: NewsItem[] = data.map((item: any) => ({
           id: item.id.toString(),
           title: item.title,
-          category: item.category || "AI",
+          category: NEWS_CATEGORIES.includes(item.category as NewsCategory)
+            ? (item.category as NewsCategory)
+            : "Uncategorized",
           source: item.source || "Source not provided",
           readTime: `${Math.max(1, Math.ceil((item.content || item.description || "").trim().split(/\s+/).length / 200))} min read`,
           publishedAt: item.created_at || "",
