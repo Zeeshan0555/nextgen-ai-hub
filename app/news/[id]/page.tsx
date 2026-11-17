@@ -122,15 +122,31 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       };
     }
 
+    const description =
+      typeof data.description === "string" && data.description.length >= 50
+        ? data.description.slice(0, 180)
+        : "Read a source-linked NeuroWire editorial briefing.";
+    const canonical = "/news/" + encodeURIComponent(articleTitle);
+    const publishedAt = data.created_at;
+
     return {
       title: articleTitle + " | NeuroWire News",
-      description:
-        typeof data.description === "string" && data.description.length >= 50
-          ? data.description.slice(0, 180)
-          : "Read a source-linked NeuroWire editorial briefing.",
+      description,
       robots: { index: true, follow: true },
-      alternates: {
-        canonical: "/news/" + encodeURIComponent(articleTitle),
+      alternates: { canonical },
+      openGraph: {
+        type: "article",
+        title: articleTitle,
+        description,
+        url: canonical,
+        ...(typeof publishedAt === "string" && !Number.isNaN(Date.parse(publishedAt))
+          ? { publishedTime: new Date(publishedAt).toISOString() }
+          : {}),
+      },
+      twitter: {
+        card: "summary",
+        title: articleTitle + " | NeuroWire News",
+        description,
       },
     };
   } catch {
@@ -144,5 +160,50 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { id } = await params;
   const initialStory = await getInitialArticle(id || "");
-  return <ArticlePageClient initialStory={initialStory} />;
+  const isIndexableBriefing = Boolean(
+    initialStory?.isEditorialBriefing &&
+    initialStory.content.length >= 500 &&
+    REQUIRED_SECTIONS.every((section) => initialStory.content.includes(section))
+  );
+  const publishedAt = initialStory?.publishedAt;
+  const canonicalUrl = "https://neurowire-news.vercel.app/news/" + encodeURIComponent(initialStory?.title || id || "");
+
+  const structuredData = isIndexableBriefing && initialStory
+    ? {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        headline: initialStory.title,
+        description: initialStory.summary,
+        articleSection: initialStory.category,
+        author: {
+          "@type": "Organization",
+          name: "NeuroWire News",
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "NeuroWire News",
+        },
+        mainEntityOfPage: canonicalUrl,
+        ...(typeof publishedAt === "string" && !Number.isNaN(Date.parse(publishedAt))
+          ? { datePublished: new Date(publishedAt).toISOString() }
+          : {}),
+        ...(initialStory.publisherUrl
+          ? { isBasedOn: initialStory.publisherUrl }
+          : {}),
+      }
+    : null;
+
+  return (
+    <>
+      {structuredData && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+          }}
+        />
+      )}
+      <ArticlePageClient initialStory={initialStory} />
+    </>
+  );
 }
