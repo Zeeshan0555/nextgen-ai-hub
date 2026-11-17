@@ -108,8 +108,7 @@ function getNewsSubcategory(item: NewsItem): string {
     const normalized = keyword.trim().toLocaleLowerCase();
     if (!normalized) return false;
     if (normalized.includes(" ")) return text.includes(normalized);
-    const escaped = normalized.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&");
-    return new RegExp("\\\\b" + escaped + "\\\\b", "i").test(text);
+    return text.split(/[^a-z0-9]+/).includes(normalized);
   };
 
   // Headline matches carry more weight than a passing mention in the summary.
