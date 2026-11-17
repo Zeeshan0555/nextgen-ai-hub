@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 
 export const metadata = {
   title: "AI and Automation Disclosure | NeuroWire News",
-  description: "How NeuroWire News uses automation and evidence-checked AI-assisted briefings.",
+  description: "How NeuroWire News uses automated headline collection, classification and Admin-reviewed AI drafts.",
 };
 
 export default function AiDisclosurePage() {
@@ -16,11 +16,16 @@ export default function AiDisclosurePage() {
           <h1 className="mt-2 text-3xl font-bold">AI and Automation Disclosure</h1>
         </header>
         <section className="space-y-4 text-sm leading-7 text-slate-300">
-          <p>NeuroWire uses automation to collect publisher RSS items, clean feed formatting, check headlines and dates, assign categories, sort stories and reduce duplicate headlines.</p>
-          <p>When the Gemini API key is configured and a publisher feed contains enough source detail, the publishing workflow can create an AI-assisted editorial briefing. The briefing is based only on the publisher text supplied to the system and includes short evidence excerpts that are checked against that text before the briefing is stored.</p>
-          <p>The system does not claim that an AI briefing is an independent investigation or a human fact-check. Important claims should be checked against the original publisher report. AI output that fails the evidence checks is not used as a NeuroWire briefing.</p>
-          <p>When there is not enough source material or the AI service is unavailable, NeuroWire keeps a clearly labelled publisher excerpt on the news feed. Those excerpt-only article pages are not included in the article sitemap and are marked not to be indexed by search engines.</p>
-          <p>Our goal is to use automation to help readers understand sourced developments, not to mass-produce pages or inflate article counts. Automation can still make mistakes; please use the publisher link for full context and updates.</p>
+          <h2 className="text-lg font-semibold text-white">Automated headlines</h2>
+          <p>NeuroWire automatically checks selected official company and public-agency feeds. The public headline feed uses the headline, publisher name, publication date and a direct link to the original report. It does not republish the feed's full article text or images.</p>
+          <h2 className="text-lg font-semibold text-white">Category assignment</h2>
+          <p>When the Gemini service is configured, it may classify a headline using only the headline and publisher name. If the result is uncertain or the service is unavailable, NeuroWire keeps the section assigned by the source configuration. Fox News remains a publisher-specific section with a direct link to its official website; it is not used as a general topic label.</p>
+          <h2 className="text-lg font-semibold text-white">AI-assisted editorial drafts</h2>
+          <p>An Admin may provide original reporting notes or source material they have permission to use and ask Gemini to prepare a draft. The draft includes short evidence excerpts checked against the submitted material. The AI tool does not fetch full publisher articles and does not publish anything by itself.</p>
+          <p>An Admin must review, correct and approve every AI-assisted draft before it is published. Evidence matching is a safeguard, not proof that every claim is true or a replacement for independent fact-checking.</p>
+          <h2 className="text-lg font-semibold text-white">Search visibility</h2>
+          <p>Headline-only pages are intended to help visitors find the original publisher report. They are not included in the article sitemap and are marked not to be indexed. Only substantial, reviewed NeuroWire briefings that pass the page checks may be included in the article sitemap.</p>
+          <p>Automation can make mistakes. Use the original publisher link for complete context, corrections and updates. NeuroWire does not claim that an automated headline or AI draft is independent reporting.</p>
           <div className="border-t border-slate-800 pt-5"><Link href="/editorial-policy" className="text-cyan-400 hover:text-cyan-300">Read our Editorial Policy</Link></div>
         </section>
       </article>
