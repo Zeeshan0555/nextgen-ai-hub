@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import ArticlePageClient from "./ArticlePageClient";
+import ArticlePageClient, { type ArticleStory } from "./ArticlePageClient";
 import { createSupabaseServerClient } from "@/app/lib/supabase-server";
 
 type ArticlePageProps = {
@@ -7,12 +7,91 @@ type ArticlePageProps = {
 };
 
 const BRIEFING_MARKER = "NEUROWIRE_EDITORIAL_BRIEF_V1";
+const SOURCE_LINK_MARKER = "NEUROWIRE_SOURCE_LINK_V1";
 const REQUIRED_SECTIONS = [
   "## What happened",
   "## Key details",
   "## Why it matters",
   "## What the source does not tell us",
 ];
+
+const PUBLISHER_HOSTS: Record<string, string[]> = {
+  "OpenAI": ["openai.com"],
+  "Google DeepMind": ["deepmind.google"],
+  "Google": ["blog.google"],
+  "Microsoft": ["news.microsoft.com"],
+  "U.S. Securities and Exchange Commission": ["sec.gov"],
+  "U.S. Federal Trade Commission": ["ftc.gov"],
+  "NASA": ["nasa.gov"],
+  "TechCrunch": ["techcrunch.com"],
+  "The Verge": ["theverge.com"],
+  "CoinTelegraph": ["cointelegraph.com"],
+  "Ars Technica": ["arstechnica.com"],
+  "Fox News": ["foxnews.com"],
+  "Harvard Business Review": ["hbr.org"],
+};
+
+function safePublisherUrl(value: unknown, publisher: string): string {
+  if (typeof value !== "string" || !value.trim()) return "";
+  try {
+    const parsed = new URL(value.trim());
+    const host = parsed.hostname.toLocaleLowerCase();
+    const allowed = (PUBLISHER_HOSTS[publisher] || []).some((domain) =>
+      host === domain || host.endsWith("." + domain)
+    );
+    return parsed.protocol === "https:" && allowed ? parsed.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+async function getInitialArticle(title: string): Promise<ArticleStory | null> {
+  if (!title) return null;
+
+  try {
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("news")
+      .select("title, category, source, description, content, image_url, created_at")
+      .eq("title", title)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    const rawContent = typeof data.content === "string" ? data.content.trim() : "";
+    const lines = rawContent.split("\n");
+    const sourceLine = lines.find((line) => line.startsWith("ORIGINAL_SOURCE_URL:"));
+    const sourceUrl = sourceLine
+      ? sourceLine.slice("ORIGINAL_SOURCE_URL:".length).trim()
+      : "";
+    const hasMarker = lines[0]?.startsWith("NEUROWIRE_") === true;
+    const content = lines
+      .filter((line, index) => !(index === 0 && hasMarker) && !line.startsWith("ORIGINAL_SOURCE_URL:"))
+      .join("\n")
+      .trim();
+    const source = typeof data.source === "string" ? data.source : "Source not provided";
+    const isEditorialBriefing = rawContent.startsWith(BRIEFING_MARKER);
+    const isHeadlineOnly = rawContent.startsWith(SOURCE_LINK_MARKER);
+
+    return {
+      title: typeof data.title === "string" ? data.title : title,
+      source,
+      category: typeof data.category === "string" ? data.category : "Uncategorized",
+      publisherUrl: safePublisherUrl(sourceUrl, source),
+      publishedAt: typeof data.created_at === "string" ? data.created_at : "",
+      image: isHeadlineOnly ? "" : typeof data.image_url === "string" ? data.image_url : "",
+      summary: typeof data.description === "string" ? data.description : "",
+      content,
+      isEditorialBriefing,
+      isHeadlineOnly,
+    };
+  } catch {
+    // The client-side fallback can still try the existing browser-safe routes.
+    return null;
+  }
+}
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { id } = await params;
@@ -62,6 +141,8 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   }
 }
 
-export default function ArticlePage() {
-  return <ArticlePageClient />;
+export default async function ArticlePage({ params }: ArticlePageProps) {
+  const { id } = await params;
+  const initialStory = await getInitialArticle(id || "");
+  return <ArticlePageClient initialStory={initialStory} />;
 }
