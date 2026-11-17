@@ -1145,6 +1145,15 @@ export default function NeuroWirePlatform() {
                 {draftError && <p role="status" className="mt-2 text-xs text-amber-300">{draftError}</p>}
               </div>
               <div>
+                <label className="text-slate-400 block mb-1">Your source notes / material you have permission to use</label>
+                <textarea rows={4} value={draftSourceText} onChange={(e) => setDraftSourceText(e.target.value)} placeholder="Add your original notes, key facts and short evidence. Do not paste a full third-party article unless you have permission." className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500" />
+                <p className="mt-1 text-[11px] text-slate-500">Gemini uses only the material you enter. It does not fetch articles or invent missing facts.</p>
+                <button type="button" onClick={handleGenerateAiDraft} disabled={isDrafting || !draftSourceText.trim()} className="mt-2 w-full py-2 rounded-xl border border-indigo-500/40 bg-indigo-500/10 text-indigo-200 hover:bg-indigo-500/20 disabled:opacity-50 font-semibold">
+                  {isDrafting ? "Preparing AI draft..." : "Generate AI briefing draft"}
+                </button>
+                {draftError && <p role="status" className="mt-2 text-xs text-amber-300">{draftError}</p>}
+              </div>
+              <div>
                 <label className="text-slate-400 block mb-1">Final article or AI-assisted draft (review before publishing) *</label>
                 <textarea required rows={5} value={newArticle} onChange={(e) => setNewArticle(e.target.value)} placeholder="Write the full report here... Double enter for new paragraphs." className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500" />
               </div>
