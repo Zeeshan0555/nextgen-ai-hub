@@ -748,7 +748,7 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
                 onClick={() => setShowPublishModal(true)}
                 className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/20 hover:opacity-90 transition-all"
               >
-                <Plus className="h-4 w-4" /> Publish Wire
+                <Plus className="h-4 w-4" /> Write Article
               </button>
               <button
                 onClick={handleAdminLogout}
@@ -1138,8 +1138,8 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
                 </div>
               </div>
               <div>
-                <label className="text-slate-400 block mb-1">Original Source URL (HTTPS) *</label>
-                <input type="url" required value={newSourceUrl} onChange={(e) => setNewSourceUrl(e.target.value)} placeholder="https://publisher.com/original-report" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500" />
+                <label className="text-slate-400 block mb-1">Original Source URL (HTTPS, optional)</label>
+                <input type="url" value={newSourceUrl} onChange={(e) => setNewSourceUrl(e.target.value)} placeholder="https://publisher.com/original-report" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500" />
               </div>
               <div>
                 <label className="text-slate-400 block mb-1">HD Photo Link (Optional)</label>
