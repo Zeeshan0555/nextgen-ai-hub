@@ -125,6 +125,34 @@ function getSafePublisherUrl(value: unknown): string {
   }
 }
 
+const CATEGORY_SIGNALS: Record<string, string[]> = {
+  AI: ["artificial intelligence", "machine learning", "generative ai", "large language model", "language model", "chatgpt", "openai", "anthropic", "gemini", "ai model", "ai agent", "neural network"],
+  Crypto: ["bitcoin", "ethereum", "crypto", "cryptocurrency", "blockchain", "web3", "defi", "digital asset", "token", "stablecoin", "solana"],
+  Policy: ["policy", "regulation", "regulatory", "legislation", "lawmakers", "government", "parliament", "congress", "privacy law", "antitrust", "court ruling", "data protection"],
+  Technology: ["technology", "tech", "software", "smartphone", "computer", "semiconductor", "chip", "cybersecurity", "robotics", "spacecraft", "app", "operating system"],
+  Leadership: ["leadership", "chief executive", "ceo", "founder", "executive", "management", "board of directors", "business strategy", "workplace culture", "decision-making"],
+};
+
+function isCategoryRelevant(category: string, title: string, articleText: string): boolean {
+  // Fox News is a publisher-based section, not a general topic classifier.
+  if (category === "Fox News") return true;
+  const text = `${title} ${articleText.slice(0, 1800)}`.toLocaleLowerCase();
+  return (CATEGORY_SIGNALS[category] || []).some((signal) => text.includes(signal));
+}
+
+function normalizedTitle(value: string): string {
+  return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function areNearDuplicateTitles(left: string, right: string): boolean {
+  const leftWords = new Set(normalizedTitle(left).split(" ").filter((word) => word.length > 2));
+  const rightWords = new Set(normalizedTitle(right).split(" ").filter((word) => word.length > 2));
+  if (leftWords.size < 6 || rightWords.size < 6) return false;
+  const intersection = [...leftWords].filter((word) => rightWords.has(word)).length;
+  const union = new Set([...leftWords, ...rightWords]).size;
+  return union > 0 && intersection / union >= 0.86;
+}
+
 async function fetchRss(url: string): Promise<RssResponse | null> {
   try {
     const response = await fetch(url, { next: { revalidate: 900 } });
@@ -173,8 +201,10 @@ export async function GET() {
         const articleText = cleanFeedText(item.content || item.description);
         const publishedAt = parsePublishedAt(item.pubDate);
 
-        // Do not invent a publication time when the feed does not provide one.
-        if (!title || !publishedAt) continue;
+        // Keep useful, dated publisher items; do not fabricate missing text or dates.
+        if (!title || title.length < 12 || !publishedAt || articleText.length < 40) continue;
+        if (Date.parse(publishedAt) > Date.now() + 24 * 60 * 60 * 1000) continue;
+        if (!isCategoryRelevant(feed.category, title, articleText)) continue;
 
         const publisherUrl = getSafePublisherUrl(item.link);
         if (publisherUrl) {
@@ -201,10 +231,16 @@ export async function GET() {
       }
     }
 
-    // Avoid sending duplicate titles from the same polling cycle.
-    const uniqueIncoming = Array.from(
-      new Map(incoming.map((item) => [item.title.toLocaleLowerCase(), item])).values()
-    );
+    // Remove exact and near-duplicate headlines while preserving publisher attribution.
+    const uniqueIncoming: typeof incoming = [];
+    for (const candidate of incoming) {
+      if (uniqueIncoming.some((existing) =>
+        normalizedTitle(existing.title) === normalizedTitle(candidate.title) ||
+        areNearDuplicateTitles(existing.title, candidate.title)
+      )) continue;
+      uniqueIncoming.push(candidate);
+    }
+    uniqueIncoming.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
 
     // This endpoint is public and is used by article readers. It only returns
     // publisher feed data; database writes belong to the protected cron/admin routes.
