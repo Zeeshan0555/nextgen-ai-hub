@@ -194,7 +194,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         articleSection: initialStory.category,
         author: {
           "@type": "Organization",
-          name: isIndexableOriginalArticle ? "NeuroWire Admin" : "NeuroWire News",
+          name: "NeuroWire News",
         },
         publisher: {
           "@type": "Organization",
