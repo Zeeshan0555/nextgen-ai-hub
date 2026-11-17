@@ -133,12 +133,45 @@ export async function GET(request: Request) {
       );
     }
 
-    const { item, publisher, category } = candidates[0];
+    const supabase = createSupabaseServerClient();
+    let selected: (typeof candidates)[number] | null = null;
+
+    // Skip already-published items so one duplicate does not block newer feed candidates.
+    for (const candidate of candidates) {
+      const candidateTitle = cleanFeedText(candidate.item.title);
+      const { data: existing, error: lookupError } = await supabase
+        .from("news")
+        .select("id")
+        .eq("title", candidateTitle)
+        .maybeSingle();
+
+      if (lookupError) {
+        console.error("Existing story lookup error:", lookupError.message);
+        return NextResponse.json(
+          { success: false, message: "Could not check for an existing story." },
+          { status: 500 }
+        );
+      }
+
+      if (!existing) {
+        selected = candidate;
+        break;
+      }
+    }
+
+    if (!selected) {
+      return NextResponse.json({
+        success: true,
+        message: "All valid feed candidates already exist.",
+        checked: candidates.length,
+      });
+    }
+
+    const { item, publisher, category } = selected;
     const title = cleanFeedText(item.title);
     const articleText = cleanFeedText(item.content || item.description);
     const publishedAt = parsePublishedAt(item.pubDate);
 
-    // The item was validated above; keep this guard for safe handling of feed changes.
     if (!title || !articleText || !publishedAt) {
       return NextResponse.json(
         { success: false, message: "The selected feed item is incomplete." },
@@ -150,26 +183,6 @@ export async function GET(request: Request) {
       articleText.length > 250
         ? `${articleText.slice(0, 247).trimEnd()}...`
         : articleText;
-
-    const supabase = createSupabaseServerClient();
-
-    const { data: existing, error: lookupError } = await supabase
-      .from("news")
-      .select("id")
-      .eq("title", title)
-      .maybeSingle();
-
-    if (lookupError) {
-      console.error("Existing story lookup error:", lookupError.message);
-      return NextResponse.json(
-        { success: false, message: "Could not check for an existing story." },
-        { status: 500 }
-      );
-    }
-
-    if (existing) {
-      return NextResponse.json({ success: true, message: "Story already exists." });
-    }
 
     const { error } = await supabase.from("news").insert([
       {
