@@ -68,7 +68,7 @@ jobs:
           - Restored six homepage category filters (AI, Crypto, Policy, Technology, Fox News, Leadership) and connected the drawer links to those filters.
           - Removed fabricated sidebar counts, unverified database/security status claims, and non-working timestamp controls.
           - Replaced invented dashboard metrics with values derived from the existing recent-article result and the public market endpoint.
-          - Added safe HTTPS original-publisher links to the article reader without adding database columns, and limited each displayed RSS publisher excerpt to 20 words.
+          - Added safe HTTPS original-publisher links to the article reader without adding database columns, and kept publisher RSS excerpts readable (up to 150 words) and linked readers to the original source for the complete story.
 
           ## Verification
 
