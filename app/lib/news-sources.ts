@@ -62,7 +62,7 @@ export const NEWS_FEEDS: NewsFeed[] = [
     titleKeywords: ["technology", "software", "windows", "security", "chip", "computer", "cloud", "data", "cybersecurity", "artificial intelligence"],
   },
   {
-    rssUrl: "https://blog.google/feed/",
+    rssUrl: "https://blog.google/rss/",
     publisher: "Google",
     category: "Leadership",
     allowedHosts: ["blog.google"],
