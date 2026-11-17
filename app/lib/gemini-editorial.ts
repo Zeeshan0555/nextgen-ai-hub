@@ -122,7 +122,6 @@ export async function createEditorialBriefing(
             }],
           }],
           generationConfig: {
-            temperature: 0.2,
             maxOutputTokens: 1100,
             responseMimeType: "application/json",
           },
@@ -266,7 +265,6 @@ export async function classifyNewsHeadline(input: {
             }],
           }],
           generationConfig: {
-            temperature: 0,
             maxOutputTokens: 120,
             responseMimeType: "application/json",
           },
