@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import ArticlePageClient, { type ArticleStory } from "./ArticlePageClient";
 import { createSupabaseServerClient } from "@/app/lib/supabase-server";
 import { isIndexableEditorialArticle } from "@/app/lib/article-quality";
+import { isIndexableEditorialArticle } from "@/app/lib/article-quality";
 
 type ArticlePageProps = {
   params: Promise<{ id: string }>;
@@ -9,6 +10,7 @@ type ArticlePageProps = {
 
 const BRIEFING_MARKER = "NEUROWIRE_EDITORIAL_BRIEF_V1";
 const SOURCE_LINK_MARKER = "NEUROWIRE_SOURCE_LINK_V1";
+const ARTICLE_MARKER = "NEUROWIRE_EDITORIAL_ARTICLE_V1";
 const REQUIRED_SECTIONS = [
   "## What happened",
   "## Key details",
@@ -74,6 +76,7 @@ async function getInitialArticle(title: string): Promise<ArticleStory | null> {
       .trim();
     const source = typeof data.source === "string" ? data.source : "Source not provided";
     const isEditorialBriefing = rawContent.startsWith(BRIEFING_MARKER);
+    const isEditorialArticle = rawContent.startsWith(ARTICLE_MARKER);
     const isHeadlineOnly = rawContent.startsWith(SOURCE_LINK_MARKER);
 
     return {
@@ -86,6 +89,7 @@ async function getInitialArticle(title: string): Promise<ArticleStory | null> {
       summary: typeof data.description === "string" ? data.description : "",
       content,
       isEditorialBriefing,
+      isEditorialArticle,
       isHeadlineOnly,
     };
   } catch {
@@ -102,7 +106,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     const supabase = createSupabaseServerClient();
     const { data, error } = await supabase
       .from("news")
-      .select("title, description, content, created_at")
+      .select("title, description, content, created_at, source")
       .eq("title", articleTitle)
       .order("created_at", { ascending: false })
       .limit(1)
@@ -164,10 +168,23 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     initialStory.content.length >= 500 &&
     REQUIRED_SECTIONS.every((section) => initialStory.content.includes(section))
   );
+  const articleMarkerContent = initialStory
+    ? (initialStory.isEditorialArticle ? ARTICLE_MARKER + "\n\n" : "") + initialStory.content
+    : "";
+  const isIndexableOriginalArticle = Boolean(
+    initialStory?.isEditorialArticle &&
+    isIndexableEditorialArticle({
+      title: initialStory.title,
+      description: initialStory.summary,
+      source: initialStory.source,
+      content: articleMarkerContent,
+    })
+  );
+  const isStructuredArticle = isIndexableBriefing || isIndexableOriginalArticle;
   const publishedAt = initialStory?.publishedAt;
   const canonicalUrl = "https://neurowire-news.vercel.app/news/" + encodeURIComponent(initialStory?.title || id || "");
 
-  const structuredData = isIndexableBriefing && initialStory
+  const structuredData = isStructuredArticle && initialStory
     ? {
         "@context": "https://schema.org",
         "@type": "NewsArticle",
