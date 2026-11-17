@@ -249,7 +249,7 @@ export default function AdminDashboard() {
               <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
                 <p className="text-xs text-slate-400">Automatic news coverage</p>
                 <p className="mt-2 text-sm font-semibold text-amber-300">Limited source setup</p>
-                <p className="text-[11px] text-slate-400 mt-1">Current publisher code covers AI and Crypto sources only. The other four categories need dedicated source feeds.</p>
+                <p className="text-[11px] text-slate-400 mt-1">Publisher feeds are now configured for all six categories. Individual feed uptime and freshness are not yet measured here.</p>
               </div>
             </div>
             <p className="text-[11px] text-slate-500">No live source-health, cron-history, traffic, or security-event endpoint is connected yet. Those items are not shown as working or healthy until real data is available.</p>
