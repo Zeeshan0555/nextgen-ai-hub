@@ -9,7 +9,7 @@ Before using admin sign-in on a deployment, configure these server-only environm
 
 Do not add either value to source files, commit them to GitHub, or use a `NEXT_PUBLIC_` prefix. Keep the signing secret private. Changing the signing secret invalidates existing sessions.
 
-The session cookie is HTTP-only, uses SameSite=Strict, is Secure in production, and expires after 12 hours. Sign out clears the browser cookie.
+The session cookie is HTTP-only, uses SameSite=Strict, is Secure in production, and expires after 12 hours. Sign out clears the browser cookie. The protected Admin Dashboard also provides a sign-out control.
 
 Manual article publishing is routed through the protected server endpoint and uses the existing server-side Supabase client helper. No Supabase project settings, credentials, schema, or database configuration were changed in this branch.
 
