@@ -74,6 +74,12 @@ export default function NeuroWirePlatform() {
   const [isReading, setIsReading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(6);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminStatusLoading, setAdminStatusLoading] = useState(true);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
+  const [adminLoginError, setAdminLoginError] = useState("");
+  const [publishingError, setPublishingError] = useState("");
+  const [isPublishing, setIsPublishing] = useState(false);
 
   // Publish Form State
   const [isSubscribed, setIsSubscribed] = useState(false);
