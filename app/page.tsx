@@ -31,6 +31,30 @@ const NEWS_CATEGORIES: NewsCategory[] = [
   "Leadership",
 ];
 
+const CATEGORY_SOURCE_LINKS: Record<NewsCategory, { label: string; url: string }[]> = {
+  AI: [
+    { label: "OpenAI News", url: "https://openai.com/news/" },
+    { label: "Google DeepMind", url: "https://deepmind.google/blog/" },
+  ],
+  Crypto: [
+    { label: "SEC Press Releases", url: "https://www.sec.gov/newsroom/press-releases" },
+  ],
+  Policy: [
+    { label: "FTC Updates", url: "https://www.ftc.gov/news-events/news/press-releases" },
+  ],
+  Technology: [
+    { label: "NASA Technology", url: "https://www.nasa.gov/technology/" },
+    { label: "Microsoft Source", url: "https://news.microsoft.com/source/" },
+  ],
+  "Fox News": [
+    { label: "Fox News Official Website", url: "https://www.foxnews.com/" },
+  ],
+  Leadership: [
+    { label: "Microsoft Source", url: "https://news.microsoft.com/source/" },
+    { label: "Google News", url: "https://blog.google/" },
+  ],
+};
+
 interface NewsItem {
   id: string;
   title: string;
@@ -255,6 +279,10 @@ export default function NeuroWirePlatform() {
   const [newImage, setNewImage] = useState("");
   const [newSummary, setNewSummary] = useState("");
   const [newArticle, setNewArticle] = useState("");
+  const [newSourceUrl, setNewSourceUrl] = useState("");
+  const [draftSourceText, setDraftSourceText] = useState("");
+  const [isDrafting, setIsDrafting] = useState(false);
+  const [draftError, setDraftError] = useState("");
 
    // Bloomberg / Reuters Style Market Terminal Timestamp Calculator
   const formatTimeAgo = (dateStr?: string) => {
