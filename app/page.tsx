@@ -317,7 +317,7 @@ export default function NeuroWirePlatform() {
         title: saved.title,
         category: saved.category,
         source: saved.source,
-        readTime: `${Math.max(1, Math.ceil(savedContent.trim().split(/\\s+/).length / 200))} min read`,
+        readTime: `${Math.max(1, Math.ceil(savedContent.trim().split(/\s+/).length / 200))} min read`,
         publishedAt: saved.created_at || new Date().toISOString(),
         image: saved.image_url || "",
         summary: saved.description || saved.title,
