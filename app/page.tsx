@@ -581,7 +581,7 @@ export default function NeuroWirePlatform() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <Cpu className="h-6 w-6 text-cyan-400" /> {activeTab === "All" ? "Latest News" : activeTab + " News"}
+              <Cpu className="h-6 w-6 text-cyan-400" /> {activeTab === "All" ? "Latest News" : activeTab === "Fox News" ? "Fox News" : activeTab + " News"}
             </h2>
             <p className="mt-1 text-xs text-slate-400">
               {activeTab === "All" ? "The latest stories across all six categories." : "Showing stories from this category only."}
