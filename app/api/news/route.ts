@@ -20,52 +20,62 @@ type FeedConfig = {
   url: string;
   publisher: string;
   category: string;
+  allowedHosts: string[];
 };
 
 const FEEDS: FeedConfig[] = [
   {
     url: "https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/category/artificial-intelligence/feed/",
     publisher: "TechCrunch",
+    allowedHosts: ["techcrunch.com"],
     category: "AI",
   },
   {
     url: "https://api.rss2json.com/v1/api.json?rss_url=https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
     publisher: "The Verge",
+    allowedHosts: ["theverge.com"],
     category: "AI",
   },
   {
     url: "https://api.rss2json.com/v1/api.json?rss_url=https://cointelegraph.com/rss",
     publisher: "CoinTelegraph",
+    allowedHosts: ["cointelegraph.com"],
     category: "Crypto",
   },
   {
     url: "https://api.rss2json.com/v1/api.json?rss_url=https://www.theverge.com/rss/policy/index.xml",
     publisher: "The Verge",
+    allowedHosts: ["theverge.com"],
     category: "Policy",
   },
   {
     url: "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.arstechnica.com/arstechnica/tech-policy",
     publisher: "Ars Technica",
+    allowedHosts: ["arstechnica.com"],
     category: "Policy",
   },
   {
     url: "https://api.rss2json.com/v1/api.json?rss_url=https://www.theverge.com/rss/tech/index.xml",
     publisher: "The Verge",
+    allowedHosts: ["theverge.com"],
     category: "Technology",
   },
   {
     url: "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.arstechnica.com/arstechnica/index",
     publisher: "Ars Technica",
+    allowedHosts: ["arstechnica.com"],
     category: "Technology",
   },
   {
     url: "https://api.rss2json.com/v1/api.json?rss_url=https://moxie.foxnews.com/google-publisher/latest.xml",
     publisher: "Fox News",
+    allowedHosts: ["foxnews.com"],
     category: "Fox News",
   },
   {
     url: "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.hbr.org/harvardbusiness",
     publisher: "Harvard Business Review",
+    allowedHosts: ["hbr.org"],
     category: "Leadership",
   },
 ];
@@ -119,12 +129,14 @@ function getImageUrl(...values: unknown[]): string {
   return "";
 }
 
-function getSafePublisherUrl(value: unknown): string {
+function getSafePublisherUrl(value: unknown, allowedHosts: string[]): string {
   if (typeof value !== "string" || !value.trim()) return "";
 
   try {
     const parsed = new URL(value.trim());
-    return parsed.protocol === "https:" ? parsed.toString() : "";
+    const host = parsed.hostname.toLocaleLowerCase();
+    const allowed = allowedHosts.some((domain) => host === domain || host.endsWith("." + domain));
+    return parsed.protocol === "https:" && allowed ? parsed.toString() : "";
   } catch {
     return "";
   }
@@ -211,7 +223,8 @@ export async function GET() {
         if (Date.parse(publishedAt) > Date.now() + 24 * 60 * 60 * 1000) continue;
         if (!isCategoryRelevant(feed.category, title, articleText)) continue;
 
-        const publisherUrl = getSafePublisherUrl(item.link);
+        const publisherUrl = getSafePublisherUrl(item.link, feed.allowedHosts);
+        if (!publisherUrl) continue;
         if (publisherUrl) {
           publisherUrls.set(
             `${feed.publisher.toLocaleLowerCase()}:${title.toLocaleLowerCase()}`,

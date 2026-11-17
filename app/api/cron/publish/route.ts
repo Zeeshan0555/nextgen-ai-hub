@@ -1,6 +1,9 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "../../../lib/supabase-server";
+import { createEditorialBriefing, formatEditorialBriefing, formatSourceExcerpt } from "../../../lib/gemini-editorial";
+
+export const maxDuration = 60;
 
 type RssItem = {
   title?: string;
@@ -56,6 +59,26 @@ function parsePublishedAt(value?: string): string | null {
   return timestamp.toISOString();
 }
 
+function getSafePublisherUrl(value: unknown, publisher: string): string {
+  if (typeof value !== "string" || !value.trim()) return "";
+  const publisherHosts: Record<string, string[]> = {
+    "TechCrunch": ["techcrunch.com"],
+    "The Verge": ["theverge.com"],
+    "CoinTelegraph": ["cointelegraph.com"],
+    "Ars Technica": ["arstechnica.com"],
+    "Fox News": ["foxnews.com"],
+    "Harvard Business Review": ["hbr.org"],
+  };
+  try {
+    const parsed = new URL(value.trim());
+    const host = parsed.hostname.toLocaleLowerCase();
+    const allowed = (publisherHosts[publisher] || []).some((domain) => host === domain || host.endsWith("." + domain));
+    return parsed.protocol === "https:" && allowed ? parsed.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
 function getImageUrl(...values: unknown[]): string {
   for (const value of values) {
     if (typeof value !== "string" || !value.trim()) continue;
@@ -105,15 +128,15 @@ export async function GET(request: Request) {
 
   try {
     const feeds = [
-      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/category/artificial-intelligence/feed/", publisher: "TechCrunch", category: "AI" },
-      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", publisher: "The Verge", category: "AI" },
-      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://cointelegraph.com/rss", publisher: "CoinTelegraph", category: "Crypto" },
-      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://www.theverge.com/rss/policy/index.xml", publisher: "The Verge", category: "Policy" },
-      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.arstechnica.com/arstechnica/tech-policy", publisher: "Ars Technica", category: "Policy" },
-      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://www.theverge.com/rss/tech/index.xml", publisher: "The Verge", category: "Technology" },
-      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.arstechnica.com/arstechnica/index", publisher: "Ars Technica", category: "Technology" },
-      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://moxie.foxnews.com/google-publisher/latest.xml", publisher: "Fox News", category: "Fox News" },
-      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.hbr.org/harvardbusiness", publisher: "Harvard Business Review", category: "Leadership" },
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/category/artificial-intelligence/feed/", publisher: "TechCrunch", category: "AI", allowedHosts: ["techcrunch.com"] },
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", publisher: "The Verge", category: "AI", allowedHosts: ["theverge.com"] },
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://cointelegraph.com/rss", publisher: "CoinTelegraph", category: "Crypto", allowedHosts: ["cointelegraph.com"] },
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://www.theverge.com/rss/policy/index.xml", publisher: "The Verge", category: "Policy", allowedHosts: ["theverge.com"] },
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.arstechnica.com/arstechnica/tech-policy", publisher: "Ars Technica", category: "Policy", allowedHosts: ["arstechnica.com"] },
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://www.theverge.com/rss/tech/index.xml", publisher: "The Verge", category: "Technology", allowedHosts: ["theverge.com"] },
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.arstechnica.com/arstechnica/index", publisher: "Ars Technica", category: "Technology", allowedHosts: ["arstechnica.com"] },
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://moxie.foxnews.com/google-publisher/latest.xml", publisher: "Fox News", category: "Fox News", allowedHosts: ["foxnews.com"] },
+      { url: "https://api.rss2json.com/v1/api.json?rss_url=https://feeds.hbr.org/harvardbusiness", publisher: "Harvard Business Review", category: "Leadership", allowedHosts: ["hbr.org"] },
     ];
 
     const feedResults = await Promise.all(feeds.map(async (feed) => {
@@ -139,7 +162,8 @@ export async function GET(request: Request) {
             articleText.length >= 40 &&
             publishedAt &&
             Date.parse(publishedAt) <= Date.now() + 24 * 60 * 60 * 1000 &&
-            isCategoryRelevant(feed.category, title, articleText)
+            isCategoryRelevant(feed.category, title, articleText) &&
+            Boolean(getSafePublisherUrl(candidate.link, feed.publisher))
           );
         })
         .map((candidate) => ({ item: candidate, publisher: feed.publisher, category: feed.category }))
@@ -156,39 +180,35 @@ export async function GET(request: Request) {
     }
 
     const supabase = createSupabaseServerClient();
-    let selected: (typeof candidates)[number] | null = null;
+    const candidatesToCheck = candidates.slice(0, 50);
+    const candidateTitles = candidatesToCheck.map((candidate) => cleanFeedText(candidate.item.title));
+    const { data: existingStories, error: lookupError } = await supabase
+      .from("news")
+      .select("title")
+      .in("title", candidateTitles);
 
-    // Skip already-published items so one duplicate does not block newer feed candidates.
-    for (const candidate of candidates) {
-      const candidateTitle = cleanFeedText(candidate.item.title);
-      const { data: existing, error: lookupError } = await supabase
-        .from("news")
-        .select("id")
-        .eq("title", candidateTitle)
-        .maybeSingle();
-
-      if (lookupError) {
-        console.error("Existing story lookup error:", lookupError.message);
-        return NextResponse.json(
-          { success: false, message: "Could not check for an existing story." },
-          { status: 500 }
-        );
-      }
-
-      if (!existing) {
-        selected = candidate;
-        break;
-      }
+    if (lookupError) {
+      console.error("Existing story lookup error:", lookupError.message);
+      return NextResponse.json(
+        { success: false, message: "Could not check for an existing story." },
+        { status: 500 }
+      );
     }
+
+    const existingTitles = new Set(
+      (existingStories || []).map((story) => String(story.title || "").toLocaleLowerCase())
+    );
+    const selected = candidatesToCheck.find((candidate) =>
+      !existingTitles.has(cleanFeedText(candidate.item.title).toLocaleLowerCase())
+    );
 
     if (!selected) {
       return NextResponse.json({
         success: true,
-        message: "All valid feed candidates already exist.",
-        checked: candidates.length,
+        message: "All checked feed candidates already exist.",
+        checked: candidatesToCheck.length,
       });
     }
-
     const { item, publisher, category } = selected;
     const title = cleanFeedText(item.title);
     const articleText = cleanFeedText(item.content || item.description);
@@ -201,17 +221,36 @@ export async function GET(request: Request) {
       );
     }
 
-    const description =
-      articleText.length > 250
-        ? `${articleText.slice(0, 247).trimEnd()}...`
-        : articleText;
+    const publisherUrl = getSafePublisherUrl(item.link, publisher);
+    if (!publisherUrl) {
+      return NextResponse.json(
+        { success: false, message: "The publisher link could not be verified." },
+        { status: 422 }
+      );
+    }
 
+    const briefing = await createEditorialBriefing({
+      title,
+      category,
+      publisher,
+      publisherUrl,
+      publishedAt,
+      sourceText: articleText,
+    });
+    const storedContent = briefing
+      ? formatEditorialBriefing(briefing, publisherUrl)
+      : formatSourceExcerpt(articleText, publisherUrl);
+    const description = briefing
+      ? briefing.summary
+      : articleText.length > 240
+        ? articleText.slice(0, 237).trimEnd() + "..."
+        : articleText;
     const { error } = await supabase.from("news").insert([
       {
         title,
         description,
         // Store only the text present in the publisher's feed.
-        content: articleText,
+        content: storedContent,
         image_url: getImageUrl(item.thumbnail, item.enclosure?.link),
         source: publisher,
         category,
@@ -234,6 +273,7 @@ export async function GET(request: Request) {
       source: publisher,
       category,
       publishedAt,
+      aiBriefingCreated: Boolean(briefing),
     });
   } catch (error) {
     console.error("Cron publish error:", error);
