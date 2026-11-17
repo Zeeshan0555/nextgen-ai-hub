@@ -54,12 +54,12 @@ type TopicRule = { label: string; keywords: string[] };
 
 const CATEGORY_TOPICS: Record<NewsCategory, TopicRule[]> = {
   AI: [
-    { label: "AI Models & Tools", keywords: ["model", "chatgpt", "claude", "gemini", "copilot", "llm", "tool"] },
-    { label: "AI Research", keywords: ["research", "study", "paper", "benchmark", "breakthrough"] },
+    { label: "AI Models & Tools", keywords: ["foundation model", "language model", "chatgpt", "claude", "gemini", "copilot", "llm", "AI tool", "AI tools"] },
+    { label: "AI Research", keywords: ["AI research", "machine learning research", "research paper", "AI study", "benchmark", "breakthrough"] },
     { label: "Generative AI", keywords: ["generative", "image generation", "video generation", "text-to-image", " sora "] },
     { label: "AI Agents & Automation", keywords: ["agent", "automation", "workflow", "autonomous"] },
     { label: "Robotics", keywords: ["robot", "humanoid", "robotics"] },
-    { label: "AI Business", keywords: ["enterprise", "business", "startup", "investment", "revenue"] },
+    { label: "AI Business", keywords: ["AI enterprise", "AI startup", "AI company", "AI investment", "AI funding", "AI revenue"] },
   ],
   Crypto: [
     { label: "Bitcoin", keywords: ["bitcoin", "btc"] },
@@ -76,8 +76,8 @@ const CATEGORY_TOPICS: Record<NewsCategory, TopicRule[]> = {
     { label: "Cybersecurity Policy", keywords: ["cybersecurity policy", "cyber security law", "security directive"] },
   ],
   Technology: [
-    { label: "Smartphones & Devices", keywords: ["iphone", "smartphone", "android", "device", "laptop", "chip"] },
-    { label: "Software", keywords: ["software", "app", "operating system", "windows", "browser"] },
+    { label: "Smartphones & Devices", keywords: ["iphone", "smartphone", "android", "mobile device", "laptop", "semiconductor", "processor chip"] },
+    { label: "Software", keywords: ["software", "mobile app", "operating system", "windows", "browser"] },
     { label: "Cybersecurity", keywords: ["cybersecurity", "cyber attack", "hacking", "malware", "data breach"] },
     { label: "Space & Science", keywords: ["space", " nasa ", "satellite", "scientist", "science", "mission"] },
     { label: "Robotics", keywords: ["robot", "robotics", "humanoid"] },
@@ -85,29 +85,42 @@ const CATEGORY_TOPICS: Record<NewsCategory, TopicRule[]> = {
   ],
   "Fox News": [
     { label: "US Politics", keywords: ["trump", "congress", "senate", "election", "white house", "republican", "democrat"] },
-    { label: "World News", keywords: ["world", "international", "ukraine", "china", "middle east", "foreign"] },
+    { label: "World News", keywords: ["international relations", "ukraine", "china", "middle east", "foreign policy"] },
     { label: "Business & Economy", keywords: ["business", "economy", "market", "inflation", "jobs", "company"] },
     { label: "Technology Coverage", keywords: ["technology", "artificial intelligence", "cyber", "tech"] },
   ],
   Leadership: [
     { label: "Tech CEOs", keywords: ["ceo", "chief executive", "founder"] },
     { label: "AI Industry Leaders", keywords: ["openai", "anthropic", "deepmind", "ai leader"] },
-    { label: "Business Strategies", keywords: ["strategy", "business plan", "growth", "leadership strategy"] },
+    { label: "Business Strategies", keywords: ["business strategy", "business plan", "leadership strategy", "corporate strategy"] },
     { label: "Company Leadership", keywords: ["executive", "board", "management", "appointed"] },
-    { label: "Interviews & Innovation", keywords: ["interview", "innovation", "vision", "future of"] },
+    { label: "Interviews & Innovation", keywords: ["CEO interview", "leadership interview", "innovation strategy", "executive vision"] },
   ],
 };
 
 function getNewsSubcategory(item: NewsItem): string {
   const rules = CATEGORY_TOPICS[item.category as NewsCategory];
   if (!rules) return "Other";
-  const text = `${item.title} ${item.summary} ${item.source}`.toLowerCase();
-  return rules.find((rule) => rule.keywords.some((keyword) => {
-    const normalizedKeyword = keyword.trim();
-    return normalizedKeyword.includes(" ")
-      ? text.includes(normalizedKeyword)
-      : new RegExp("\\b" + normalizedKeyword + "\\b").test(text);
-  }))?.label || "Other";
+
+  const title = item.title.toLocaleLowerCase();
+  const summary = item.summary.toLocaleLowerCase();
+  const matchesKeyword = (text: string, keyword: string) => {
+    const normalized = keyword.trim().toLocaleLowerCase();
+    if (!normalized) return false;
+    if (normalized.includes(" ")) return text.includes(normalized);
+    const escaped = normalized.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&");
+    return new RegExp("\\\\b" + escaped + "\\\\b", "i").test(text);
+  };
+
+  // Headline matches carry more weight than a passing mention in the summary.
+  const ranked = rules.map((rule) => ({
+    label: rule.label,
+    score: rule.keywords.reduce((score, keyword) =>
+      score + (matchesKeyword(title, keyword) ? 3 : 0) +
+        (matchesKeyword(summary, keyword) ? 1 : 0), 0),
+  })).sort((left, right) => right.score - left.score);
+
+  return ranked[0]?.score >= 2 ? ranked[0].label : "Other";
 }
 
 const MARKET_SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT"] as const;
