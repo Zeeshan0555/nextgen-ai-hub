@@ -208,16 +208,6 @@ export default function NeuroWirePlatform() {
 
   // Secret Admin & Supabase Sync
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("admin") === "true") {
-        setIsAdmin(true);
-        localStorage.setItem("neurowire_admin_mode", "true");
-      } else if (localStorage.getItem("neurowire_admin_mode") === "true") {
-        setIsAdmin(true);
-      }
-    }
-
     async function loadVaultNews() {
     try {
       const { data, error } = await supabase
