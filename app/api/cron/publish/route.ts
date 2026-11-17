@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "../../../lib/supabase-server";
 
@@ -57,7 +58,36 @@ function getImageUrl(...values: unknown[]): string {
   return "";
 }
 
-export async function GET() {
+function isAuthorizedCronRequest(request: Request): boolean {
+  const secret = process.env.CRON_SECRET;
+  const authorization = request.headers.get("authorization");
+
+  if (!secret || secret.length < 32 || !authorization) return false;
+
+  const expected = Buffer.from(`Bearer ${secret}`);
+  const received = Buffer.from(authorization);
+
+  return (
+    received.length === expected.length &&
+    timingSafeEqual(received, expected)
+  );
+}
+
+export async function GET(request: Request) {
+  if (!process.env.CRON_SECRET || process.env.CRON_SECRET.length < 32) {
+    return NextResponse.json(
+      { success: false, message: "Scheduled publishing is not configured." },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+
+  if (!isAuthorizedCronRequest(request)) {
+    return NextResponse.json(
+      { success: false, message: "Unauthorized scheduled publishing request." },
+      { status: 401, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+
   try {
     const response = await fetch(
       "https://api.rss2json.com/v1/api.json?rss_url=https://techcrunch.com/category/artificial-intelligence/feed/"
