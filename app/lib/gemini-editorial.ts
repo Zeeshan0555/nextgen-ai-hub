@@ -15,7 +15,6 @@ type EditorialInput = {
   category: string;
   publisher: string;
   publisherUrl: string;
-  publishedAt: string;
   sourceText: string;
 };
 
@@ -86,7 +85,7 @@ export async function createEditorialBriefing(
     "Create a useful, original editorial briefing from ONLY the editor-supplied source material.",
     "Do not use outside knowledge, browsing, assumptions, forecasts, invented context, invented numbers, invented quotes, or claims not directly supported by the supplied text.",
     "Do not rewrite the source paragraph sentence by sentence. Explain the central development clearly and distinguish confirmed details from what the source does not establish.",
-    "Keep the supplied headline, publisher name, category and publication date unchanged; they are metadata, not facts to embellish.",
+    "Keep the supplied headline, publisher name and category unchanged; they are metadata, not facts to embellish. Do not invent or infer a publication date. If no verified source publication date is supplied, do not state one.",
     "Return only valid JSON with these exact keys: summary, keyPoints, whyItMatters, openQuestions.",
     "summary: 2 to 4 clear sentences in plain English, written freshly, explaining what the publisher text actually reports.",
     "keyPoints: 2 to 4 objects, each with point and evidence. Each evidence value must be an exact, contiguous 5-to-14-word excerpt copied verbatim from the supplied source text. Keep excerpts short.",
@@ -113,7 +112,6 @@ export async function createEditorialBriefing(
                 "Headline: " + input.title,
                 "Category: " + input.category,
                 "Publisher: " + input.publisher,
-                "Publisher publication date: " + input.publishedAt,
                 "Original publisher URL: " + input.publisherUrl,
                 "",
                 "SOURCE MATERIAL (the only factual source you may use):",
