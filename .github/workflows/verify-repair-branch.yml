@@ -43,6 +43,7 @@ jobs:
         env:
           CHECKPOINT_COMMIT: ${{ github.sha }}
           CHECKPOINT_BRANCH: ${{ github.ref_name }}
+          CHECKPOINT_DATE: $(date -u +%F)
         run: |
           set -euo pipefail
 
@@ -53,11 +54,11 @@ jobs:
           git archive --format=tar "${CHECKPOINT_COMMIT}" | tar -xf - -C "${project_root}"
 
           cat > "${checkpoint_root}/PROGRESS-REPORT.md" <<'EOF'
-          # NeuroWire Repair Branch Snapshot
+          # NeuroWire Repair Branch Checkpoint
 
           - Branch: @CHECKPOINT_BRANCH@
           - Source commit: @CHECKPOINT_COMMIT@
-          - Snapshot date: 2026-11-16
+          - Snapshot date: @CHECKPOINT_DATE@
           - Project source: `NeuroWire-Project/`
 
           ## Included work
@@ -80,7 +81,7 @@ jobs:
 
           ## Important scope notes
 
-          - This is a repair-branch snapshot based on the GitHub `main` branch, not a verified reconstruction of Checkpoint 50.
+          - This archive contains the exact source tree at the workflow-triggering repair-branch commit. It is not a verified reconstruction of Checkpoint 50.
           - The existing Checkpoint 50 backup must be preserved; do not overwrite it with this snapshot.
           - No merge to `main` or production deployment is performed by this workflow.
           - Supabase project settings, credentials, schema, and database configuration were not changed.
@@ -91,6 +92,7 @@ jobs:
           sed -i \
             -e "s|@CHECKPOINT_BRANCH@|${CHECKPOINT_BRANCH}|g" \
             -e "s|@CHECKPOINT_COMMIT@|${CHECKPOINT_COMMIT}|g" \
+            -e "s|@CHECKPOINT_DATE@|${CHECKPOINT_DATE}|g" \
             "${checkpoint_root}/PROGRESS-REPORT.md"
 
           (
@@ -102,7 +104,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: NeuroWire-Checkpoint-51-Repair-Branch-${{ github.sha }}
+          name: NeuroWire-Checkpoint-52-Repair-Branch-${{ github.sha }}
           path: ${{ runner.temp }}/neurowire-checkpoint/
           if-no-files-found: error
           retention-days: 30
