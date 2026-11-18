@@ -99,7 +99,6 @@ export async function POST(request: NextRequest) {
     category,
     publisher,
     publisherUrl,
-    publishedAt: new Date().toISOString(),
     sourceText,
   });
 
