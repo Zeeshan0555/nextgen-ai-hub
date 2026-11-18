@@ -107,7 +107,13 @@ export function safePublisherUrl(value: unknown, allowedHosts: string[]): string
     const parsed = new URL(value.trim());
     const host = parsed.hostname.toLocaleLowerCase();
     const hostAllowed = allowedHosts.some((domain) => host === domain || host.endsWith("." + domain));
-    return parsed.protocol === "https:" && hostAllowed ? parsed.toString() : "";
+    const hasUnsafeAuthority = Boolean(parsed.username || parsed.password || (parsed.port && parsed.port !== "443"));
+
+    if (parsed.protocol !== "https:" || !hostAllowed || hasUnsafeAuthority) return "";
+
+    // Fragments are not sent to the publisher and can carry misleading client-side text.
+    parsed.hash = "";
+    return parsed.toString();
   } catch {
     return "";
   }
