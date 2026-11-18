@@ -43,9 +43,9 @@ jobs:
         env:
           CHECKPOINT_COMMIT: ${{ github.sha }}
           CHECKPOINT_BRANCH: ${{ github.ref_name }}
-          CHECKPOINT_DATE: $(date -u +%F)
         run: |
           set -euo pipefail
+          CHECKPOINT_DATE="$(date -u +%F)"
 
           checkpoint_root="${RUNNER_TEMP}/neurowire-checkpoint"
           project_root="${checkpoint_root}/NeuroWire-Project"
