@@ -25,9 +25,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (let offset = 0; ; offset += PAGE_SIZE) {
       const { data, error } = await supabase
         .from("news")
-        .select("title, created_at, content, description, source")
+        .select("id, title, created_at, content, description, source")
         .order("created_at", { ascending: false })
         .order("title", { ascending: true })
+        .order("id", { ascending: true })
         .range(offset, offset + PAGE_SIZE - 1);
 
       if (error || !Array.isArray(data)) {
