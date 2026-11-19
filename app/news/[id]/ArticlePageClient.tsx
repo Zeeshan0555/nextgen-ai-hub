@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ExternalLink, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Bookmark, BookmarkCheck, ExternalLink, ShieldCheck } from "lucide-react";
+import { readSavedStories, toggleSavedStory } from "@/app/lib/reader-saved";
 import { supabase } from "@/lib/supabase";
 
 export type ArticleStory = {
@@ -91,6 +92,8 @@ export default function ArticlePageClient({ initialStory }: { initialStory: Arti
   const [story, setStory] = useState<ArticleStory | null>(initialStory);
   const [loading, setLoading] = useState(!initialStory);
   const [loadError, setLoadError] = useState("");
+  const [isSaved, setIsSaved] = useState(false);
+  const [saveNotice, setSaveNotice] = useState("");
 
   useEffect(() => {
     if (initialStory) {
@@ -250,6 +253,36 @@ export default function ArticlePageClient({ initialStory }: { initialStory: Arti
     );
   }
 
+  useEffect(() => {
+    if (!story) {
+      setIsSaved(false);
+      return;
+    }
+    const normalizedTitle = story.title.trim().toLocaleLowerCase();
+    setIsSaved(readSavedStories().some(
+      (saved) => saved.title.trim().toLocaleLowerCase() === normalizedTitle
+    ));
+  }, [story?.title]);
+
+  const handleToggleSavedStory = () => {
+    if (!story) return;
+    const result = toggleSavedStory({
+      title: story.title,
+      category: story.category,
+      source: story.source,
+      publishedAt: story.publishedAt,
+      image: story.image,
+      publisherUrl: story.publisherUrl,
+      summary: story.summary,
+    });
+    if (!result.persisted) {
+      setSaveNotice("Could not save this story in your browser.");
+      return;
+    }
+    setIsSaved(result.saved);
+    setSaveNotice(result.saved ? "Saved on this device." : "Removed from saved stories.");
+  };
+
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-100 font-sans pb-20">
       <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40 px-4 py-4">
@@ -275,6 +308,19 @@ export default function ArticlePageClient({ initialStory }: { initialStory: Arti
         </div>
 
         <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">{story.title}</h1>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={handleToggleSavedStory}
+            aria-pressed={isSaved}
+            className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors ${isSaved ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-200" : "border-slate-700 bg-slate-900 text-slate-300 hover:text-white"}`}
+          >
+            {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+            {isSaved ? "Saved" : "Save story"}
+          </button>
+          {saveNotice && <p role="status" aria-live="polite" className="text-xs text-cyan-300">{saveNotice}</p>}
+        </div>
 
         {story.publisherUrl && (
           <a
