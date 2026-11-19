@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../supabase";
 import { useRouter } from "next/navigation";
+import { readSavedStories, toggleSavedStory, type SavedReaderStory } from "@/app/lib/reader-saved";
 import {
+  Bookmark,
+  BookmarkCheck,
   TrendingUp,
   Volume2,
   VolumeX,
@@ -148,6 +151,9 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
   const [search, setSearch] = useState<string>("");
   const [activeStory, setActiveStory] = useState<NewsItem | null>(null);
   const [isReading, setIsReading] = useState(false);
+  const [savedStories, setSavedStories] = useState<SavedReaderStory[]>([]);
+  const [showSavedStories, setShowSavedStories] = useState(false);
+  const [savedNotice, setSavedNotice] = useState("");
   const [visibleCount, setVisibleCount] = useState(6);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminStatusLoading, setAdminStatusLoading] = useState(true);
@@ -169,6 +175,7 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
       const sub = localStorage.getItem("neurowire_sub");
       if (sub) setIsSubscribed(true);
     }
+    setSavedStories(readSavedStories());
   }, []);
 
   useEffect(() => {
@@ -575,6 +582,22 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
 
   const searchTerm = search.trim().toLowerCase();
 
+  const handleToggleSavedStory = (item: NewsItem) => {
+    const result = toggleSavedStory({
+      title: item.title,
+      category: item.category,
+      source: item.source,
+      publishedAt: item.publishedAt,
+      image: item.image,
+      publisherUrl: item.publisherUrl || "",
+      summary: item.summary,
+    });
+    setSavedStories(result.stories);
+    setSavedNotice(!result.persisted
+      ? "Saved stories could not be stored in this browser."
+      : result.saved ? "Story saved on this device." : "Story removed from saved stories.");
+  };
+
   // Keep the homepage feed in publication order, with undated records last.
   const sortedNews = [...news].sort((left, right) => {
     const leftTime = Date.parse(left.publishedAt);
@@ -594,8 +617,25 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
     return matchesTab && matchesSubcategory && matchesSearch;
   });
 
+  const savedFeedItems: NewsItem[] = savedStories.map((story) => ({
+    id: "saved-" + story.title,
+    title: story.title,
+    category: NEWS_CATEGORIES.includes(story.category as NewsCategory)
+      ? story.category as NewsCategory
+      : "Uncategorized",
+    source: story.source,
+    readTime: story.publisherUrl ? "Source link" : "Saved story",
+    publishedAt: story.publishedAt,
+    image: story.image,
+    publisherUrl: story.publisherUrl,
+    summary: story.summary,
+    fullReport: [],
+    bullets: [],
+  }));
+  const storiesForView = showSavedStories ? savedFeedItems : filtered;
+
   // Never show an unrelated story when a selected category has no results.
-  const hero = filtered[0] || null;
+  const hero = showSavedStories ? null : filtered[0] || null;
 
   const handleCategoryChange = (category: string) => {
     setActiveTab(category);
@@ -619,7 +659,7 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
               <span className="text-2xl font-black text-white">
                 Neuro<span className="text-cyan-400">Wire</span>
               </span>
-              <p className="text-[10px] uppercase text-slate-400 font-mono">Market & Frontier Tech Intelligence</p>
+              <p className="text-[10px] uppercase text-slate-400 font-mono">AI, Crypto & Technology News</p>
             </div>
           </div>
 
@@ -629,7 +669,7 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search reports, policy, or tickers..."
+              placeholder="Search AI, crypto, technology and policy news..."
               className="w-full bg-slate-950 border border-slate-800 rounded-full pl-9 pr-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500"
             />
           </div>
@@ -657,6 +697,8 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
         </div>
       </header>
 
+      {!showSavedStories && (
+      <>
       {/* 3. HERO DISPATCH */}
       <section className="max-w-7xl mx-auto px-4 pt-8 pb-8">
         {hero ? (
@@ -719,8 +761,10 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
           </div>
         )}
       </section>
+      </>
+      )}
 
-      {/* 4. MACRO WIRE FEED */}
+      {/* 4. NEWS FEED */}
       <section id="categories" className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
@@ -728,8 +772,18 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
               <Cpu className="h-6 w-6 text-cyan-400" /> {activeTab === "All" ? "Latest News" : activeTab === "Fox News" ? "Fox News" : activeTab + " News"}
             </h2>
             <p className="mt-1 text-xs text-slate-400">
-              {activeTab === "All" ? "The latest stories across all six categories." : "Showing stories from this category only."}
+              {showSavedStories ? "Stories you have saved in this browser." : activeTab === "All" ? "The latest stories across all six categories." : "Showing stories from this category only."}
             </p>
+            <button
+              type="button"
+              onClick={() => { setShowSavedStories((current) => !current); setVisibleCount(6); setSavedNotice(""); }}
+              aria-pressed={showSavedStories}
+              className={`mt-3 inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors ${showSavedStories ? "border-cyan-500 bg-cyan-500/15 text-cyan-200" : "border-slate-700 bg-slate-950 text-slate-300 hover:border-cyan-500/50 hover:text-white"}`}
+            >
+              {showSavedStories ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+              {showSavedStories ? "Back to latest" : `Saved stories (${savedStories.length})`}
+            </button>
+            {savedNotice && <p role="status" aria-live="polite" className="mt-2 text-xs text-cyan-300">{savedNotice}</p>}
           </div>
 
           <div className="flex max-w-full items-center gap-2 overflow-x-auto bg-slate-950 p-1.5 rounded-full border border-slate-800">
@@ -773,19 +827,21 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
           </div>
         )}
 
-{filtered.length === 0 ? (
+{storiesForView.length === 0 ? (
   <div className="p-8 md:p-10 rounded-2xl border border-slate-800 bg-slate-900/40 text-center">
     <h3 className="text-base font-semibold text-white">
-      {newsLoading ? "Loading latest headlines..." : news.length === 0 ? "No fresh headlines at the moment" : "No headlines match this view"}
+      {showSavedStories ? "No saved stories yet" : newsLoading ? "Loading latest headlines..." : news.length === 0 ? "No fresh headlines at the moment" : "No headlines match this view"}
     </h3>
     <p className="mt-2 text-sm text-slate-400">
-      {newsLoading
-        ? "The newsroom is checking its publisher sources."
-        : news.length === 0
-          ? "Open an official source page while new headlines are being collected."
-          : "Try another topic or clear the search to see more stories."}
+      {showSavedStories
+        ? "Use the bookmark button on any story to keep it here on this device."
+        : newsLoading
+          ? "The newsroom is checking its publisher sources."
+          : news.length === 0
+            ? "Open an official source page while new headlines are being collected."
+            : "Try another topic or clear the search to see more stories."}
     </p>
-    {!newsLoading && (
+    {!showSavedStories && !newsLoading && (
       <div className="mt-5 flex flex-wrap justify-center gap-2">
         {(activeTab === "All"
           ? NEWS_CATEGORIES.map((category) => ({
@@ -810,7 +866,7 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
 ) : (
 
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-    {filtered.slice(0, visibleCount).map((item) => (
+    {storiesForView.slice(0, visibleCount).map((item) => (
       <div
         key={item.id}
         className="bg-slate-900/50 border border-slate-800 rounded-3xl p-5 flex flex-col justify-between group hover:border-slate-700 transition-all shadow-xl"
@@ -848,7 +904,7 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
                 </p>
               </div>
 
-              <div className="border-t border-slate-800 pt-3 flex items-center justify-between">
+              <div className="border-t border-slate-800 pt-3 flex items-center justify-between gap-3">
                 {item.publisherUrl && item.readTime === "Source link" ? (
                   <a
                     href={item.publisherUrl}
@@ -867,6 +923,17 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
                   </button>
                 )}
 
+                <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleToggleSavedStory(item)}
+                  aria-label={savedStories.some((story) => story.title.toLocaleLowerCase() === item.title.toLocaleLowerCase()) ? "Remove saved story" : "Save story"}
+                  aria-pressed={savedStories.some((story) => story.title.toLocaleLowerCase() === item.title.toLocaleLowerCase())}
+                  className={`inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-2 text-xs font-semibold ${savedStories.some((story) => story.title.toLocaleLowerCase() === item.title.toLocaleLowerCase()) ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-200" : "border-slate-700 bg-slate-800 text-slate-300 hover:text-white"}`}
+                >
+                  {savedStories.some((story) => story.title.toLocaleLowerCase() === item.title.toLocaleLowerCase()) ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                  Save
+                </button>
                 <button
                   onClick={() => toggleVoiceReader(item)}
                   className={`p-2 rounded-xl border ${
@@ -876,6 +943,7 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
                 >
                   {isReading ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 </button>
+                </div>
               </div>
             </div>
     
@@ -883,13 +951,13 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
   </div>
 )}
         {/* BLOOMBERG STYLE LOAD MORE BUTTON */}
-        {visibleCount < filtered.length && (
+        {visibleCount < storiesForView.length && (
           <div className="flex justify-center mt-10">
             <button
               onClick={() => setVisibleCount((prev) => prev + 6)}
               className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-cyan-500/40 text-cyan-400 hover:text-white font-bold text-xs uppercase tracking-wider transition-all shadow-xl shadow-cyan-500/10 active:scale-95"
             >
-              <Zap className="h-4 w-4" /> Load More Intelligence Wire ({filtered.length - visibleCount} Remaining)
+              <Zap className="h-4 w-4" /> Load More Intelligence Wire ({storiesForView.length - visibleCount} Remaining)
             </button>
           </div>
         )}
