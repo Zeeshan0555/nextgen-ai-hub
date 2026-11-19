@@ -233,6 +233,9 @@ export default function AdminDashboard() {
           <a href="#recent-articles" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
             <FileText className="h-5 w-5" /> News Articles
           </a>
+          <a href="#author-submissions" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
+            <FileText className="h-5 w-5" /> Author Submissions
+          </a>
           <a href="#system-health" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/40">
             <ShieldCheck className="h-5 w-5" /> System Health
           </a>
