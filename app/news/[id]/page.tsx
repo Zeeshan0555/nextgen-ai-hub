@@ -63,6 +63,7 @@ async function getInitialArticle(title: string): Promise<ArticleStory | null> {
     if (error || !data) return null;
 
     const rawContent = typeof data.content === "string" ? data.content.trim() : "";
+    if (rawContent.startsWith("NEUROWIRE_PRIVATE_AUTHOR_DRAFT_V1\\n")) return null;
     const lines = rawContent.split("\n");
     const sourceLine = lines.find((line) => line.startsWith("ORIGINAL_SOURCE_URL:"));
     const sourceUrl = sourceLine
