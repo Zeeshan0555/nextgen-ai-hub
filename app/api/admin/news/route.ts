@@ -262,9 +262,7 @@ export async function PATCH(request: NextRequest) {
     storedContent += "\n\nNEUROWIRE_AUTHOR_NAME: NeuroWire Admin";
   }
   if (sourceUrl) {
-    storedContent += "
-
-ORIGINAL_SOURCE_URL: " + sourceUrl;
+    storedContent += "\n\nORIGINAL_SOURCE_URL: " + sourceUrl;
   }
 
   try {
