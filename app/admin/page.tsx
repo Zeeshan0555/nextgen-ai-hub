@@ -66,6 +66,7 @@ export default function AdminDashboard() {
         const { data, error } = await supabase
           .from('news')
           .select('id, title, category, source, description, content, image_url, created_at')
+          .neq('source', 'NeuroWire Private Draft')
           .order('created_at', { ascending: false })
           .limit(50);
 
