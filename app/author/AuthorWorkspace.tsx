@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { ArrowLeft, BookOpen, CheckCircle2, FilePlus2, LogOut, Save, Send } from "lucide-react";
 
 const CATEGORIES = ["AI", "Crypto", "Policy", "Technology", "Fox News", "Leadership"] as const;
@@ -90,7 +90,7 @@ export default function AuthorWorkspace() {
     if (authenticated) void loadDrafts();
   }, [authenticated, loadDrafts]);
 
-  const signIn = async (event: React.FormEvent<HTMLFormElement>) => {
+  const signIn = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoginError("");
     setChecking(true);
