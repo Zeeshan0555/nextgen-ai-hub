@@ -69,12 +69,6 @@ export interface NewsItem {
   bullets: string[];
 }
 
-type MarketQuote = {
-  symbol: string;
-  price: number;
-  changePercent: number;
-};
-
 type TopicRule = { label: string; keywords: string[] };
 
 const CATEGORY_TOPICS: Record<NewsCategory, TopicRule[]> = {
@@ -145,24 +139,10 @@ function getNewsSubcategory(item: NewsItem): string {
   return ranked[0]?.score >= 2 ? ranked[0].label : "Other";
 }
 
-const MARKET_SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT"] as const;
-
-function formatMarketPrice(value: number): string {
-  const formatted = new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 6,
-  }).format(value);
-
-  return `${formatted} USDT`;
-}
-
 export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsItem[] }) {
     const router = useRouter();
   const [news, setNews] = useState<NewsItem[]>(initialNews);
   const [newsLoading, setNewsLoading] = useState(initialNews.length === 0);
-  const [marketQuotes, setMarketQuotes] = useState<MarketQuote[]>([]);
-  const [marketUpdatedAt, setMarketUpdatedAt] = useState<string | null>(null);
-  const [marketStatus, setMarketStatus] = useState<"loading" | "live" | "unavailable">("loading");
   const [activeTab, setActiveTab] = useState<string>("All");
   const [activeSubcategory, setActiveSubcategory] = useState<string>("All topics");
   const [search, setSearch] = useState<string>("");
@@ -220,41 +200,6 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
 
     window.addEventListener("neurowire:category-select", handleCategorySelect);
     return () => window.removeEventListener("neurowire:category-select", handleCategorySelect);
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-
-    async function loadMarketSnapshot() {
-      try {
-        const response = await fetch("/api/market", { cache: "no-store" });
-        if (!response.ok) throw new Error("Market feed unavailable");
-
-        const payload = await response.json();
-        if (!Array.isArray(payload.quotes) || payload.quotes.length === 0) {
-          throw new Error("No market quotes returned");
-        }
-
-        if (active) {
-          setMarketQuotes(payload.quotes);
-          setMarketUpdatedAt(typeof payload.fetchedAt === "string" ? payload.fetchedAt : null);
-          setMarketStatus("live");
-        }
-      } catch {
-        if (active) {
-          // Keep last successful quotes visible, but never show them as current after a failed refresh.
-          setMarketStatus("unavailable");
-        }
-      }
-    }
-
-    loadMarketSnapshot();
-    const intervalId = window.setInterval(loadMarketSnapshot, 60_000);
-
-    return () => {
-      active = false;
-      window.clearInterval(intervalId);
-    };
   }, []);
 
   const handleSubscribe = async (e: React.FormEvent) => {
@@ -663,53 +608,6 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
 
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-black">
-      {/* 1. TICKER */}
-      <div className="bg-slate-950 border-b border-slate-800/80 py-2 sticky top-0 z-40 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between text-xs">
-          <div className="flex flex-col shrink-0 pr-4 border-r border-slate-800">
-            <div className="flex items-center gap-2 text-slate-300 font-semibold uppercase">
-              <span className={`h-2 w-2 rounded-full ${marketStatus === "live" ? "bg-emerald-400" : marketStatus === "unavailable" ? "bg-amber-400" : "bg-slate-500"}`}></span>
-              Market snapshot
-            </div>
-            <span className="text-[9px] text-slate-500 normal-case mt-0.5">
-              {marketStatus === "loading"
-                ? "Loading quotes..."
-                : marketStatus === "unavailable"
-                  ? marketUpdatedAt
-                    ? `Refresh failed • last fetched ${new Date(marketUpdatedAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`
-                    : "Feed temporarily unavailable"
-                  : marketUpdatedAt
-                    ? `Fetched ${new Date(marketUpdatedAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`
-                    : "Waiting for quotes"}
-            </span>
-            <span className="text-[9px] text-slate-600 normal-case">Binance • USDT pairs</span>
-          </div>
-          <div className="flex items-center gap-6 overflow-x-auto whitespace-nowrap pl-4 no-scrollbar">
-            {MARKET_SYMBOLS.map((symbol) => {
-              const quote = marketQuotes.find((item) => item.symbol === symbol);
-              const label = symbol.replace("USDT", "/USDT");
-              return (
-                <div key={symbol} className="flex items-center gap-2">
-                  <span className="text-slate-400">{label}</span>
-                  {quote ? (
-                    <>
-                      <span className="font-semibold text-slate-100 tabular-nums">{formatMarketPrice(quote.price)}</span>
-                      <span className={`font-mono text-[11px] tabular-nums ${quote.changePercent >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
-                        {quote.changePercent > 0 ? "+" : ""}{quote.changePercent.toFixed(2)}%
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-slate-500 font-mono text-[11px]">
-                      {marketStatus === "loading" ? "Loading..." : "Unavailable"}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
       {/* 2. NAVBAR (WITH SECRET ADMIN UNLOCK) */}
       <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
