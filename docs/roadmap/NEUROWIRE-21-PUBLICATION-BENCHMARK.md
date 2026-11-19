@@ -53,12 +53,11 @@ For each publication, inspect publicly accessible live pages and features where 
 
 ## Business & Market Intelligence (educational information, not personalized investment advice)
 - Business Pulse: news-driven industry/company overview.
-- Market sentiment panel: aggregate source-based sentiment, show sampling/time window and methodology, caveats, stale-data status and source links; avoid presenting sentiment as a price forecast or buy/sell recommendation.
-- Sentiment inputs can include article tone and publicly available aggregate indicators, subject to lawful access and reliability; disclose source coverage/bias and missing data.
-- Sector Pulse and company/topic story clusters.
-- Economic calendar with event time, source, prior/forecast/actual only when reliable and licensed/accessible.
-- Market-data widgets (assets, indices, currencies, commodities) only when sourced, time-stamped and permitted; explicit unavailable/stale state.
-- Sentiment history and comparisons only where data coverage supports it; distinguish observation from inference.
+- Business/news mood overview: summarize tone and recurring themes in general business and industry reporting for educational context only; do not produce asset-specific sentiment signals, market predictions, buy/sell prompts or trading indicators.
+- Sentiment inputs must be source-based, disclose sampling/time window/methodology, caveats, source coverage/bias, gaps and stale-data status.
+- Sector Pulse and company/topic story clusters for reading and research, without investment action suggestions.
+- Economic events explained as general news and policy context; do not provide trade-planning cues or actionable financial guidance.
+- Avoid asset price widgets or trading-oriented features in this development scope.
 
 ## Implementation guardrails
 - Benchmark first, map existing components/features, prioritize opportunities, then implement incremental features.
