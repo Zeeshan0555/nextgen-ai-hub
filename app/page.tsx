@@ -44,6 +44,9 @@ function mapStoredStory(item: Record<string, unknown>): NewsItem | null {
   const content = typeof item.content === "string" ? item.content : "";
   const isReviewedBriefing = content.startsWith("NEUROWIRE_EDITORIAL_BRIEF_V1");
 
+  // Private encrypted Author drafts must never appear in public news.
+  if (content.startsWith("NEUROWIRE_PRIVATE_AUTHOR_DRAFT_V1\\n")) return null;
+
   // Older automated RSS copies are not republished after the source-policy change.
   if (LEGACY_FEED_PUBLISHERS.has(source.toLocaleLowerCase()) && !isReviewedBriefing) {
     return null;
