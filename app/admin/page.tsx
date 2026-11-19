@@ -39,6 +39,22 @@ type ArticleEditForm = {
   source_url: string;
 };
 
+type AdminAuthorDraft = {
+  id: string;
+  title: string;
+  category: string;
+  source: string;
+  sourceUrl: string;
+  description: string;
+  content: string;
+  imageUrl: string;
+  status: "draft" | "submitted" | "revision_requested" | "published";
+  feedback: string;
+  author: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 const ADMIN_CATEGORIES = ["AI", "Crypto", "Policy", "Technology", "Fox News", "Leadership"] as const;
 
 function getOriginalSourceUrl(content: string): string {
@@ -60,6 +76,34 @@ export default function AdminDashboard() {
   const [editForm, setEditForm] = useState<ArticleEditForm>({ title: "", category: "AI", source: "", description: "", content: "", image_url: "", source_url: "" });
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState("");
+  const [authorDrafts, setAuthorDrafts] = useState<AdminAuthorDraft[]>([]);
+  const [authorDraftsLoading, setAuthorDraftsLoading] = useState(true);
+  const [authorDraftsError, setAuthorDraftsError] = useState("");
+  const [draftFeedback, setDraftFeedback] = useState<Record<string, string>>({});
+  const [reviewingDraftId, setReviewingDraftId] = useState("");
+  useEffect(() => {
+    let active = true;
+    async function fetchAuthorDrafts() {
+      try {
+        const response = await fetch("/api/admin/author-drafts", { cache: "no-store" });
+        const payload = await response.json();
+        if (!response.ok || !payload.success || !Array.isArray(payload.drafts)) {
+          throw new Error(typeof payload.error === "string" ? payload.error : "Author submissions are not available.");
+        }
+        if (active) {
+          setAuthorDrafts(payload.drafts as AdminAuthorDraft[]);
+          setAuthorDraftsError("");
+        }
+      } catch (error) {
+        if (active) setAuthorDraftsError(error instanceof Error ? error.message : "Author submissions could not be loaded.");
+      } finally {
+        if (active) setAuthorDraftsLoading(false);
+      }
+    }
+    fetchAuthorDrafts();
+    return () => { active = false; };
+  }, []);
+
   useEffect(() => {
     async function fetchArticles() {
       try {
@@ -132,6 +176,33 @@ export default function AdminDashboard() {
       setEditError(error instanceof Error ? error.message : "The article could not be updated. Please try again.");
     } finally {
       setEditSaving(false);
+    }
+  };
+
+  const reviewAuthorDraft = async (draft: AdminAuthorDraft, action: "request_revision" | "publish") => {
+    if (action === "publish" && !window.confirm("Publish this Author article to the public news feed?")) return;
+    setReviewingDraftId(draft.id);
+    setAuthorDraftsError("");
+    try {
+      const response = await fetch("/api/admin/author-drafts", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: draft.id,
+          action,
+          feedback: draftFeedback[draft.id] || "",
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.success || !payload.draft) {
+        throw new Error(typeof payload.error === "string" ? payload.error : "The Author submission could not be updated.");
+      }
+      setAuthorDrafts((current) => current.map((item) => item.id === draft.id ? payload.draft : item));
+      setDraftFeedback((current) => ({ ...current, [draft.id]: "" }));
+    } catch (error) {
+      setAuthorDraftsError(error instanceof Error ? error.message : "The review action could not be completed.");
+    } finally {
+      setReviewingDraftId("");
     }
   };
 
@@ -369,6 +440,62 @@ export default function AdminDashboard() {
               </table>
             </div>
           </div>
+
+
+          <section id="author-submissions" className="rounded-2xl border border-slate-800/80 bg-[#0c0e15] p-6 space-y-4 scroll-mt-24">
+            <div>
+              <h3 className="text-lg font-bold">Author submissions</h3>
+              <p className="mt-1 text-xs text-slate-400">Review work submitted by the Author account before it appears in public news.</p>
+            </div>
+            {authorDraftsError && <p role="alert" className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-amber-200">{authorDraftsError}</p>}
+            {authorDraftsLoading ? (
+              <p className="text-sm text-slate-400">Loading Author submissions...</p>
+            ) : authorDrafts.length === 0 ? (
+              <p className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-400">No Author drafts or submissions are available. Draft storage must be configured before Authors can save work.</p>
+            ) : (
+              <div className="space-y-4">
+                {authorDrafts.map((draft) => (
+                  <article key={draft.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 space-y-3">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <h4 className="font-semibold text-white break-words">{draft.title}</h4>
+                        <p className="mt-1 text-xs text-slate-400">{draft.category} · {draft.source} · Author: {draft.author}</p>
+                      </div>
+                      <span className={`w-fit shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${draft.status === "submitted" ? "border-cyan-500/30 bg-cyan-500/10 text-cyan-200" : draft.status === "revision_requested" ? "border-amber-500/30 bg-amber-500/10 text-amber-200" : draft.status === "published" ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200" : "border-slate-700 text-slate-300"}`}>
+                        {draft.status.replace("_", " ")}
+                      </span>
+                    </div>
+                    <p className="text-sm leading-6 text-slate-300">{draft.description || "No summary added."}</p>
+                    <details className="rounded-lg border border-slate-800 px-3 py-2">
+                      <summary className="cursor-pointer text-xs font-semibold text-slate-300">Read article draft</summary>
+                      <div className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-slate-300">{draft.content}</div>
+                      {draft.sourceUrl && <a href={draft.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-xs text-cyan-300 underline">Open original source</a>}
+                    </details>
+                    {draft.feedback && (
+                      <p className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-amber-100">Author feedback: {draft.feedback}</p>
+                    )}
+                    {draft.status === "submitted" && (
+                      <div className="space-y-2 border-t border-slate-800 pt-3">
+                        <label className="block text-xs text-slate-400">Feedback for the Author
+                          <textarea rows={2} maxLength={1200} value={draftFeedback[draft.id] || ""} onChange={(event) => setDraftFeedback((current) => ({ ...current, [draft.id]: event.target.value }))} placeholder="Explain what needs to change..." className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-purple-500" />
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          <button type="button" onClick={() => void reviewAuthorDraft(draft, "request_revision")} disabled={Boolean(reviewingDraftId)} className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-200 disabled:opacity-50">Request changes</button>
+                          <button type="button" onClick={() => void reviewAuthorDraft(draft, "publish")} disabled={Boolean(reviewingDraftId)} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-50">{reviewingDraftId === draft.id ? "Working..." : "Publish article"}</button>
+                        </div>
+                      </div>
+                    )}
+                    {draft.status === "revision_requested" && (
+                      <p className="text-xs text-slate-400">Waiting for the Author to make changes and submit again.</p>
+                    )}
+                    {draft.status === "published" && (
+                      <p className="text-xs text-emerald-300">This article has been published to the public news feed.</p>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
 
           <section id="automation-status" className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-6 space-y-3 scroll-mt-24">
             <div>
