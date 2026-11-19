@@ -30,10 +30,6 @@ export default function AdminDashboard() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [articleError, setArticleError] = useState(false);
-  const [marketStatus, setMarketStatus] = useState<"checking" | "available" | "unavailable">("checking");
-  const [marketQuoteCount, setMarketQuoteCount] = useState(0);
-  const [marketFetchedAt, setMarketFetchedAt] = useState<string | null>(null);
-
   useEffect(() => {
     async function fetchArticles() {
       try {
@@ -59,38 +55,6 @@ export default function AdminDashboard() {
     }
 
     fetchArticles();
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-
-    async function checkMarketFeed() {
-      try {
-        const response = await fetch("/api/market", { cache: "no-store" });
-        if (!response.ok) throw new Error("Market feed unavailable");
-
-        const payload: { success?: boolean; quotes?: unknown[]; fetchedAt?: string } = await response.json();
-        if (!payload.success || !Array.isArray(payload.quotes)) {
-          throw new Error("Market feed response was not valid");
-        }
-
-        if (active) {
-          setMarketQuoteCount(payload.quotes.length);
-          setMarketFetchedAt(typeof payload.fetchedAt === "string" ? payload.fetchedAt : null);
-          setMarketStatus("available");
-        }
-      } catch {
-        if (active) setMarketStatus("unavailable");
-      }
-    }
-
-    checkMarketFeed();
-    const intervalId = window.setInterval(checkMarketFeed, 60_000);
-
-    return () => {
-      active = false;
-      window.clearInterval(intervalId);
-    };
   }, []);
 
   return (
@@ -157,7 +121,7 @@ export default function AdminDashboard() {
             </button>
             <div>
               <h2 className="text-xl font-bold tracking-wide">Admin Dashboard</h2>
-              <p className="text-xs text-slate-400">Recent article records and public market feed status.</p>
+              <p className="text-xs text-slate-400">Recent article records and newsroom checks.</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -187,7 +151,7 @@ export default function AdminDashboard() {
 
         <main id="overview" className="p-6 space-y-6 flex-1 scroll-mt-24">
           {/* Live overview based only on data this page can verify */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
               <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Recent Articles Loaded</p>
               <h3 className="text-3xl font-extrabold mt-2 tracking-tight">
@@ -202,17 +166,6 @@ export default function AdminDashboard() {
                 {loading || articleError ? "—" : new Set(articles.map((article) => article.category).filter(Boolean)).size}
               </h3>
               <p className="text-xs text-slate-400 mt-2">Distinct categories in this sample</p>
-            </div>
-
-            <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Public Market Feed</p>
-              <h3 className={`text-2xl font-extrabold mt-2 tracking-tight ${marketStatus === "available" ? "text-emerald-400" : marketStatus === "unavailable" ? "text-amber-400" : "text-slate-300"}`}>
-                {marketStatus === "checking" ? "Checking" : marketStatus === "available" ? "Available" : "Unavailable"}
-              </h3>
-              <p className="text-xs text-slate-400 mt-2">
-                {marketQuoteCount} quote pairs returned
-                {marketFetchedAt ? ` · ${new Date(marketFetchedAt).toLocaleTimeString()}` : ""}
-              </p>
             </div>
 
             <div className="bg-[#0c0e15] border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden">
@@ -231,20 +184,13 @@ export default function AdminDashboard() {
               <h3 className="font-bold text-lg">System Health & Monitoring</h3>
               <p className="text-xs text-slate-400 mt-1">Private admin view. These indicators report only checks this dashboard actually performs.</p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
               <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
                 <p className="text-xs text-slate-400">News database read</p>
                 <p className={"mt-2 text-sm font-semibold " + (loading ? "text-slate-300" : articleError ? "text-rose-300" : "text-emerald-300")}>
                   {loading ? "Checking" : articleError ? "Unavailable" : "Read successful"}
                 </p>
                 <p className="text-[11px] text-slate-500 mt-1">Based on the latest articles query already used by this dashboard.</p>
-              </div>
-              <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
-                <p className="text-xs text-slate-400">Market API</p>
-                <p className={"mt-2 text-sm font-semibold " + (marketStatus === "checking" ? "text-slate-300" : marketStatus === "available" ? "text-emerald-300" : "text-amber-300")}>
-                  {marketStatus === "checking" ? "Checking" : marketStatus === "available" ? "Available" : "Unavailable"}
-                </p>
-                <p className="text-[11px] text-slate-500 mt-1">{marketQuoteCount} quote pairs returned{marketFetchedAt ? " · Last checked " + new Date(marketFetchedAt).toLocaleTimeString() : ""}.</p>
               </div>
               <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
                 <p className="text-xs text-slate-400">Automatic source setup</p>
@@ -305,7 +251,7 @@ export default function AdminDashboard() {
                         <td className="py-3 px-4">
                           <span className="flex items-center gap-1.5 text-slate-400 text-xs">
                             <span className="h-1.5 w-1.5 rounded-full bg-slate-500"></span>
-                            {art.created_at && !Number.isNaN(Date.parse(art.created_at)) ? "Published" : "Date unavailable"}
+                            {art.created_at && !Number.isNaN(Date.parse(art.created_at)) ? "Saved record" : "Date unavailable"}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-xs text-slate-400">
