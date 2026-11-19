@@ -1,88 +1,87 @@
 # NeuroWire 21-Publication Benchmark & Product Requirements
-Status: active specification; research and implementation must be evidenced, not assumed.
-Scope: preserve existing project capabilities; no production deployment; Supabase configuration/database/schema/policies/migrations are out of scope unless separately authorized.
+Status: active guide for improving the existing NeuroWire project, not replacing its roadmap.
+Scope: keep existing features and work intact; make useful, gradual improvements. No production deployment. Supabase settings, database, tables, policies, migrations and production data are out of scope unless separately approved.
 
 ## Benchmark set (21)
-1. Reuters — fast, clear reporting, topic and live coverage.
-2. Bloomberg — business/market data integrated with news.
-3. Financial Times — analysis, visual journalism, business context.
-4. Wall Street Journal — specialist business coverage.
-5. New York Times — storytelling, multimedia, explainers.
-6. BBC News — topic sections, live/video formats, accessibility.
-7. Associated Press — news-first reporting and multimedia.
-8. The Guardian — investigations, long-form and editorial depth.
-9. The Economist — concise analysis and global context.
-10. CNBC — business/markets, live formats and data.
-11. Axios — concise, structured news presentation.
-12. Semafor — separation of facts, perspectives and analysis.
-13. The Information — technology-business intelligence.
-14. TechCrunch — startups, technology companies, funding and product news.
-15. The Verge — visual technology/culture experience.
-16. WIRED — investigative technology, science, security and culture.
-17. Ars Technica — technical depth and explanatory coverage.
-18. MIT Technology Review — emerging technology and research context.
-19. CoinDesk — crypto news, data and research.
-20. Cointelegraph — crypto/blockchain coverage and explainers.
-21. Investing.com — market data, sentiment presentation, asset coverage and economic calendar.
+1. Reuters — clear reporting, topics and live coverage.
+2. Bloomberg — news with business information.
+3. Financial Times — analysis and business context.
+4. Wall Street Journal — business reporting.
+5. New York Times — storytelling and explainers.
+6. BBC News — topic sections, live news and accessibility.
+7. Associated Press — direct news reporting.
+8. The Guardian — investigations and longer stories.
+9. The Economist — short analysis and global context.
+10. CNBC — business news and live coverage.
+11. Axios — short, easy-to-scan news.
+12. Semafor — clear separation of facts and viewpoints.
+13. The Information — technology-business reporting.
+14. TechCrunch — startups, technology companies and products.
+15. The Verge — technology news and reader experience.
+16. WIRED — technology, security and culture reporting.
+17. Ars Technica — detailed technology reporting.
+18. MIT Technology Review — new technology and research explained.
+19. CoinDesk — crypto news and reporting.
+20. Cointelegraph — crypto news and explainers.
+21. Investing.com — business news, data and economic events.
 
 ## Research rule
-For each publication, inspect publicly accessible live pages and features where possible; record URLs, date checked, observations, screenshots/notes if available, strengths, friction/limitations, and ideas transferable to NeuroWire. Do not present unobserved features or conjectured defects as verified facts. Compare shared industry risks separately from individual-site findings.
+For each publication, inspect public pages and features where possible. Record links, date checked, what was actually observed, strengths, problems and ideas that could help NeuroWire. Do not claim a feature or problem was checked if it was not. Separate shared industry issues from findings about a specific publication.
 
-## Product target: integrated news + intelligence + context + discovery + transparency
-- Rich responsive homepage: multi-column desktop, mobile-first reflow; compact and large card formats; feature/lead stories, latest, trending and analysis; avoid clutter.
-- Six existing categories remain: AI, Crypto, Policy, Technology, Fox News, Leadership. Preserve existing publishing lanes and author/admin paths.
-- Topic hubs and story clusters: AI models/tools, research, generative AI, agents/automation, robotics, AI business, crypto topics, policy, cybersecurity, devices/software, leadership and other topics mapped to real coverage.
-- Story context: What happened; verified key details; why it matters (carefully qualified); what remains unknown; background; timeline; linked coverage and perspectives.
-- Briefings/explainers/analysis: label AI assistance and editorial review accurately; source evidence must be traceable; no fabricated context, quotations, numbers, dates or certainty.
-- News discovery: search, topic filters, duplicate/near-duplicate clustering and clear source attribution.
-- Data visualization: charts only with reliable source, timeframe, units, methodology and caveats; no fabricated or stale data represented as live.
-- Reader experience: responsive columns, accessible typography, clear navigation, compact/full reading options where feasible.
-- Editorial dashboard: quality review, source checks, correction records, transparent workflow; avoid unsafe pending-author/public-table handling.
+## Existing product direction (do not replace)
+Improve the existing NeuroWire experience in small, verified steps. Keep its current publishing setup, categories, reader features, admin paths and other working parts.
+- Keep the six current categories: AI, Crypto, Policy, Technology, Fox News and Leadership.
+- Keep current publishing lanes, author and admin paths.
+- Improve the homepage while keeping it clear and easy to read: lead stories, latest news, trending stories and analysis, with layouts that work on phones and desktops.
+- Improve story pages: clear headline, readable body, source link, date and author when available; helpful background, related stories and what is known or still unclear.
+- Improve topic pages and story groups based on real coverage.
+- Improve search, filters, related stories and duplicate handling.
+- Add useful charts only when data, dates, source and limits are clear.
+- Keep the admin workflow useful and safe.
 
-## Accessibility and calm UX
-- Support screen readers: semantic structure, meaningful accessible names/labels, sensible heading hierarchy, keyboard access and visible focus.
-- Clear contrast and readable font sizing, including metadata; don't rely on colour alone to convey meaning.
-- Meaningful image alt text; decorative images should not add noise to screen-reader output.
-- No intrusive pop-ups and no autoplay videos; respect reduced-motion preferences where feasible.
-- Accessible controls, layouts and navigation across small mobile screens as well as desktop.
+## Easy reading and accessibility
+- Use simple, natural English in headlines, summaries, buttons, labels and explanations.
+- Make reading comfortable: clear text, spacing, contrast, sensible headings and readable source details.
+- Support screen readers, keyboard use and visible focus.
+- Use useful image descriptions; leave decorative images out of screen-reader noise.
+- Avoid pop-ups, autoplay and motion that gets in the way.
+- Make layouts and controls work on small screens and desktop.
 
-## Search, discovery and SEO
-- Robust search with spelling-tolerant/fuzzy matching where feasible, sensible ranking, and helpful empty states.
-- Search filters for category/topic, date range and source, plus clear reset and mobile usability.
-- On mobile, keep category navigation easy to reach (sticky category bar when it works with viewport, keyboard and screen-reader navigation; avoid covering content).
-- SEO: descriptive titles and metadata, canonical URLs, useful internal links, structured data only when accurate, sitemap/indexing hygiene, crawlable content and no misleading markup.
-- Share previews: accurate Open Graph/social preview title, description and image per article/topic where appropriate; verify rendering and fallback behavior.
+## Search, discovery and website visibility
+- Make search helpful, including common spelling mistakes when practical.
+- Allow useful filters such as category, date and source, with a clear reset and easy mobile use.
+- Keep category navigation easy to reach without hiding page content.
+- Keep page titles, descriptions, links, structured data and sitemap accurate.
+- Make social previews accurate and check their fallbacks.
 
-## Free reader features (avoid paywalling our own useful features)
-- Aim to offer useful reader features free rather than imitating competitors' paid gates: search and filters, topic-following, story context, accessible reading, sharing, and briefings where sustainable.
-- Optional daily or weekly email briefing/newsletter with clear opt-in, unsubscribe, frequency choice, privacy-conscious handling and no deceptive signup.
-- Share-friendly article/topic previews with accurate metadata and readable shared content; avoid claiming premium content without offering it.
-- Any feature that has operational/API costs or requires a third-party paid service must be evaluated for sustainable free implementation; do not promise unlimited service before verifying costs and limits.
+## Useful reader features
+- Keep helpful features available without a paywall where practical: search, filters, topic pages, background, sharing and readable articles.
+- Consider optional daily or weekly email updates only if they can be run reliably, with clear opt-in, unsubscribe and privacy.
+- Check costs and limits before promising a free feature that depends on outside services.
 
-## Trust and integrity requirements
-- Source, original link, verified publication date, author/publisher details when available.
-- AI-use disclosures describe actual process (drafting, summary, translation, analysis, review); never imply human review if it did not occur.
-- Corrections log: timestamp, change and reason; don't silently erase corrections.
-- Evidence/claim links for key factual claims where feasible.
-- Multiple perspectives/independent coverage links; don't equate number of links with independent verification.
-- Developing/confirmed/unconfirmed labels only with defined editorial rules.
-- Publisher identity, ownership, contact, editorial policy, sourcing policy, correction policy and AI policy.
-- Sponsored content clearly separate.
-- Avoid clickbait and sensationalism; headlines should match reporting.
-- Explain confidence, data gaps and uncertainty. No fabricated trust scores or verification badges.
+## Trust and accuracy
+- Show the source link, publication date and author when available.
+- Explain AI use honestly; do not claim human review unless it happened.
+- Keep corrections visible with their date and reason.
+- Link evidence for important claims where practical.
+- Link independent coverage without treating multiple copies of one report as separate confirmation.
+- Use developing or confirmed labels only under clear rules.
+- Keep publisher details, contact and editorial, source, correction and AI-use policies easy to find.
+- Clearly mark sponsored content.
+- Avoid clickbait. Headlines should match the story.
+- Explain gaps and uncertainty; do not invent trust scores or verification labels.
 
-## Business & Market Intelligence (educational information, not personalized investment advice)
-- Business Pulse: news-driven industry/company overview.
-- Business/news mood overview: summarize tone and recurring themes in general business and industry reporting for educational context only; do not produce asset-specific sentiment signals, market predictions, buy/sell prompts or trading indicators.
-- Sentiment inputs must be source-based, disclose sampling/time window/methodology, caveats, source coverage/bias, gaps and stale-data status.
-- Sector Pulse and company/topic story clusters for reading and research, without investment action suggestions.
-- Economic events explained as general news and policy context; do not provide trade-planning cues or actionable financial guidance.
-- Avoid asset price widgets or trading-oriented features in this development scope.
+## Business news and context (for learning, not financial advice)
+- Explain business, company and industry news in plain language.
+- Summaries of news tone must be based on named sources, a clear time range and a stated method, with limits explained.
+- Do not create asset-specific trading signals, predictions, buy/sell suggestions or trading guides.
+- Explain economic events as news, not trading instructions.
+- Do not add price or trading widgets within this development scope.
 
-## Implementation guardrails
-- Benchmark first, map existing components/features, prioritize opportunities, then implement incremental features.
-- Preserve existing functionality/categories and avoid unnecessary rewrites.
-- Do not touch Supabase setup/config/schema/database/policies/migrations without explicit approval.
-- No main-branch merge or production deploy without explicit permission.
-- CI checks, tests and actual feature verification are required before claiming completion. This project currently has typecheck/build scripts; do not claim tests exist unless added.
-- Create complete checkpoints with progress report and internal checksum manifest; preserve earlier checkpoints.
+## Work and verification rules
+- Use research to improve the existing project; do not turn it into a new plan or redesign everything.
+- Check the current code and preserve working parts before changing them.
+- Do not change Supabase setup, settings, database, policies, migrations or production data without approval.
+- Do not merge into main or deploy to production without approval.
+- Run the checks that are available and verify changes before calling them complete. Do not claim tests exist or pass without evidence.
+- At approved checkpoints, include the full project, progress report and internal checksum file; keep earlier checkpoints.
