@@ -52,7 +52,7 @@ export const NEWS_FEEDS: NewsFeed[] = [
     publisher: "NASA",
     category: "Technology",
     allowedHosts: ["nasa.gov"],
-    titleKeywords: ["technology", "robot", "computing", "spacecraft", "satellite", "artificial intelligence", "machine learning", "engineering", "software", "chip", "innovation"],
+    titleKeywords: ["technology", "computing", "spacecraft", "satellite", "artificial intelligence", "machine learning", "engineering", "software", "chip", "innovation"],
   },
   {
     rssUrl: "https://news.microsoft.com/source/feed/",
