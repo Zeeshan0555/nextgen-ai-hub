@@ -58,7 +58,17 @@ export function readSavedStories(): SavedReaderStory[] {
 
     return parsed
       .filter(isSavedReaderStory)
-      .slice(0, MAX_SAVED_STORIES);
+      .slice(0, MAX_SAVED_STORIES)
+      .map((story) => ({
+        title: story.title.trim().slice(0, 180),
+        category: story.category.slice(0, 60),
+        source: story.source.slice(0, 120),
+        publishedAt: story.publishedAt.slice(0, 80),
+        image: safeHttpsUrl(story.image),
+        publisherUrl: safeHttpsUrl(story.publisherUrl),
+        summary: story.summary.slice(0, 1000),
+        savedAt: story.savedAt.slice(0, 80),
+      }));
   } catch {
     return [];
   }
