@@ -16,30 +16,57 @@ function safeEqual(left: string, right: string): boolean {
   return timingSafeEqual(leftBytes, rightBytes);
 }
 
+type AuthorAccount = { username: string; password: string };
+
+function getAuthorAccounts(): AuthorAccount[] {
+  const accountsJson = process.env.NEUROWIRE_AUTHOR_ACCOUNTS_JSON;
+  if (accountsJson) {
+    try {
+      const parsed: unknown = JSON.parse(accountsJson);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter((item): item is AuthorAccount => Boolean(
+        item &&
+        typeof item === "object" &&
+        typeof (item as Record<string, unknown>).username === "string" &&
+        typeof (item as Record<string, unknown>).password === "string" &&
+        (item as Record<string, string>).username.trim().length > 0 &&
+        (item as Record<string, string>).username.length <= 120 &&
+        (item as Record<string, string>).password.length >= 12 &&
+        (item as Record<string, string>).password.length <= 256
+      ));
+    } catch {
+      return [];
+    }
+  }
+
+  const username = process.env.NEUROWIRE_AUTHOR_USERNAME?.trim() || "";
+  const password = process.env.NEUROWIRE_AUTHOR_PASSWORD || "";
+  return username && password.length >= 12 && password.length <= 256
+    ? [{ username, password }]
+    : [];
+}
+
 function getSessionSecret(): string | null {
   const secret = process.env.NEUROWIRE_AUTHOR_SESSION_SECRET;
   return secret && secret.length >= 32 ? secret : null;
 }
 
 export function verifyAuthorCredentials(username: unknown, password: unknown): string | null {
-  const configuredUsername = process.env.NEUROWIRE_AUTHOR_USERNAME?.trim();
-  const configuredPassword = process.env.NEUROWIRE_AUTHOR_PASSWORD;
-
   if (
     typeof username !== "string" ||
     typeof password !== "string" ||
-    !configuredUsername ||
-    !configuredPassword ||
     username.length > 120 ||
     password.length > 256
   ) return null;
 
-  if (
-    !safeEqual(username.trim().toLocaleLowerCase(), configuredUsername.toLocaleLowerCase()) ||
-    !safeEqual(password, configuredPassword)
-  ) return null;
-
-  return configuredUsername;
+  const normalizedUsername = username.trim().toLocaleLowerCase();
+  for (const account of getAuthorAccounts()) {
+    if (
+      safeEqual(normalizedUsername, account.username.trim().toLocaleLowerCase()) &&
+      safeEqual(password, account.password)
+    ) return account.username.trim();
+  }
+  return null;
 }
 
 export function createAuthorSessionToken(username: string, now = Date.now()): string | null {
@@ -95,10 +122,5 @@ export function getAuthorSession(request: Request, now = Date.now()): { username
 }
 
 export function isAuthorSessionConfigured(): boolean {
-  return Boolean(
-    process.env.NEUROWIRE_AUTHOR_USERNAME?.trim() &&
-    process.env.NEUROWIRE_AUTHOR_PASSWORD &&
-    process.env.NEUROWIRE_AUTHOR_SESSION_SECRET &&
-    process.env.NEUROWIRE_AUTHOR_SESSION_SECRET.length >= 32
-  );
+  return getAuthorAccounts().length > 0 && Boolean(getSessionSecret());
 }
