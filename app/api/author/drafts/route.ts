@@ -252,7 +252,7 @@ export async function PATCH(request: NextRequest) {
       ...fields.value,
       status: action === "submit" || action === "resubmit"
         ? "submitted"
-        : existing.status,
+        : existing.status === "submitted" ? "draft" : existing.status,
       feedback: action === "resubmit" ? "" : existing.feedback,
       updatedAt: new Date().toISOString(),
     };
