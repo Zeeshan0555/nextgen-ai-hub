@@ -4,7 +4,6 @@ import {
   decryptAuthorDraft,
   encryptAuthorDraft,
   PRIVATE_AUTHOR_DRAFT_SOURCE,
-  type AuthorDraft,
 } from "@/app/lib/author-drafts";
 import { createSupabaseServerClient } from "@/app/lib/supabase-server";
 import { isIndexableEditorialArticle } from "@/app/lib/article-quality";
@@ -127,7 +126,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    if (draft.status !== "submitted" && !(action === "publish" && draft.status === "revision_requested")) {
+    if (draft.status !== "submitted") {
       return NextResponse.json(
         { success: false, error: "Only submitted articles can be reviewed or published." },
         { status: 409, headers: { "Cache-Control": "no-store" } }
