@@ -12,14 +12,38 @@ import {
   Settings, 
   Menu, 
   X, 
-  Zap 
+  Zap,
+  Search,
+  Pencil,
+  ExternalLink,
 } from 'lucide-react';
 
 interface Article {
   id: string;
   title: string;
   category: string;
+  source?: string | null;
+  description?: string | null;
+  content?: string | null;
+  image_url?: string | null;
   created_at?: string | null;
+}
+
+type ArticleEditForm = {
+  title: string;
+  category: string;
+  source: string;
+  description: string;
+  content: string;
+  image_url: string;
+  source_url: string;
+};
+
+const ADMIN_CATEGORIES = ["AI", "Crypto", "Policy", "Technology", "Fox News", "Leadership"] as const;
+
+function getOriginalSourceUrl(content: string): string {
+  const line = content.split("\n").find((part) => part.startsWith("ORIGINAL_SOURCE_URL:"));
+  return line ? line.slice("ORIGINAL_SOURCE_URL:".length).trim() : "";
 }
 
 export default function AdminDashboard() {
@@ -30,14 +54,20 @@ export default function AdminDashboard() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [articleError, setArticleError] = useState(false);
+  const [articleSearch, setArticleSearch] = useState("");
+  const [articleCategory, setArticleCategory] = useState("All");
+  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
+  const [editForm, setEditForm] = useState<ArticleEditForm>({ title: "", category: "AI", source: "", description: "", content: "", image_url: "", source_url: "" });
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState("");
   useEffect(() => {
     async function fetchArticles() {
       try {
         const { data, error } = await supabase
           .from('news')
-          .select('id, title, category, created_at')
+          .select('id, title, category, source, description, content, image_url, created_at')
           .order('created_at', { ascending: false })
-          .limit(5);
+          .limit(50);
 
         if (error) {
           setArticleError(true);
@@ -56,6 +86,53 @@ export default function AdminDashboard() {
 
     fetchArticles();
   }, []);
+
+  const filteredArticles = articles.filter((article) => {
+    const query = articleSearch.trim().toLocaleLowerCase();
+    const searchableText = [article.title, article.source || "", article.description || ""].join(" ").toLocaleLowerCase();
+    const matchesQuery = searchableText.includes(query);
+    const matchesCategory = articleCategory === "All" || article.category === articleCategory;
+    return matchesQuery && matchesCategory;
+  });
+
+  const openArticleEditor = (article: Article) => {
+    setEditingArticle(article);
+    setEditError("");
+    setEditForm({
+      title: article.title || "",
+      category: ADMIN_CATEGORIES.includes(article.category as (typeof ADMIN_CATEGORIES)[number]) ? article.category : "AI",
+      source: article.source || "",
+      description: article.description || "",
+      content: article.content || "",
+      image_url: article.image_url || "",
+      source_url: getOriginalSourceUrl(article.content || ""),
+    });
+  };
+
+  const saveArticleChanges = async () => {
+    if (!editingArticle) return;
+    setEditSaving(true);
+    setEditError("");
+    try {
+      const response = await fetch("/api/admin/news", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: editingArticle.id, ...editForm }),
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.success || !payload.story) {
+        throw new Error(typeof payload.error === "string" ? payload.error : "The article could not be updated.");
+      }
+      setArticles((current) => current.map((article) =>
+        article.id === editingArticle.id ? { ...article, ...payload.story } : article
+      ));
+      setEditingArticle(null);
+    } catch (error) {
+      setEditError(error instanceof Error ? error.message : "The article could not be updated. Please try again.");
+    } finally {
+      setEditSaving(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#07080b] text-slate-100 flex font-sans selection:bg-purple-500 selection:text-white">
@@ -206,7 +283,7 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-bold text-lg">Recent News Articles</h3>
-                <p className="text-xs text-slate-400">Latest five records returned by the connected news table</p>
+                <p className="text-xs text-slate-400">Search and update the latest 50 records returned by the news table.</p>
               </div>
               <button 
                 onClick={() => window.location.reload()}
@@ -216,6 +293,20 @@ export default function AdminDashboard() {
               </button>
             </div>
 
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row">
+              <label className="relative flex-1">
+                <span className="sr-only">Search articles</span>
+                <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                <input value={articleSearch} onChange={(event) => setArticleSearch(event.target.value)} placeholder="Search title, source or summary" className="w-full rounded-xl border border-slate-700 bg-slate-950 py-2 pl-9 pr-3 text-sm text-slate-200 outline-none focus:border-purple-500" />
+              </label>
+              <label className="sm:w-52">
+                <span className="sr-only">Filter by category</span>
+                <select value={articleCategory} onChange={(event) => setArticleCategory(event.target.value)} className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 outline-none focus:border-purple-500">
+                  <option value="All">All categories</option>
+                  {ADMIN_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
+                </select>
+              </label>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm text-slate-300">
                 <thead className="border-b border-slate-800 text-xs uppercase text-slate-500">
@@ -224,23 +315,24 @@ export default function AdminDashboard() {
                     <th className="py-3 px-4">Category</th>
                     <th className="py-3 px-4">Status</th>
                     <th className="py-3 px-4">Timestamp</th>
+                    <th className="py-3 px-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
                   {loading ? (
                     <tr>
-                      <td colSpan={4} className="py-6 text-center text-slate-500 text-xs">
+                      <td colSpan={5} className="py-6 text-center text-slate-500 text-xs">
                         Loading recent articles...
                       </td>
                     </tr>
-                  ) : articles.length === 0 ? (
+                  ) : articles.length === 0 || filteredArticles.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="py-6 text-center text-slate-500 text-xs">
-                        No recent articles were returned.
+                      <td colSpan={5} className="py-6 text-center text-slate-500 text-xs">
+                        {articles.length === 0 ? "No recent articles were returned." : "No articles match these filters."}
                       </td>
                     </tr>
                   ) : (
-                    articles.map((art) => (
+                    filteredArticles.map((art) => (
                       <tr key={art.id} className="hover:bg-slate-900/40 transition-colors">
                         <td className="py-3 px-4 font-medium text-white">{art.title}</td>
                         <td className="py-3 px-4">
@@ -258,6 +350,16 @@ export default function AdminDashboard() {
                           {art.created_at && !Number.isNaN(Date.parse(art.created_at))
                             ? new Date(art.created_at).toLocaleDateString()
                             : "Date unavailable"}
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-2">
+                            <button type="button" onClick={() => openArticleEditor(art)} className="inline-flex items-center gap-1 rounded-lg border border-purple-500/30 bg-purple-500/10 px-2.5 py-1.5 text-xs font-semibold text-purple-200 hover:bg-purple-500/20">
+                              <Pencil className="h-3.5 w-3.5" /> Edit
+                            </button>
+                            <button type="button" onClick={() => router.push("/news/" + encodeURIComponent(art.title))} className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white">
+                              <ExternalLink className="h-3.5 w-3.5" /> Open
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -310,6 +412,57 @@ export default function AdminDashboard() {
           </section>
 
         </main>
+
+          {editingArticle && (
+            <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+              <section role="dialog" aria-modal="true" aria-labelledby="edit-article-title" className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-700 bg-[#0c0e15] p-5 shadow-2xl">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <h3 id="edit-article-title" className="text-lg font-bold text-white">Edit article</h3>
+                    <p className="mt-1 text-xs text-slate-400">Changes are saved to this article record.</p>
+                  </div>
+                  <button type="button" onClick={() => { setEditingArticle(null); setEditError(""); }} className="rounded-lg bg-slate-800 p-2 text-slate-300 hover:text-white" aria-label="Close article editor">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <form onSubmit={(event) => { event.preventDefault(); void saveArticleChanges(); }} className="space-y-3">
+                  <label className="block text-xs text-slate-400">Headline
+                    <input required maxLength={180} value={editForm.title} onChange={(event) => setEditForm((current) => ({ ...current, title: event.target.value }))} className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-purple-500" />
+                  </label>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="block text-xs text-slate-400">Category
+                      <select value={editForm.category} onChange={(event) => setEditForm((current) => ({ ...current, category: event.target.value }))} className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-purple-500">
+                        {ADMIN_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
+                      </select>
+                    </label>
+                    <label className="block text-xs text-slate-400">Source name
+                      <input required maxLength={120} value={editForm.source} onChange={(event) => setEditForm((current) => ({ ...current, source: event.target.value }))} className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-purple-500" />
+                    </label>
+                  </div>
+                  <label className="block text-xs text-slate-400">Short summary
+                    <textarea rows={3} maxLength={1000} value={editForm.description} onChange={(event) => setEditForm((current) => ({ ...current, description: event.target.value }))} className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-purple-500" />
+                  </label>
+                  <label className="block text-xs text-slate-400">Article text
+                    <textarea required rows={9} maxLength={30000} value={editForm.content} onChange={(event) => setEditForm((current) => ({ ...current, content: event.target.value }))} className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm leading-6 text-white outline-none focus:border-purple-500" />
+                    <span className="mt-1 block text-[11px] text-slate-500">Keep the source notes and article facts accurate. Existing NeuroWire article markers will be kept.</span>
+                  </label>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="block text-xs text-slate-400">Original source link (HTTPS)
+                      <input type="url" maxLength={2048} value={editForm.source_url} onChange={(event) => setEditForm((current) => ({ ...current, source_url: event.target.value }))} placeholder="https://publisher.com/story" className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-purple-500" />
+                    </label>
+                    <label className="block text-xs text-slate-400">Image link (HTTPS)
+                      <input type="url" maxLength={2048} value={editForm.image_url} onChange={(event) => setEditForm((current) => ({ ...current, image_url: event.target.value }))} placeholder="https://..." className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-purple-500" />
+                    </label>
+                  </div>
+                  {editError && <p role="alert" className="rounded-lg border border-rose-500/20 bg-rose-500/5 p-3 text-xs text-rose-300">{editError}</p>}
+                  <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+                    <button type="button" onClick={() => { setEditingArticle(null); setEditError(""); }} disabled={editSaving} className="rounded-xl border border-slate-700 px-4 py-2.5 text-sm text-slate-300 hover:text-white disabled:opacity-50">Cancel</button>
+                    <button type="submit" disabled={editSaving} className="rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-500 disabled:opacity-50">{editSaving ? "Saving changes..." : "Save changes"}</button>
+                  </div>
+                </form>
+              </section>
+            </div>
+          )}
       </div>
 
     </div>
