@@ -83,7 +83,6 @@ const CATEGORY_TOPICS: Record<NewsCategory, TopicRule[]> = {
     { label: "AI Research", keywords: ["AI research", "machine learning research", "research paper", "AI study", "benchmark", "breakthrough"] },
     { label: "Generative AI", keywords: ["generative", "image generation", "video generation", "text-to-image", " sora "] },
     { label: "AI Agents & Automation", keywords: ["agent", "automation", "workflow", "autonomous"] },
-    { label: "Robotics", keywords: ["robot", "humanoid", "robotics"] },
     { label: "AI Business", keywords: ["AI enterprise", "AI startup", "AI company", "AI investment", "AI funding", "AI revenue"] },
   ],
   Crypto: [
@@ -105,7 +104,6 @@ const CATEGORY_TOPICS: Record<NewsCategory, TopicRule[]> = {
     { label: "Software", keywords: ["software", "mobile app", "operating system", "windows", "browser"] },
     { label: "Cybersecurity", keywords: ["cybersecurity", "cyber attack", "hacking", "malware", "data breach"] },
     { label: "Space & Science", keywords: ["space", " nasa ", "satellite", "scientist", "science", "mission"] },
-    { label: "Robotics", keywords: ["robot", "robotics", "humanoid"] },
     { label: "Big Tech Companies", keywords: ["apple", "google", "microsoft", "meta", "amazon", "nvidia"] },
   ],
   "Fox News": [
