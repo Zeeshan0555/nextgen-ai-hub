@@ -631,7 +631,8 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
     summary: story.summary,
     fullReport: [],
     bullets: [],
-  }));
+  })).filter((item) => [item.title, item.summary, item.source, item.category]
+    .some((field) => field.toLocaleLowerCase().includes(searchTerm)));
   const storiesForView = showSavedStories ? savedFeedItems : filtered;
 
   // Never show an unrelated story when a selected category has no results.
@@ -769,7 +770,7 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <Cpu className="h-6 w-6 text-cyan-400" /> {activeTab === "All" ? "Latest News" : activeTab === "Fox News" ? "Fox News" : activeTab + " News"}
+              <Cpu className="h-6 w-6 text-cyan-400" /> {showSavedStories ? "Saved Stories" : activeTab === "All" ? "Latest News" : activeTab === "Fox News" ? "Fox News" : activeTab + " News"}
             </h2>
             <p className="mt-1 text-xs text-slate-400">
               {showSavedStories ? "Stories you have saved in this browser." : activeTab === "All" ? "The latest stories across all six categories." : "Showing stories from this category only."}
@@ -786,6 +787,7 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
             {savedNotice && <p role="status" aria-live="polite" className="mt-2 text-xs text-cyan-300">{savedNotice}</p>}
           </div>
 
+          {!showSavedStories && (
           <div className="flex max-w-full items-center gap-2 overflow-x-auto bg-slate-950 p-1.5 rounded-full border border-slate-800">
             {["All", ...NEWS_CATEGORIES].map((tab) => (
               <button
@@ -799,9 +801,10 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
               </button>
             ))}
           </div>
+          )}
         </div>
 
-        {activeTab !== "All" && (
+        {!showSavedStories && activeTab !== "All" && (
           <div className="mb-6">
             <p className="text-[11px] uppercase tracking-wider text-slate-500 mb-2">Filter by topic</p>
             <div className="flex max-w-full items-center gap-2 overflow-x-auto pb-2">
@@ -932,7 +935,7 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
                   className={`inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-2 text-xs font-semibold ${savedStories.some((story) => story.title.toLocaleLowerCase() === item.title.toLocaleLowerCase()) ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-200" : "border-slate-700 bg-slate-800 text-slate-300 hover:text-white"}`}
                 >
                   {savedStories.some((story) => story.title.toLocaleLowerCase() === item.title.toLocaleLowerCase()) ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-                  Save
+                  {savedStories.some((story) => story.title.toLocaleLowerCase() === item.title.toLocaleLowerCase()) ? "Saved" : "Save"}
                 </button>
                 <button
                   onClick={() => toggleVoiceReader(item)}
