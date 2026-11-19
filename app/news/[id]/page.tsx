@@ -56,6 +56,7 @@ async function getInitialArticle(title: string): Promise<ArticleStory | null> {
       .from("news")
       .select("title, category, source, description, content, image_url, created_at")
       .eq("title", title)
+      .neq("source", "NeuroWire Private Draft")
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
