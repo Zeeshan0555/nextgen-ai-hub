@@ -4,6 +4,7 @@ import {
   decryptAuthorDraft,
   encryptAuthorDraft,
   PRIVATE_AUTHOR_DRAFT_SOURCE,
+  type AuthorDraft,
 } from "@/app/lib/author-drafts";
 import { createSupabaseServerClient } from "@/app/lib/supabase-server";
 import { isIndexableEditorialArticle } from "@/app/lib/article-quality";
