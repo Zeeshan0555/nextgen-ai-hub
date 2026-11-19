@@ -158,7 +158,6 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminStatusLoading, setAdminStatusLoading] = useState(true);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [showAuthorNotice, setShowAuthorNotice] = useState(false);
   const [adminPassword, setAdminPassword] = useState("");
   const [adminLoginError, setAdminLoginError] = useState("");
   const [publishingError, setPublishingError] = useState("");
@@ -990,7 +989,7 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
           )}
           <button
             type="button"
-            onClick={() => setShowAuthorNotice(true)}
+            onClick={() => router.push("/author")}
             className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-900/70 text-slate-300 hover:text-white hover:border-purple-500/50 text-xs font-semibold transition-colors"
           >
             Author sign in
@@ -1002,34 +1001,6 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
         </p>
       </footer>
       
-        {/* Secure admin sign-in */}
-      {showAuthorNotice && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-sm w-full p-6 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-white">Author access</h3>
-              <button
-                type="button"
-                onClick={() => setShowAuthorNotice(false)}
-                className="p-2 text-slate-400 hover:text-white rounded-full bg-slate-800"
-                aria-label="Close author access notice"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <p className="text-sm text-slate-300 leading-relaxed">
-              Author sign-in is not available yet. The author application, approval and secure login system still needs to be built.
-            </p>
-            <button
-              type="button"
-              onClick={() => setShowAuthorNotice(false)}
-              className="mt-5 w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
 
       {showAdminLogin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
