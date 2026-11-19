@@ -22,6 +22,7 @@ export default function PrivacyPolicy() {
           <p>This page explains the information-handling features currently visible in NeuroWire News. The site may change as new features are added; this policy must be reviewed before new data collection or advertising is enabled.</p>
           <h2 className="pt-2 text-lg font-semibold text-white">Information you enter</h2>
           <p>The current homepage subscription control stores a small preference flag in your browser's local storage. It does not currently submit the email address entered in that control to a mailing-list service. Do not enter sensitive information into website forms.</p>
+          <p>Saved stories are kept in this browser on this device using local storage. They are not synced to an account or sent to NeuroWire's server by the save button. You can remove a saved story from the Saved Stories view or the article page, and clearing this browser's site data will also remove the saved list.</p>
           <h2 className="pt-2 text-lg font-semibold text-white">Sign-in and security</h2>
           <p>The Admin sign-in feature uses a server-managed, HTTP-only session cookie after a successful sign-in. The public news feed does not require visitors to create an account.</p>
           <h2 className="pt-2 text-lg font-semibold text-white">News content and service providers</h2>
