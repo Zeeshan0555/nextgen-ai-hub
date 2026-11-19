@@ -108,6 +108,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       .from("news")
       .select("title, description, content, created_at, source")
       .eq("title", articleTitle)
+      .neq("source", "NeuroWire Private Draft")
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
