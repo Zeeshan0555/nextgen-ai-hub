@@ -3,7 +3,6 @@ import { getAuthorSession } from "@/app/lib/author-session";
 import {
   encryptAuthorDraft,
   decryptAuthorDraft,
-  PRIVATE_AUTHOR_DRAFT_MARKER,
   PRIVATE_AUTHOR_DRAFT_SOURCE,
   PRIVATE_AUTHOR_DRAFT_TITLE,
   type AuthorDraft,
