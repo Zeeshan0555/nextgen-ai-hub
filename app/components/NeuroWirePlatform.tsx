@@ -621,8 +621,8 @@ export default function NeuroWirePlatform({ initialNews }: { initialNews: NewsIt
     id: "saved-" + story.title,
     title: story.title,
     category: NEWS_CATEGORIES.includes(story.category as NewsCategory)
-      ? story.category as NewsCategory
-      : "Uncategorized",
+      ? (story.category as NewsCategory)
+      : "Uncategorized" as const,
     source: story.source,
     readTime: story.publisherUrl ? "Source link" : "Saved story",
     publishedAt: story.publishedAt,
