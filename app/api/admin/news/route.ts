@@ -210,9 +210,9 @@ export async function PATCH(request: NextRequest) {
   const imageUrl = cleanText(body.image_url, 2048);
   const sourceUrl = cleanText(body.source_url, 2048);
   const articleText = content
-    .split(/\\r?\\n/)
+    .split(/\r?\n/)
     .filter((line) => !line.startsWith("NEUROWIRE_") && !line.startsWith("ORIGINAL_SOURCE_URL:"))
-    .join("\\n")
+    .join("\n")
     .trim();
 
   if (!id || !/^[a-zA-Z0-9_-]{1,80}$/.test(id)) {
@@ -244,25 +244,27 @@ export async function PATCH(request: NextRequest) {
   }
 
   let storedContent = content
-    .split(/\\r?\\n/)
+    .split(/\r?\n/)
     .filter((line) => !line.startsWith("ORIGINAL_SOURCE_URL:"))
-    .join("\\n")
+    .join("\n")
     .trim();
 
   if (
     !storedContent.startsWith("NEUROWIRE_EDITORIAL_BRIEF_V1") &&
     !storedContent.startsWith("NEUROWIRE_EDITORIAL_ARTICLE_V1")
   ) {
-    storedContent = "NEUROWIRE_EDITORIAL_ARTICLE_V1\\n\\n" + storedContent;
+    storedContent = "NEUROWIRE_EDITORIAL_ARTICLE_V1\n\n" + storedContent;
   }
   if (
     storedContent.startsWith("NEUROWIRE_EDITORIAL_ARTICLE_V1") &&
     !storedContent.includes("NEUROWIRE_AUTHOR_NAME:")
   ) {
-    storedContent += "\\n\\nNEUROWIRE_AUTHOR_NAME: NeuroWire Admin";
+    storedContent += "\n\nNEUROWIRE_AUTHOR_NAME: NeuroWire Admin";
   }
   if (sourceUrl) {
-    storedContent += "\\n\\nORIGINAL_SOURCE_URL: " + sourceUrl;
+    storedContent += "
+
+ORIGINAL_SOURCE_URL: " + sourceUrl;
   }
 
   try {
