@@ -20,9 +20,18 @@ function rejectCrossOriginRequest(request: NextRequest): boolean {
   }
 }
 
+function isAuthorWorkspaceConfigured(): boolean {
+  return (
+    isAuthorSessionConfigured() &&
+    /^[a-f0-9]{64}$/i.test(process.env.NEUROWIRE_AUTHOR_DRAFT_ENCRYPTION_KEY || "") &&
+    Boolean(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL) &&
+    Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)
+  );
+}
+
 export async function GET(request: NextRequest) {
   return NextResponse.json(
-    { success: true, configured: isAuthorSessionConfigured(), isAuthenticated: Boolean(getAuthorSession(request)) },
+    { success: true, configured: isAuthorWorkspaceConfigured(), isAuthenticated: Boolean(getAuthorSession(request)) },
     { headers: { "Cache-Control": "no-store" } }
   );
 }
@@ -34,7 +43,7 @@ export async function POST(request: NextRequest) {
       { status: 403, headers: { "Cache-Control": "no-store" } }
     );
   }
-  if (!isAuthorSessionConfigured()) {
+  if (!isAuthorWorkspaceConfigured()) {
     return NextResponse.json(
       { success: false, error: "Author sign-in is not configured on this deployment yet." },
       { status: 503, headers: { "Cache-Control": "no-store" } }
