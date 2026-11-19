@@ -117,6 +117,7 @@ export default function ArticlePageClient({ initialStory }: { initialStory: Arti
           .from("news")
           .select("*")
           .eq("title", decodedTitle)
+          .neq("source", "NeuroWire Private Draft")
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
